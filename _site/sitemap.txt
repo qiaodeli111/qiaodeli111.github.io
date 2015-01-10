@@ -1,12 +1,12 @@
 
-/archive.html
-/atom.xml
-/categories.html
-/index.html
-/pages.html
-/rss.xml
-/sitemap.txt
-/tags.html
+http://qiaodeli111.github.io/archive.html
+http://qiaodeli111.github.io/atom.xml
+http://qiaodeli111.github.io/categories.html
+http://qiaodeli111.github.io/index.html
+http://qiaodeli111.github.io/pages.html
+http://qiaodeli111.github.io/rss.xml
+http://qiaodeli111.github.io/sitemap.txt
+http://qiaodeli111.github.io/tags.html
 
-/2014/12/22/post1.html
-/lessons/2011/12/29/jekyll-introduction.html
+http://qiaodeli111.github.io/2014/12/22/post1
+http://qiaodeli111.github.io/lessons/2011/12/29/jekyll-introduction

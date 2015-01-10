@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <title>Post1</title>
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,8 +28,8 @@
   -->
 
     <!-- atom & rss feed -->
-    <link href="" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
-    <link href="" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
 
   </head>
 
@@ -37,7 +37,7 @@
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container-narrow">
-          <a class="brand" href="/"></a>
+          <a class="brand" href="/">Jekyll Bootstrap</a>
           <ul class="nav">
             
             
@@ -116,12 +116,29 @@
     </div>
     <div class="content">
       
-<h1 id="h1">H1</h1>
-<hr />
+<h1 id="heading-1">Heading 1</h1>
 
-<p>*Testing
-*Testing
-*Testing</p>
+<h2 id="heading-2">Heading 2</h2>
+
+<h3 id="heading-3">Heading 3</h3>
+
+<p><em>Italic text</em>
+<strong>Bold text</strong></p>
+
+<ul>
+  <li>list item 1</li>
+  <li>list item 2</li>
+  <li>list item 3</li>
+</ul>
+
+<ol>
+  <li>list item 1</li>
+  <li>list item 2</li>
+  <li>list item 3</li>
+</ol>
+
+<p><a href="http://qiaodeli111.github.io" title="The qiaodeli111 github page">Podmedics</a></p>
+
 
     </div>
 
@@ -133,9 +150,9 @@
     <div class="pagination">
       <ul>
       
-        <li class="prev"><a href="/lessons/2011/12/29/jekyll-introduction.html" title="Jekyll Introduction">&larr; Previous</a></li>
+        <li class="prev"><a href="/lessons/2011/12/29/jekyll-introduction" title="Jekyll Introduction">&larr; Previous</a></li>
       
-        <li><a href="">Archive</a></li>
+        <li><a href="/archive.html">Archive</a></li>
       
         <li class="next disabled"><a>Next &rarr;</a>
       
@@ -143,6 +160,26 @@
     </div>
     <hr>
     
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'jekyllbootstrap'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
   </div>
 </div>
 
@@ -150,7 +187,7 @@
       </div>
       <hr>
       <footer>
-        <p>&copy; 2014 
+        <p>&copy; 2014 Delly Qiao
           with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
           and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
         </p>

@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
 <channel>
-        <title></title>
-        <description> - </description>
-        <link></link>
-        <link></link>
-        <lastBuildDate>2014-12-22T21:19:22+08:00</lastBuildDate>
-        <pubDate>2014-12-22T21:19:22+08:00</pubDate>
+        <title>Jekyll Bootstrap</title>
+        <description>Jekyll Bootstrap - Delly Qiao</description>
+        <link>http://qiaodeli111.github.io</link>
+        <link>http://qiaodeli111.github.io</link>
+        <lastBuildDate>2014-12-28T21:47:31+08:00</lastBuildDate>
+        <pubDate>2014-12-28T21:47:31+08:00</pubDate>
         <ttl>1800</ttl>
 
 
         <item>
                 <title>Post1</title>
                 <description>
-&lt;h1 id=&quot;h1&quot;&gt;H1&lt;/h1&gt;
-&lt;hr /&gt;
+&lt;h1 id=&quot;heading-1&quot;&gt;Heading 1&lt;/h1&gt;
 
-&lt;p&gt;*Testing
-*Testing
-*Testing&lt;/p&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;Heading 2&lt;/h2&gt;
+
+&lt;h3 id=&quot;heading-3&quot;&gt;Heading 3&lt;/h3&gt;
+
+&lt;p&gt;&lt;em&gt;Italic text&lt;/em&gt;
+&lt;strong&gt;Bold text&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;list item 1&lt;/li&gt;
+  &lt;li&gt;list item 2&lt;/li&gt;
+  &lt;li&gt;list item 3&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;list item 1&lt;/li&gt;
+  &lt;li&gt;list item 2&lt;/li&gt;
+  &lt;li&gt;list item 3&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://qiaodeli111.github.io&quot; title=&quot;The qiaodeli111 github page&quot;&gt;Podmedics&lt;/a&gt;&lt;/p&gt;
+
 </description>
-                <link>/2014/12/22/post1.html</link>
-                <guid>/2014/12/22/post1</guid>
+                <link>http://qiaodeli111.github.io/2014/12/22/post1</link>
+                <guid>http://qiaodeli111.github.io/2014/12/22/post1</guid>
                 <pubDate>2014-12-22T00:00:00+08:00</pubDate>
         </item>
 
@@ -443,8 +460,8 @@ As noted, our main programming constraint is the fact that our API is limited to
 &lt;p&gt;Please take a look at []()
 or jump right into &lt;a href=&quot;&quot;&gt;Usage&lt;/a&gt; if you’d like.&lt;/p&gt;
 </description>
-                <link>/lessons/2011/12/29/jekyll-introduction.html</link>
-                <guid>/lessons/2011/12/29/jekyll-introduction</guid>
+                <link>http://qiaodeli111.github.io/lessons/2011/12/29/jekyll-introduction</link>
+                <guid>http://qiaodeli111.github.io/lessons/2011/12/29/jekyll-introduction</guid>
                 <pubDate>2011-12-29T00:00:00+08:00</pubDate>
         </item>
 
