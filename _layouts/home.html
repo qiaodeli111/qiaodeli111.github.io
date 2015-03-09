@@ -1,50 +1,10 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Leap Day in Jekyll</title>
-    <link rel="stylesheet" href="assets/stylesheets/styles.css">
-    <link rel="stylesheet" href="assets/stylesheets/pygment_trac.css">
-    <script src="http://dellyqiao.qiniudn.com/dellyqiao.com/rsc/jquery-2.0.3.min.js"></script>
-    <script src="assets/javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  </head>
-  <body>
+{% include header.html %}
 
-  <header>
-    <a href="">
-      <h1>Leap Day for Jekyll</h1>
-      <p>Theme built on GitHub Pages for all to use.</p>
-    </a>
-  </header>
-
-
-  <div id="banner">
-  <div class="banner-inner">
-    <span id="logo"><span class="octicon octicon-mark-github"></span></span>
-
-    <a href="https://github.com/mattgraham/leapday" class="button fork"><strong>Fork On GitHub</strong></a>
-    <div class="downloads">
-      <span>Downloads:</span>
-      <ul>
-        <li><a href="https://github.com/mattgraham/leapday/zipball/master" class="button">ZIP</a></li>
-        <li><a href="https://github.com/mattgraham/leapday/tarball/master" class="button">TAR</a></li>
-      </ul>
-    </div>
-  </div>
-</div>
-
+  {% include banner.html %}
 
   <div class="wrapper">
 
-    <nav>
-  <ul></ul>
-</nav>
-
+    {% include page-nav.html %}
 
   <section>
     <h1>Heading One</h1>
@@ -165,21 +125,10 @@
 
     <p>The sub-navigation is automatically generated using a little JS based on the H1 and H2 tags in your markdown file. The goal was to make it a quick <code>and exciting</code> way to write a markdown file and create an amazing pages site.  </p>
 
-    <h2>Who is Matt Graham?</h2>
-<p><img src="http://www.gravatar.com/avatar/25d643886852ad60d0efe0b3190a53dd.png?s=600" alt="Matt Graham"></p>
-<p>A creative. Previously at GitHub, Ordered List etc. He can be found on <a href="http://twitter.com/#!/michigangraham">Twitter</a>, <a href="http://github.com/mattgraham">GitHub</a>, <a href="http://madebygraham.com">his blog</a>, and around the country for numerous events. Enjoyed the theme? Share it with the twitterverse. Found bugs, submit a pull request and he'll see what he thinks.</p>
-
+    {% include mattgraham.html %}
 
     </section>
 
-	
+	{{ content }}
 
-
-  <footer>
-    <span class="small">Built in Jekyll for GitHub Pages by <a href="http://twitter.com/#!/michigangraham">@mattgraham</a></span>
-  </footer>
-  </div>
-  <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
-  </body>
-</html>
-
+{% include footer.html %}
