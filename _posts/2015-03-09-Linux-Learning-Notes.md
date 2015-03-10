@@ -1,42 +1,35 @@
 ---
-layout: home
+layout: post
 title: Linux学习笔记
 category: Server
 date: 2015-03-09
 ---
 
-```
-echo $SHELL
+	echo $SHELL
+	##永久改变shell
+	chsh -s /bin/bash [username]
 
-##永久改变shell
-chsh -s /bin/bash [username]
-
-##临时改变shell
-/bin/bash
-
-```
+	##临时改变shell
+	/bin/bash
 
 
 ### Linux命令包括内部命令和系统命令
 
-```
-内部命令作为shell程序自身的子程序运行。Bash shell内部命令包括echo，exit，history。
+	内部命令作为shell程序自身的子程序运行。Bash shell内部命令包括echo，exit，history。
 
+	系统命令是作为独立文件存在的程序，通过键入命令或文件名来执行。
 
-系统命令是作为独立文件存在的程序，通过键入命令或文件名来执行。
+	帮助： info、help和man
 
-帮助： info、help和man
+	help 可显示所有内部命令列表
 
-help 可显示所有内部命令列表
+	man 提供系统命令的信息。man -k xxx 可以模糊搜索命令
 
-man 提供系统命令的信息。man -k xxx 可以模糊搜索命令
+	一行输入;多个命令;用分号
 
-一行输入;多个命令;用分号
+	!! 重复上个命令； !ma 可以执行上个以ma开头的命令
 
-!! 重复上个命令； !ma 可以执行上个以ma开头的命令
-
-用一条命令作为另一命令的参数  echo `date`
-```
+	用一条命令作为另一命令的参数  echo `date`
 
 
 
@@ -52,39 +45,35 @@ man 提供系统命令的信息。man -k xxx 可以模糊搜索命令
 
 
 ### 文件操作
-```
-ls
--c 按修改时间排列
 
-mkdir -p abc/def/eft 连续创建子目录
+	ls
+	-c 按修改时间排列
 
-rmdir -p abc/def/* 删除包括abc/def/下面的所有空子目录，如果abc/def也为空，删除这个目录。
+	mkdir -p abc/def/eft 连续创建子目录
 
-设备到设备复制文件： dd xxxx
+	rmdir -p abc/def/* 删除包括abc/def/下面的所有空子目录，如果abc/def也为空，删除这个目录。
 
-参数：
-if=filename	源文件
-of=filename	输出文件
-bs=blocksize	每次读或写多少字节
+	设备到设备复制文件： dd xxxx
+
+	参数：
+	if=filename	源文件
+	of=filename	输出文件
+	bs=blocksize	每次读或写多少字节
 
 
-mv 移动目录时，如果移动的是目录，目标目录已存在，则源目录会移动成为目标目录的子目录
+	mv 移动目录时，如果移动的是目录，目标目录已存在，则源目录会移动成为目标目录的子目录
 
-```
 
 ### 信息显示命令
-```
 
-wc -c/-w/-l filename(s)
+	wc -c/-w/-l filename(s)
 
-file xxxx 查看文件类型
+	file xxxx 查看文件类型
 
-touch 建新文件或修改现有文件的上次访问或修改时间。
--a 修改访问时间
--m 修改改变时间
--t 使用你指定的时间
--d 更新修改
-
+	touch 建新文件或修改现有文件的上次访问或修改时间。
+	-a 修改访问时间
+	-m 修改改变时间
+	-t 使用你指定的时间
+	-d 更新修改
 
 
-```

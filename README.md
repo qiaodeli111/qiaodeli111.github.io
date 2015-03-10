@@ -1,25 +1,40 @@
-# Leap Day
+# Jekyll-Bootstrap
 
-Open source content for Leap Day theme. Theme was first designed / developed for GitHub Pages and is availalbe for download, forking and using anywhere else on the web. Like the theme share it with the twitterverse.
+The quickest way to start and publish your Jekyll powered blog. 100% compatible with GitHub pages
 
-![Leap Day](http://cl.ly/image/2Z1Z1e2q2I1C/image)
+## Usage
 
-**Note** If you are an original Leap Day user (pre August 2014) the [1.0 tag](https://github.com/mattgraham/leapday/releases/tag/1.0) is what you are on.
+For all usage and documentation please see: <http://jekyllbootstrap.com>
 
-The Leap Day Pages demo is [here](http://mattgraham.github.com/leapday)
+## Version
+
+0.3.0 - stable and versioned using [semantic versioning](http://semver.org/).
+
+**NOTE:** 0.3.0 introduces a new theme which is not backwards compatible in the sense it won't _look_ like the old version.
+However, the actual API has not changed at all.
+You might want to run 0.3.0 in a branch to make sure you are ok with the theme design changes.
+
+## Contributing
 
 
-### Developing Locally
+To contribute to the framework please make sure to checkout your branch based on `jb-development`!!
+This is very important as it allows me to accept your pull request without having to publish a public version release.
 
-```
-script/server
-```
+Small, atomic Features, bugs, etc.
+Use the `jb-development` branch but note it will likely change fast as pull requests are accepted.
+Please rebase as often as possible when working.
+Work on small, atomic features/bugs to avoid upstream commits affecting/breaking your development work.
 
-Running `script/server` will run `jekyll serve && compass --watch` commands via terminal. You will be able to open http://localhost:4000 and make changes to any of the, md, .html or .scss files and compass will compile them for you. Simply refresh your browser (or use something like livereload) and develop away. Most of the colors and sizing is found in the _variables.scss file.
+For Big Features or major API extensions/edits:
+This is the one case where I'll accept pull-requests based off the master branch.
+This allows you to work in isolation but it means I'll have to manually merge your work into the next public release.
+Translation : it might take a bit longer so please be patient! (but sincerely thank you).
+
+**Jekyll-Bootstrap Documentation Website.**
+
+The documentation website at <http://jekyllbootstrap.com> is maintained at https://github.com/plusjade/jekyllbootstrap.com
 
 
-### Credits
+## License
 
-Leap-Day Theme is by [Matt Graham](http://madebygraham.com), twitter [@michigangraham](http://twitter.com/#!/michigangraham). Use, reuse and modify away.
-
-[Creative Commons Attribution](http://creativecommons.org/licenses/by/3.0/)
+[MIT](http://opensource.org/licenses/MIT)

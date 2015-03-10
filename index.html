@@ -1,0 +1,73 @@
+---
+layout: home
+title: Delly's Publisher
+tagline: Personal Article Publishing Blog
+---
+{% include JB/setup %}
+
+<div class="hero-unit">
+	<div class="container-fluid">
+	  <div class="row-fluid">
+	    <div class="span8">
+	    	<h2>{{ site.title }} {% if page.tagline %}</h2> 
+	    	<p><small>{{ site.tagline }}</small>{% endif %}</p>
+		  <p>
+		    <a class="btn btn-primary btn-large">
+		      Learn more
+		    </a>
+		  </p>
+	    </div>
+	    <div class="span4">
+	      <img src="assets/images/avator.jpg" class="img-circle">
+	  	</div>
+	  </div>
+	</div>
+</div>
+
+<ul class="posts">
+	{% for post in paginator.posts %}
+	    <h2><a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></h2>
+	    <span>{{ post.date | date_to_string }}</span> 
+	    {{ post.excerpt }}
+	    <a class="btn" href="{{ BASE_PATH }}{{ post.url }}">Read More...</a>
+	    <hr>
+	{% endfor %}
+</ul>
+
+{% if paginator.total_pages > 1 %}
+<div class="pagination pagination-centered">
+<ul>
+	{% if paginator.previous_page %}
+		<li class="prev">
+    {% else %}
+    	<li class="prev disabled">
+	{% endif %}
+		<a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}" aria-label="Previous">
+			<span aria-hidden="true">&laquo; 上一页</span>
+    	</a>
+    	</li>
+
+	{% for page in (1..paginator.total_pages) %}
+		<li>
+	    {% if page == paginator.page %}
+	      <span class="active">{{ page }}</span>
+	    {% elsif page == 1 %}
+	      <a href="{{ '/index.html' | prepend: site.baseurl | replace: '//', '/' }}">{{ page }}</a>
+	    {% else %}
+	      <a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
+	    {% endif %}
+	    </li>
+	{% endfor %}
+<li>
+
+	{% if paginator.next_page %}
+		<li class="next">
+    {% else %}
+    	<li class="next disabled">
+	{% endif %}
+	    <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">下一页 &raquo;</a>
+	</li>
+</ul>
+</div>
+{% endif %}
+

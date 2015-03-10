@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: post
 title: WebSphere应用服务器学习笔记
 category: Middleware
 date: 2015-03-09
@@ -27,6 +27,8 @@ WAS包含多个组件，每个组件都向平台提供特定的功能：
 ### EJB容器
 
 安装在服务器上的EJB不直接与应用程序服务器交互。EJB容器就是服务器与EJB之间的接口。这是支持线程、事务处理和数据管理的服务器进程，处理进入和出自EJB的所有请求。
+
+<!-- more -->
 
 ### WEB容器
 

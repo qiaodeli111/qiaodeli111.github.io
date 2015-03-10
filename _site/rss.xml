@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+        <title>Delly's Publisher</title>
+        <description>Delly's Publisher - Delly Qiao</description>
+        <link>http://dellyqiao.com</link>
+        <link>http://dellyqiao.com</link>
+        <lastBuildDate>2015-03-10T18:02:25+08:00</lastBuildDate>
+        <pubDate>2015-03-10T18:02:25+08:00</pubDate>
+        <ttl>1800</ttl>
+
+
+        <item>
+                <title>WebSphere应用服务器学习笔记</title>
+                <description>&lt;p&gt;WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;websphere&quot;&gt;Websphere的架构&lt;/h2&gt;
+
+&lt;p&gt;Websphere采用三层架构来平衡工作负载，病最大化对资源的访问，从而提高了吞吐量和性能。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;表示层&lt;/strong&gt;：支持网络上的客户端计算机，向其展示信息，并且处理用户操作。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;应用程序逻辑层&lt;/strong&gt;：包含用于管理连接和处理数据的应用程序组建，包括servlet，EJB组建，applet等。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;资源层&lt;/strong&gt;：包含数据库和其他数据存储设备。该层中的服务位于安全网络中，客户端不能直接访问。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;websphere-1&quot;&gt;Websphere的组件&lt;/h2&gt;
+
+&lt;p&gt;WAS包含多个组件，每个组件都向平台提供特定的功能：&lt;/p&gt;
+
+&lt;h3 id=&quot;ejb&quot;&gt;EJB容器&lt;/h3&gt;
+
+&lt;p&gt;安装在服务器上的EJB不直接与应用程序服务器交互。EJB容器就是服务器与EJB之间的接口。这是支持线程、事务处理和数据管理的服务器进程，处理进入和出自EJB的所有请求。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;web&quot;&gt;WEB容器&lt;/h3&gt;
+
+&lt;p&gt;WEB容器支持用于处理HTTP客户端请求的servlet和JSP文件，然后向其他应用程序组件提供数据，必要时还生成XML。&lt;/p&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;应用程序客户端容器&lt;/h3&gt;
+
+&lt;p&gt;处理客户端一侧的Java程序，管理与应用服务器上承载的J2EE组件之间的交互，并在客户机上配置器执行环境。&lt;/p&gt;
+
+&lt;h3 id=&quot;applet&quot;&gt;Applet容器&lt;/h3&gt;
+
+&lt;p&gt;WEB服务器可以把生成WEB页时涉及的某些处理负荷转移到客户端，这是通过与普通HTML一起向其发送Java applet来实现的。这些applet是在客户端浏览器中运行的Java类，在客户端机器上安装的applet通过applet容器可以访问应用程序服务器上的EJB。&lt;/p&gt;
+
+&lt;h3 id=&quot;http&quot;&gt;嵌入式HTTP服务器&lt;/h3&gt;
+
+&lt;p&gt;WEB客户端通过HTTP服务器上的HTTP插件连接到应用程序服务器。嵌入式HTTP服务器是提供替代方案的Websphere内部组件，它使得客户端可以直接连接到应用程序服务器。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;虚拟主机&lt;/h3&gt;
+
+&lt;p&gt;在多台机器上运行Websphere的优点之一是可以隔离数据，使得只有同一台机器上安装的资源才能访问。你可以通过创建虚拟主机在一台机器上复制该功能，也就是说，让一台机器看起来仿佛是多台机器在运行。这样就可以限制对数据的访问，在虚拟机上运行具有自定义配置的应用程序。&lt;/p&gt;
+
+&lt;h2 id=&quot;j2ee&quot;&gt;J2EE功能&lt;/h2&gt;
+
+&lt;p&gt;Java 2 Enterprise Edition平台是在开发和部署企业应用程序中使用的一项标准。它也为J2EE应用程序提供运行库环境。&lt;/p&gt;
+
+&lt;h3 id=&quot;j2ee-1&quot;&gt;J2EE标准定义的架构包含&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;开发多层应用程序的标准应用程序模型&lt;/li&gt;
+  &lt;li&gt;承载应用程序的标准平台&lt;/li&gt;
+  &lt;li&gt;保证达到J2EE标准的兼容性测试套件&lt;/li&gt;
+  &lt;li&gt;提供J2EE平台运行定义的引用实现&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;j2eej2ee&quot;&gt;J2EE平台规范为J2EE应用程序定义运行库环境，包括：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;应用程序组件&lt;/li&gt;
+  &lt;li&gt;容器&lt;/li&gt;
+  &lt;li&gt;资源管理器驱动程序&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这些元素与一组也是由J2EE标准规定的标准设备进行通信。&lt;/p&gt;
+
+&lt;h3 id=&quot;j2ee-2&quot;&gt;J2EE平台定义在应用程序开发和部署期间执行的一系列角色。理解这些角色可以更有效的开发和部署应用程序。&lt;/h3&gt;
+
+&lt;p&gt;产品提供商 &amp;amp; 工具提供商 –》 产品&lt;/p&gt;
+
+&lt;p&gt;应用程序组件提供商 &amp;amp; 应用程序汇编器 –》 应用程序&lt;/p&gt;
+
+&lt;p&gt;部署者 &amp;amp; 系统管理员 –》 运行库&lt;/p&gt;
+
+&lt;h3 id=&quot;j2ee-3&quot;&gt;在J2EE架构中部署应用程序有多项优点：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;简化的结构&lt;/strong&gt;：因为J2EE规范是以标准的Java组件和服务为基础的，所以企业应用程序只需编写一次，在任何地方都可以运行。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;选择工具&lt;/strong&gt;：开发人员可以从一系列应用程序开发工具和现成的组件和解决方案中选择。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;集成服务&lt;/strong&gt;：你可以把J2EE应用程序与当前多种系统集成到一起，包括Java数据库互联（JDBC）、Java消息服务（JMS）、Java接口定义语言（Java Interface Definition Language，Java IDL）和JavaMail及Java事务处理API。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;缩放能力&lt;/strong&gt;：例如，你可以向上扩展J2EE架构来满足需求，把容器在多个系统上分布并使用数据库连接池。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;安全性&lt;/strong&gt;：应用程序组件安全机制是统一而灵活的，你可以把它与集成安全系统集成到一起。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;j2ee-4&quot;&gt;J2EE编程模型有四种类型的应用程序组件，每种都在应用程序服务器中不同类型的容器内。&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;EJB （在EJB容器中）&lt;/li&gt;
+  &lt;li&gt;servlet和JSP页面文件 （在WEB容器中）&lt;/li&gt;
+  &lt;li&gt;应用程序客户端 （在应用程序客户端容器中）&lt;/li&gt;
+  &lt;li&gt;applet （在applet容器中）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;每种类型的组件都有自己的容器。容器能够位组件提供运行库支持，为访问服务提供API，还能够处理安全机制、资源共享和其他问题。&lt;/p&gt;
+
+&lt;h3 id=&quot;j2ee-5&quot;&gt;J2EE平台为实现组件之间的交互而提供了一组标准服务&lt;/h3&gt;
+
+&lt;p&gt;其中包括HTTP和HTTPS、Java事务处理API和远程方法调用/Internet ORB间协议（Remote Method Invocation/Internet Inter-ORB Protocol, RMI/IIOP）。&lt;/p&gt;
+
+&lt;h3 id=&quot;j2ee-6&quot;&gt;J2EE平台的一项重要特点是它打包应用程序进行部署的方式。&lt;/h3&gt;
+
+&lt;p&gt;它把组件汇编到模块中，然后打包到应用程序。叫做部署描述符的XML文件控制每个模块和应用程序的部署&lt;/p&gt;
+
+&lt;h3 id=&quot;ejb-1&quot;&gt;应用程序和EJB的新功能&lt;/h3&gt;
+
+&lt;p&gt;WebSphere包含针对应用程序和EJB模块的新功能。EJB持久化管理器支持EJB2.0容器管理的持久化（container-managed persistence，CMP）方案，这与EJB1.1方案不同，这是对模块性、易维护性和性能的进一步完善。&lt;/p&gt;
+
+&lt;p&gt;EJB2.0的规范支持包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;本地、远程和消息驱动的Bean&lt;/li&gt;
+  &lt;li&gt;容器管理的关系和关联关系&lt;/li&gt;
+  &lt;li&gt;便携式查找着查询语言&lt;/li&gt;
+  &lt;li&gt;编程模式&lt;/li&gt;
+  &lt;li&gt;抽象和具体实体bean&lt;/li&gt;
+  &lt;li&gt;本地家庭和本地实体接口&lt;/li&gt;
+  &lt;li&gt;EJB查询语言&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;WebSphere5.0中提供的超过EJB2.0规范的高性能的持久化功能包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;修改语义行为&lt;/li&gt;
+  &lt;li&gt;实体bean的集成&lt;/li&gt;
+  &lt;li&gt;乐观的并发控制&lt;/li&gt;
+  &lt;li&gt;提前读取&lt;/li&gt;
+  &lt;li&gt;密切的机制支持&lt;/li&gt;
+  &lt;li&gt;后端访问支持&lt;/li&gt;
+  &lt;li&gt;SQL&lt;/li&gt;
+  &lt;li&gt;数据高速缓冲&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在WebSphere中完善CMP实体bean性能的新功能包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;bean数据高速缓存&lt;/li&gt;
+  &lt;li&gt;长生存期高速缓冲&lt;/li&gt;
+  &lt;li&gt;乐观的并发控制&lt;/li&gt;
+  &lt;li&gt;提前读取&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;活动对话是WebSphere企业版的一项新功能，用户可以通过该对话把事务处理分组到个工作单位。你可以在各种属性和配置与活动对话之间建立关联。&lt;/p&gt;
+
+&lt;p&gt;CMP bean和bean管理的持久化（bean-managed persistence，BMP）bean可以通过共享数据存储连接在同一事务处理中访问数据。&lt;/p&gt;
+
+&lt;p&gt;CMP bean之间可以互相集成，或互为子集。在关系数据存储中，可以在单张表格或根叶布局中定义。应用程序服务器在部署时认可继承。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;websphere-2&quot;&gt;确定WebSphere平台基础结构&lt;/h2&gt;
+
+&lt;h3 id=&quot;base&quot;&gt;Base版&lt;/h3&gt;
+
+&lt;p&gt;在基本版本的运行库架构中有多个组件，与管理相关的组件包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;节点&lt;/strong&gt;：WebSphere管理的服务器进程的逻辑安排，这些进程工作在公共配置和运行功能之外。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;配置存储库&lt;/strong&gt;：配置库在XML文件中保存每个组件配置文档的副本。应用程序服务器的管理服务管理配置，并保证运行期间的连贯性。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;虚拟主机&lt;/strong&gt;：通过虚拟主机可以把独立的一台主机当做多台主机使用。采用这项技术，一台物理机器可以支持一系列的唯一配置并管理的应用程序。虚拟主机不连接到特定节点上。是可以被创建但不能被启动和停止的组件。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;管理服务&lt;/strong&gt;：管理服务运行在每台服务器JVM上，也运行在基本配置的应用程序服务器中。管理服务提供一些关键功能，这些功能可以操纵用于服务器及其组件的配置数据。配置在存储库中保存，也就是在服务器文件系统中保存一组XML文件。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;会话数据库&lt;/strong&gt;：会话详细资料可以保存在中央会话数据库中，保证多用户环境下的会话持久化。承载特定应用程序的多个应用程序服务器共享数据库信息来运行状态组件的会话状态。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;脚本客户端&lt;/strong&gt;：脚本客户端wsadmin增强对基于WEB的管理控制台的调节。这样管理员就可以使用命令行接口了。脚本客户端使用脚本帮助自动完成对多台应用服务器和节点的管理。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;应用服务器是WebSphere的主要组件。他是在JVM上运行的，为应用程序代码提供运行库环境。&lt;/p&gt;
+
+&lt;p&gt;应用程序服务器包含执行特定Java应用程序组件的容器。应用程序服务器有三个容器：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;WEB容器&lt;/strong&gt;：WEB容器处理servlet和JSP文件。它默认有一个会话管理器，在处理servlet时创建请求对象和响应对象。然后它访问servlet服务的方法。WEB容器处理嵌入式HTTP服务器、外部WEB服务器插件或WEB浏览器的HTTP请求。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;EJB容器&lt;/strong&gt;：EJB容器为EJB提供运行库服务，处理对会话和实体bean的请求。企业bean位于EJB模块中。加载在应用服务器上的bean不直接与服务器交互。EJB容器提供EJB与服务器之间的接口。容器和服务器提供bean运行库环境。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;JCA容器&lt;/strong&gt;：Java连接器结构（Java Connector Architecture，JCA）容器是WAS提供的组件。可以把从EIS提供商处购买的JCA资源适配器查到Java连接器结构上，用兼容JCA的应用程序来配置和使用。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;嵌入式WebSphere JMS提供者依靠JMS服务器来实现集成的消息传递功能。它适合点到点和发布/注册类型的消息传递，是事务处理管理服务的一部分。JMS服务器支持消息驱动的bean以及WebSphere单元中的消息传递。在Base版本中，JMS服务器在与应用服务器相同的JVM中运行。&lt;/p&gt;
+
+&lt;p&gt;应用程序服务器JVM拥有名称服务，它提供Java命名和目录接口（JNDI）名称空间。该服务注册应用程序服务器所承载的所有EJB和J2EE资源（JMS、J2C、JDBC、URL和JavaMail）&lt;/p&gt;
+
+&lt;p&gt;应用程序服务器JVM也承载依赖配置库中安全设置的安全服务，以提供验证和授权功能。&lt;/p&gt;
+
+&lt;p&gt;在讨论WAS Base中，需要考虑有关应用程序的三个基本组件：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;客户端应用程序容器&lt;/strong&gt;：是在客户端计算机上单独安装的组件。它使客户端能够在与EJB兼容的J2EE环境中运行应用程序。可以用可执行的命令行工具（launchClient）来启动客户端应用程序及其客户端容器运行库。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;应用程序&lt;/strong&gt;：是唯一设计的，是由应用程序服务器承载并运行的。应用程序在存储到企业应用程序档案（EAR）之后，可以有一个或多个应用程序服务器共享应用程序。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;应用程序数据库&lt;/strong&gt;：是在一个企业系统中的数据库服务器上运行的，在那里，堕胎应用程序服务器可以共享同一数据库。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;WAS Base版包含若干个基于WEB的或与WEB相关的组件：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;WEB服务器和WEB服务器插件&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;嵌入式HTTP服务器&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;WEB管理控制台和应用程序&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;WEB服务引擎&lt;/strong&gt;：WEB服务引擎不能作为单独的物理组件存在。应用程序服务器为附加服务引进了一系列的API。WEB服务是作为配合J2EE应用程序的一组API提供的。WebSphere WEB服务引擎是机遇AXIS的，使用SOAP、WSDL、UDDL和WSIF规范。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;nd&quot;&gt;ND版&lt;/h3&gt;
+
+&lt;p&gt;WAS ND配置支持多个节点，每个节点都有一个节点代理组件和多个应用程序服务器。都是在叫做单元的管理单元中运行的，单元在Deployment Manager中。你可以用Network Deployment单元配置负载平衡的应用程序服务器集群。DM管理单元中组件的配置和应用程序二进制文件都被分配给每个节点上的本地副本。&lt;/p&gt;
+
+&lt;p&gt;ND运行库结构包含多个组件：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;单元&lt;/strong&gt;：单元是管理域中节点的集合。为了进行配置，每个节点都有名称。单元住配置库保存单元中每个节点的配置和应用程序二进制文件。存储库是通过DM管理的。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Deployment Manager&lt;/strong&gt;：DM组件是管理单元所有部分的唯一位置。DM承载基于WEB的管理控制台应用程序。它负责每个节点的存储库内容（配置和应用程序二进制文件）。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;主配置库&lt;/strong&gt;：主配置库保存单元的配置数据。DM执行对它的更新。每个节点的配置库是主库的同步子集。节点库针对应用程序服务器的访问是只读的。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;节点代理&lt;/strong&gt;：节点代理是执行下列功能的管理组件：文件传输服务、配置同步和性能监控。节点代理通过与DM的交互管理可管理的组件。节点代理配置同步化，位DM执行管理操作。它还与应用程序服务器和JMS服务器交互来管理每台服务器并更新其配置和应用程序二进制文件。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;UDDI注册表&lt;/strong&gt;：WAS提供专用的UDDI注册表，这样企业就可以在组织内管理其自身的WEB服务了。也可以向其他组织或企业提供代理服务。管理员把UDDI注册表作为符合J2EE规范的WEB应用安装到利用起服务的没太应用程序服务器上。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;WEB服务网关是在WEB服务调用期间链接Internet和企业内部网的中间组件。它管理：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;WEB服务&lt;/li&gt;
+  &lt;li&gt;WEB服务触发的过滤器&lt;/li&gt;
+  &lt;li&gt;承载进出WEB服务的请求的通道&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;对在其中可以注册WEB服务的UDDI注册表的引用&lt;/p&gt;
+
+    &lt;p&gt;网关运行在WEB服务定义语言（WSDL）和WEB服务调用框架（WSIF）智商，以进行部署和调用。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Edge组件是承载WEB易访问的内容并提供Internet访问的一种有效而经济的方式。该软件一般是在邻近企业内部网和Internet之间边界的机器上运行的。Edge组件包含告诉缓冲代理器和负载平衡器，它们帮助管理员提高服务级别，以便具有访问权限的内部和外部用户能够更好地访问企业服务器计算机上的文档。&lt;/p&gt;
+
+&lt;p&gt;集群是为工作负载平衡而设计的应用程序服务器进程的逻辑排列。构成集群一部分的应用程序服务器是该集群的成员，在其上应部署相同的应用程序组件。不要求集群成员共享任何配置数据。&lt;/p&gt;
+
+&lt;p&gt;集群成员可以位于一个节点上（垂直群集），可以在多个节点上（水平群集），也可以是两种类型的混合。&lt;/p&gt;
+
+&lt;p&gt;被管理的服务器或被管理的进程是指构成WebSphere产品组件的所有系统进程。所有服务器都在管理域中占有一席之地。JMX支持是所有被管理进程的一部分。这些进程能够接收管理命令，在这些进程内分布有关被管理资源条件的管理信息。&lt;/p&gt;
+
+&lt;p&gt;WebSphere提供多项被管理的服务器或进程：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Deployment Manager（ND）&lt;/p&gt;
+
+    &lt;p&gt;Deployment Manager是一个单元的所有配置信息和控制的单个访问点。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;节点代理（ND）&lt;/p&gt;
+
+    &lt;p&gt;节点代理聚集并管理节点上所有WebSphere管理进程。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;应用程序服务器（Base and ND）&lt;/p&gt;
+
+    &lt;p&gt;应用程序服务器是承载J2EE应用程序的托管服务器。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;JMS服务器（ND）&lt;/p&gt;
+
+    &lt;p&gt;JMS服务器是为节点承载嵌入式消息传递服务的托管服务器&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;websphere-3&quot;&gt;WebSphere组件共存&lt;/h3&gt;
+
+&lt;p&gt;ND为实现多个WAS安装在一台机器上的共存而支持一系列的场景。&lt;/p&gt;
+
+&lt;h4 id=&quot;was&quot;&gt;多个WAS实例&lt;/h4&gt;
+
+&lt;p&gt;WAS在一台机器上支持两种特定类型的运行库实例：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;应用程序服务器，是WAS一个安装版本的多个实例。&lt;/li&gt;
+  &lt;li&gt;DM，是ND的一个安装版本的多个实例&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-2&quot;&gt;来自单一安装版本的多个服务器实例&lt;/h4&gt;
+
+&lt;p&gt;WebSphere支持采用一个安装版本运行多个数据库实例。例如，你可以从一个WAS安装版本中开发并运行多个WAS实例。你也可以从独立的ND安装版本中创建并运行多个DM。&lt;/p&gt;
+
+&lt;p&gt;可以为耽搁ND安装版本配置多个DM，但是这些DM不能提供相互的故障转换，也不支持群集。&lt;/p&gt;
+
+&lt;h4 id=&quot;wasnd&quot;&gt;WAS和ND共存&lt;/h4&gt;
+
+&lt;p&gt;你可以在与WAS相同的机器上安装ND软件。这样做有明显的优点。例如，你不需要专门的机器来承载单元DM和它的主单元存储库。这还能够重新使用为节点机器提供的当前备份工具。&lt;/p&gt;
+
+&lt;p&gt;但这样做也有缺点，如果WAS或DM出现了任何问题，则需要重建节点，需要重新部署其他组件。&lt;/p&gt;
+
+&lt;h4 id=&quot;webweb&quot;&gt;单个Web服务器与多个Web服务器&lt;/h4&gt;
+
+&lt;p&gt;除了多个实例以外，当独立机器上有多个应用程序服务器共存时WAS提供Web服务器选项。这些选项包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在一台机器上共享多个版本的应用程序服务器的一台Web服务器&lt;/li&gt;
+  &lt;li&gt;用于WAS的多个实例的一台Web服务器&lt;/li&gt;
+  &lt;li&gt;在运行WAS多个实例时用于每个应用服务器实例的独立Web服务器&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;websphere-4&quot;&gt;Websphere拓扑结构考虑因素&lt;/h2&gt;
+
+&lt;p&gt;在为Websphere不熟选择合适的拓扑结构或配置是，有七个重要因素需要考虑：&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;可用性&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;拓扑结构需要有合适的进程冗余，以避免单个故障点，从而最大化系统可用性。&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+                <link>http://dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes</link>
+                <guid>http://dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes</guid>
+                <pubDate>2015-03-09T00:00:00+08:00</pubDate>
+        </item>
+
+        <item>
+                <title>Linux学习笔记</title>
+                <description>&lt;pre&gt;&lt;code&gt;echo $SHELL
+##永久改变shell
+chsh -s /bin/bash [username]
+
+##临时改变shell
+/bin/bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;linux&quot;&gt;Linux命令包括内部命令和系统命令&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;内部命令作为shell程序自身的子程序运行。Bash shell内部命令包括echo，exit，history。
+
+系统命令是作为独立文件存在的程序，通过键入命令或文件名来执行。
+
+帮助： info、help和man
+
+help 可显示所有内部命令列表
+
+man 提供系统命令的信息。man -k xxx 可以模糊搜索命令
+
+一行输入;多个命令;用分号
+
+!! 重复上个命令； !ma 可以执行上个以ma开头的命令
+
+用一条命令作为另一命令的参数  echo `date`
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;后台与前台切换命令&lt;/h3&gt;
+
+&lt;p&gt;直接在命令后面加 &amp;amp; 开启后台任务&lt;/p&gt;
+
+&lt;p&gt;如果有前台任务，Ctrl+Z可以挂起作业，然后输入bg把作业移入后台。&lt;/p&gt;
+
+&lt;p&gt;输入 fg %jobnumber 把后台作业调到前台&lt;/p&gt;
+
+&lt;p&gt;输入 kill %jobnumber 删除后台作业&lt;/p&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;文件操作&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;ls
+-c 按修改时间排列
+
+mkdir -p abc/def/eft 连续创建子目录
+
+rmdir -p abc/def/* 删除包括abc/def/下面的所有空子目录，如果abc/def也为空，删除这个目录。
+
+设备到设备复制文件： dd xxxx
+
+参数：
+if=filename	源文件
+of=filename	输出文件
+bs=blocksize	每次读或写多少字节
+
+
+mv 移动目录时，如果移动的是目录，目标目录已存在，则源目录会移动成为目标目录的子目录
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;信息显示命令&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;wc -c/-w/-l filename(s)
+
+file xxxx 查看文件类型
+
+touch 建新文件或修改现有文件的上次访问或修改时间。
+-a 修改访问时间
+-m 修改改变时间
+-t 使用你指定的时间
+-d 更新修改
+&lt;/code&gt;&lt;/pre&gt;
+
+</description>
+                <link>http://dellyqiao.com/server/2015/03/09/Linux-Learning-Notes</link>
+                <guid>http://dellyqiao.com/server/2015/03/09/Linux-Learning-Notes</guid>
+                <pubDate>2015-03-09T00:00:00+08:00</pubDate>
+        </item>
+
+        <item>
+                <title>ITIL Learning Note</title>
+                <description>&lt;p&gt;IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.&lt;/p&gt;
+
+&lt;h2 id=&quot;itil-service-life-cycle&quot;&gt;ITIL Service Life Cycle&lt;/h2&gt;
+
+&lt;p&gt;The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.&lt;/p&gt;
+
+&lt;p&gt;The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.&lt;/p&gt;
+
+&lt;p&gt;The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.&lt;/p&gt;
+
+&lt;p&gt;Without this structure, you would have no way of determining the relative importance of information items or the connections between them.&lt;/p&gt;
+
+&lt;p&gt;The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.&lt;/p&gt;
+
+&lt;p&gt;You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;structure
+|
+patterns of behavior
+|
+events
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The ITIL Service Life Cycle contains five key stages:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Service Strategy&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
+Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Service Design&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Service transition&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
+This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Service Operation&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Continual Service Improvement&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.&lt;/p&gt;
+
+&lt;p&gt;Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.&lt;/p&gt;
+
+&lt;h3 id=&quot;service-strategy&quot;&gt;Service Strategy&lt;/h3&gt;
+
+</description>
+                <link>http://dellyqiao.com/management/2015/03/09/ITIL-Learning-Note</link>
+                <guid>http://dellyqiao.com/management/2015/03/09/ITIL-Learning-Note</guid>
+                <pubDate>2015-03-09T00:00:00+08:00</pubDate>
+        </item>
+
+        <item>
+                <title>解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</title>
+                <description>&lt;p&gt;这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。&lt;/p&gt;
+
+&lt;p&gt;文章内容仅适用于IHS和WAS分别安装在不同服务器上的情况，文章里提到的一些错误在其他情况下也许根本就不会发生。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;本例中环境的配置：&lt;/h2&gt;
+
+&lt;p&gt;IHS和WAS分别装在两台服务器上，两台服务器分别位于不同的DMZ，DMZ之间有防火墙，在防火墙上只开通了必要的端口。&lt;/p&gt;
+
+&lt;p&gt;在本例中，公网用户通过公网IP(public_ip)，端口80和443访问IHS服务器，IHS服务器(IP地址为：ihs_server)上安装了Plugin，plugin通过端口9081把网站的请求转发到WAS服务器(IP地址为：was_server)。假设要请求的资源在WAS服务器上，叫abc.jsp.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;出现的问题：&lt;/h2&gt;
+
+&lt;p&gt;从公网测试：&lt;/p&gt;
+
+&lt;p&gt;http://public_ip/abc.jsp — abc.jsp可以正常显示&lt;/p&gt;
+
+&lt;p&gt;https://public_ip/abc.jsp — 500 Internal Server Error&lt;/p&gt;
+
+&lt;p&gt;从IHS服务器上测试：&lt;/p&gt;
+
+&lt;p&gt;http://ihs_server/abc.jsp — abc.jsp可以正常显示&lt;/p&gt;
+
+&lt;p&gt;https://ihs_server/abc.jsp — 500 Internal Server Error&lt;/p&gt;
+
+&lt;p&gt;从IHS和WAS服务器上分别测试：&lt;/p&gt;
+
+&lt;p&gt;http://was_server:9081/abc.jsp – abc.jsp可以正常显示&lt;/p&gt;
+
+&lt;h2 id=&quot;troubleshooting&quot;&gt;Troubleshooting和问题分析&lt;/h2&gt;
+
+&lt;h3 id=&quot;plugincfglog&quot;&gt;1）首先看plugin_cfg.log，错误信息如下：&lt;/h3&gt;
+
+&lt;p&gt;```
+[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
+```&lt;/p&gt;
+
+&lt;p&gt;这段错误的LOG完全给不出有用的信息，只是在说无法建立连接，导致请求处理失败。&lt;/p&gt;
+
+&lt;p&gt;奇怪的地方是http没问题但是https就不行。&lt;/p&gt;
+
+&lt;h3 id=&quot;logihserror-logwasjvm-loghttpswas&quot;&gt;2）继续检查其他所有的Log，包括IHS的error log——没有任何错误信息，WAS的JVM log——用https做的访问请求完全没有任何输出，意味着请求完全没有到达WAS应用。&lt;/h3&gt;
+
+&lt;h3 id=&quot;plugin-config&quot;&gt;3）继续怀疑是plugin config文件的问题，但是试过很多更改，全部都是一样的效果。&lt;/h3&gt;
+
+&lt;p&gt;怎么办？还是怀疑问题出在plugin的转发过程上。想起来plugin的Log level是可以更改的，我们所设置的leve是ERROR，只有在plugin转发出现ERROR信息的时候才会保存到plugin_cfg.log文件内。现在试着把完整地跟踪信息输出。&lt;/p&gt;
+
+&lt;p&gt;更改plugin_cfg.xml： 找到这行配置：&lt;em&gt;LogLevel&lt;/em&gt;=“Error”， 把Error改成Trace即可。可以等1分钟自动重新加载plugin配置文件或者直接重启IHS服务立刻生效。&lt;/p&gt;
+
+&lt;p&gt;果然发现问题了，在plugin log里有这么一段：&lt;/p&gt;
+
+&lt;p&gt;```
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client-&amp;gt;stream=00000000&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0&lt;/p&gt;
+
+&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+```&lt;/p&gt;
+
+&lt;p&gt;实际上看到这一行：Setting the transport(case 1): wasserver on port 9444 就大概明白了，IHS在进行请求转发的时候使用的不是9081，而是9444，9444是wc_default_secure端口，也就是WAS服务器容器的安全传输端口。而9444端口在IHS和WAS之间并没有打开。&lt;/p&gt;
+
+&lt;p&gt;看来在处理https请求的时候，IHS会尝试使用安全端口吧请求转发到WAS。&lt;/p&gt;
+
+&lt;p&gt;所以现在的问题变成了如何让IHS利用9081端口而不是9444端口？&lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;问题解决&lt;/h2&gt;
+
+&lt;p&gt;在plugin_cfg.xml配置文件中，有一行关于kdb文件的配置信息，里面写明了所使用的plugin.kdb文件放置的路径。删掉这行配置，或者删掉对应的kdb文件就好了。&lt;/p&gt;
+
+&lt;p&gt;KDB文件是IBM的用来存放安全证书的文件，安全证书用来给session加密。下一次当IHS找不到安全证书的时候自然就会退而求其次使用没有安全加密的端口9081了。&lt;/p&gt;
+</description>
+                <link>http://dellyqiao.com/middleware/2015/02/09/Resolve-Error-500</link>
+                <guid>http://dellyqiao.com/middleware/2015/02/09/Resolve-Error-500</guid>
+                <pubDate>2015-02-09T00:00:00+08:00</pubDate>
+        </item>
+
+
+</channel>
+</rss>

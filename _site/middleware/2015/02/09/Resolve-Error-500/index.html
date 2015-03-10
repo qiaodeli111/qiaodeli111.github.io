@@ -3,7 +3,7 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>Delly's Publisher</title>
+    <title>解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</title>
     
     <meta name="author" content="Delly Qiao">
 
@@ -89,221 +89,17 @@
 
       <div class="content col-md-9">
         
-<div class="row-fluid">
-  <div class="span12">
-    
-
-<div class="hero-unit">
-	<div class="container-fluid">
-	  <div class="row-fluid">
-	    <div class="span8">
-	    	<h2>Delly's Publisher </h2> 
-	    	<p><small>Personal blog publish website</small></p>
-		  <p>
-		    <a class="btn btn-primary btn-large">
-		      Learn more
-		    </a>
-		  </p>
-	    </div>
-	    <div class="span4">
-	      <img src="assets/images/avator.jpg" class="img-circle">
-	  	</div>
-	  </div>
-	</div>
+<div class="page-header">
+  <h1>解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误） </h1>
 </div>
 
-<ul class="posts">
-	
-	    <h2><a href="/middleware/2015/03/09/WebSphere-Learning-Notes">WebSphere应用服务器学习笔记</a></h2>
-	    <span>09 Mar 2015</span> 
-	    <p>WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。</p>
-
-<hr />
-
-<h2 id="websphere">Websphere的架构</h2>
-
-<p>Websphere采用三层架构来平衡工作负载，病最大化对资源的访问，从而提高了吞吐量和性能。</p>
-
-<ol>
-  <li>
-    <p><strong>表示层</strong>：支持网络上的客户端计算机，向其展示信息，并且处理用户操作。</p>
-  </li>
-  <li>
-    <p><strong>应用程序逻辑层</strong>：包含用于管理连接和处理数据的应用程序组建，包括servlet，EJB组建，applet等。</p>
-  </li>
-  <li>
-    <p><strong>资源层</strong>：包含数据库和其他数据存储设备。该层中的服务位于安全网络中，客户端不能直接访问。</p>
-  </li>
-</ol>
-
-<h2 id="websphere-1">Websphere的组件</h2>
-
-<p>WAS包含多个组件，每个组件都向平台提供特定的功能：</p>
-
-<h3 id="ejb">EJB容器</h3>
-
-<p>安装在服务器上的EJB不直接与应用程序服务器交互。EJB容器就是服务器与EJB之间的接口。这是支持线程、事务处理和数据管理的服务器进程，处理进入和出自EJB的所有请求。</p>
-
-
-	    <a class="btn" href="/middleware/2015/03/09/WebSphere-Learning-Notes">Read More...</a>
-	    <hr>
-	
-	    <h2><a href="/server/2015/03/09/Linux-Learning-Notes">Linux学习笔记</a></h2>
-	    <span>09 Mar 2015</span> 
-	    <pre><code>echo $SHELL
-##永久改变shell
-chsh -s /bin/bash [username]
-
-##临时改变shell
-/bin/bash
-</code></pre>
-
-<h3 id="linux">Linux命令包括内部命令和系统命令</h3>
-
-<pre><code>内部命令作为shell程序自身的子程序运行。Bash shell内部命令包括echo，exit，history。
-
-系统命令是作为独立文件存在的程序，通过键入命令或文件名来执行。
-
-帮助： info、help和man
-
-help 可显示所有内部命令列表
-
-man 提供系统命令的信息。man -k xxx 可以模糊搜索命令
-
-一行输入;多个命令;用分号
-
-!! 重复上个命令； !ma 可以执行上个以ma开头的命令
-
-用一条命令作为另一命令的参数  echo `date`
-</code></pre>
-
-<h3 id="section">后台与前台切换命令</h3>
-
-<p>直接在命令后面加 &amp; 开启后台任务</p>
-
-<p>如果有前台任务，Ctrl+Z可以挂起作业，然后输入bg把作业移入后台。</p>
-
-<p>输入 fg %jobnumber 把后台作业调到前台</p>
-
-<p>输入 kill %jobnumber 删除后台作业</p>
-
-<h3 id="section-1">文件操作</h3>
-
-<pre><code>ls
--c 按修改时间排列
-
-mkdir -p abc/def/eft 连续创建子目录
-
-rmdir -p abc/def/* 删除包括abc/def/下面的所有空子目录，如果abc/def也为空，删除这个目录。
-
-设备到设备复制文件： dd xxxx
-
-参数：
-if=filename	源文件
-of=filename	输出文件
-bs=blocksize	每次读或写多少字节
-
-
-mv 移动目录时，如果移动的是目录，目标目录已存在，则源目录会移动成为目标目录的子目录
-</code></pre>
-
-<h3 id="section-2">信息显示命令</h3>
-
-<pre><code>wc -c/-w/-l filename(s)
-
-file xxxx 查看文件类型
-
-touch 建新文件或修改现有文件的上次访问或修改时间。
--a 修改访问时间
--m 修改改变时间
--t 使用你指定的时间
--d 更新修改
-</code></pre>
-
-
-	    <a class="btn" href="/server/2015/03/09/Linux-Learning-Notes">Read More...</a>
-	    <hr>
-	
-	    <h2><a href="/management/2015/03/09/ITIL-Learning-Note">ITIL Learning Note</a></h2>
-	    <span>09 Mar 2015</span> 
-	    <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
-
-<h2 id="itil-service-life-cycle">ITIL Service Life Cycle</h2>
-
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
-
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
-
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
-
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
-
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
-
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
-
-<pre><code>structure
-|
-patterns of behavior
-|
-events
-</code></pre>
-
-<p>The ITIL Service Life Cycle contains five key stages:</p>
-
-<ul>
-  <li>
-    <p>Service Strategy</p>
-
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
-
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
-
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
-
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
-
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
-
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
-
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
-
-<h3 id="service-strategy">Service Strategy</h3>
-
-
-	    <a class="btn" href="/management/2015/03/09/ITIL-Learning-Note">Read More...</a>
-	    <hr>
-	
-	    <h2><a href="/middleware/2015/02/09/Resolve-Error-500">解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></h2>
-	    <span>09 Feb 2015</span> 
-	    <p>这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。</p>
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>09 February 2015</span>
+    </div>
+    <div class="content">
+      <p>这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。</p>
 
 <p>文章内容仅适用于IHS和WAS分别安装在不同服务器上的情况，文章里提到的一些错误在其他情况下也许根本就不会发生。</p>
 
@@ -413,12 +209,65 @@ This stage includes determining risks, constraints, and whether the service will
 
 <p>KDB文件是IBM的用来存放安全证书的文件，安全证书用来给session加密。下一次当IHS找不到安全证书的时候自然就会退而求其次使用没有安全加密的端口9081了。</p>
 
+    </div>
 
-	    <a class="btn" href="/middleware/2015/02/09/Resolve-Error-500">Read More...</a>
-	    <hr>
-	
-</ul>
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
 
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
+    		middleware <span class="badge badge-info">2</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination">
+      <ul>
+      
+        <li class="prev disabled"><a>&larr; Previous</a></li>
+      
+        <li><a href="/archive.html">Archive</a></li>
+      
+        <li class="next"><a href="/management/2015/03/09/ITIL-Learning-Note" title="ITIL Learning Note">ITIL Learning Note &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- 多说评论框 start -->
+	<div class="ds-thread" data-category="<#article/category/id#>" data-thread-key="<#article/id#>" data-title="<#article/title#>" data-author-key="<#article/author/id#>"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"dellyqiao"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
 
 
 

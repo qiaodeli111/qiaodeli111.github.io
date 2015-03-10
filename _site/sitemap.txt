@@ -1,0 +1,12 @@
+
+http://dellyqiao.com/archive.html
+http://dellyqiao.com/atom.xml
+http://dellyqiao.com/categories.html
+http://dellyqiao.com/index.html
+http://dellyqiao.com/rss.xml
+http://dellyqiao.com/sitemap.txt
+
+http://dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes
+http://dellyqiao.com/server/2015/03/09/Linux-Learning-Notes
+http://dellyqiao.com/management/2015/03/09/ITIL-Learning-Note
+http://dellyqiao.com/middleware/2015/02/09/Resolve-Error-500
