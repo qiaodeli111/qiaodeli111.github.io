@@ -8,6 +8,7 @@ date: 2015-03-09
 
 IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.
 
+<!-- more -->
 ## ITIL Service Life Cycle ##
 
 The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.

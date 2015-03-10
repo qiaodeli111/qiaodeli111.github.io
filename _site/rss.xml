@@ -5,14 +5,16 @@
         <description>Delly's Publisher - Delly Qiao</description>
         <link>http://dellyqiao.com</link>
         <link>http://dellyqiao.com</link>
-        <lastBuildDate>2015-03-10T18:02:25+08:00</lastBuildDate>
-        <pubDate>2015-03-10T18:02:25+08:00</pubDate>
+        <lastBuildDate>2015-03-10T22:04:50+08:00</lastBuildDate>
+        <pubDate>2015-03-10T22:04:50+08:00</pubDate>
         <ttl>1800</ttl>
 
 
         <item>
                 <title>WebSphere应用服务器学习笔记</title>
                 <description>&lt;p&gt;WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。&lt;/p&gt;
+
+&lt;!-- more --&gt;
 
 &lt;hr /&gt;
 
@@ -39,8 +41,6 @@
 &lt;h3 id=&quot;ejb&quot;&gt;EJB容器&lt;/h3&gt;
 
 &lt;p&gt;安装在服务器上的EJB不直接与应用程序服务器交互。EJB容器就是服务器与EJB之间的接口。这是支持线程、事务处理和数据管理的服务器进程，处理进入和出自EJB的所有请求。&lt;/p&gt;
-
-&lt;!-- more --&gt;
 
 &lt;h3 id=&quot;web&quot;&gt;WEB容器&lt;/h3&gt;
 
@@ -338,6 +338,8 @@ chsh -s /bin/bash [username]
 /bin/bash
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;!-- more --&gt;
+
 &lt;h3 id=&quot;linux&quot;&gt;Linux命令包括内部命令和系统命令&lt;/h3&gt;
 
 &lt;pre&gt;&lt;code&gt;内部命令作为shell程序自身的子程序运行。Bash shell内部命令包括echo，exit，history。
@@ -410,7 +412,8 @@ touch 建新文件或修改现有文件的上次访问或修改时间。
                 <title>ITIL Learning Note</title>
                 <description>&lt;p&gt;IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.&lt;/p&gt;
 
-&lt;h2 id=&quot;itil-service-life-cycle&quot;&gt;ITIL Service Life Cycle&lt;/h2&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;## ITIL Service Life Cycle ##&lt;/p&gt;
 
 &lt;p&gt;The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.&lt;/p&gt;
 
@@ -490,6 +493,8 @@ This stage includes determining risks, constraints, and whether the service will
                 <description>&lt;p&gt;这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。&lt;/p&gt;
 
 &lt;p&gt;文章内容仅适用于IHS和WAS分别安装在不同服务器上的情况，文章里提到的一些错误在其他情况下也许根本就不会发生。&lt;/p&gt;
+
+&lt;!-- more --&gt;
 
 &lt;h2 id=&quot;section&quot;&gt;本例中环境的配置：&lt;/h2&gt;
 

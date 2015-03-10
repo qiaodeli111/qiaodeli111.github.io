@@ -12,6 +12,7 @@ date: 2015-03-09
 	##临时改变shell
 	/bin/bash
 
+<!-- more -->
 
 ### Linux命令包括内部命令和系统命令
 

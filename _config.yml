@@ -9,13 +9,15 @@ highlighter: pygments
 # so be sure to set them if your theme uses them.
 #
 title : Delly's Publisher
-tagline: Personal blog publish website
+tagline: Delly's Personal Blog Website
 author : 
   name : Delly Qiao
   email : qiaodeli1@gmail.com
-  github : qiaodeli111
+  github : https://github.com/qiaodeli111
   twitter : qiaodeli111
   feedburner : feedname
+  weibo: http://weibo.com/qiaodeli
+  facebook: https://www.facebook.com/deli.qiao.3
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
