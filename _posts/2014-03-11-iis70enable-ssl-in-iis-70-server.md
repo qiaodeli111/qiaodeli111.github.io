@@ -11,6 +11,7 @@ category: "Middleware"
 
 ![](http://dellyqiao.qiniudn.com/2015/03/111.png/scale)
 
+<!-- more -->
 右击 "Default Web Site”，然后点击 "Edit Bindings".
 
 ![](http://dellyqiao.qiniudn.com/2015/03/112.png/scale)

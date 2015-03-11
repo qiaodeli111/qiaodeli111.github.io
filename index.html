@@ -22,7 +22,7 @@ tagline: Personal Article Publishing Blog
   			</p>
 	    </div>
 	    <div class="span4">
-	      <img src="assets/images/avator.jpg" class="img-circle">
+	      <img src="/assets/images/avator.jpg" class="img-circle">
 	  	</div>
 	  </div>
 	</div>
@@ -71,7 +71,7 @@ tagline: Personal Article Publishing Blog
 	    {% elsif page == 1 %}
 	      <a href="{{ '/index.html' | prepend: site.baseurl | replace: '//', '/' }}">{{ page }}</a>
 	    {% else %}
-	      <a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
+	      <a href="/{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}">{{ page }}</a>
 	    {% endif %}
 	    </li>
 	{% endfor %}

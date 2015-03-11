@@ -4,7 +4,7 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-11T21:39:39+08:00</updated>
+ <updated>2015-03-11T21:57:08+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
@@ -1736,6 +1736,7 @@ class Point {
 
 &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/111.png/scale&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
+&lt;!-- more --&gt;
 &lt;p&gt;右击 “Default Web Site”，然后点击 “Edit Bindings”.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/112.png/scale&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
