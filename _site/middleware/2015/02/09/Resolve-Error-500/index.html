@@ -81,6 +81,14 @@
       
     
   
+    
+      
+    
+  
+    
+      
+    
+  
 
 
 
@@ -137,29 +145,28 @@
 
 <h3 id="plugincfglog">1）首先看plugin_cfg.log，错误信息如下：</h3>
 
-<p>```
-[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired</p>
+<pre><code>[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-<p>[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired</p>
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-<p>[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream</p>
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-<p>[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one</p>
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
 
-<p>[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired</p>
+[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2
 
-<p>[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
-```</p>
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
+</code></pre>
 
 <p>这段错误的LOG完全给不出有用的信息，只是在说无法建立连接，导致请求处理失败。</p>
 
@@ -175,33 +182,32 @@
 
 <p>果然发现问题了，在plugin log里有这么一段：</p>
 
-<p>```
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.</p>
+<pre><code>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client-&gt;stream=00000000</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client-&gt;stream=00000000
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
 
-<p>[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect</p>
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0
 
-<p>[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
-```</p>
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+</code></pre>
 
 <p>实际上看到这一行：Setting the transport(case 1): wasserver on port 9444 就大概明白了，IHS在进行请求转发的时候使用的不是9081，而是9444，9444是wc_default_secure端口，也就是WAS服务器容器的安全传输端口。而9444端口在IHS和WAS之间并没有打开。</p>
 
@@ -227,7 +233,7 @@
   
      
     	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
-    		middleware <span class="badge badge-info">2</span>
+    		middleware <span class="badge badge-info">10</span>
     	</a></li>
     
   

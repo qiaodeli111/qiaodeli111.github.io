@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
  
  <title>Delly's Publisher</title>
- <link href="http://dellyqiao.com/" rel="self"/>
- <link href="http://dellyqiao.com"/>
- <updated>2015-03-10T22:11:07+08:00</updated>
- <id>http://dellyqiao.com</id>
+ <link href="http://blog.dellyqiao.com/" rel="self"/>
+ <link href="http://blog.dellyqiao.com"/>
+ <updated>2015-03-11T18:22:08+08:00</updated>
+ <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
    <email>qiaodeli1@gmail.com</email>
@@ -13,10 +13,1635 @@
 
  
  <entry>
+   <title>解决Websphere内置证书更新失败——IBM Renewing personal WAS certificate fails if plugin key.kdb is unavailable</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/websphereibm-renewing-personal-was-certificate-fails-if-plugin-keykdb-is-unavailable"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/websphereibm-renewing-personal-was-certificate-fails-if-plugin-keykdb-is-unavailable</id>
+   <content type="html">
+&lt;p&gt;最近Websphere服务器集群遇到一个问题，在用部署脚本部署应用的时候出现错误，显示SSL证书过期导致无法建立安全连接。&lt;/p&gt;
+
+&lt;p&gt;打开IBM Console，发现Console已经无法识别那个Node，Node状态显示为“？”，Node下所有的应用服务器的状态也无法被Console所识别。重启Nodeagent和DMGR均无效果。&lt;/p&gt;
+
+&lt;p&gt;为什么会这样呢，经过检查，我发现那个Node中的内建证书过期了，可以在Security -&amp;gt; SSL Certificate and Key Management -&amp;gt; Key Stores and certificates -&amp;gt; NodeDefaultKeyStore -&amp;gt; Personal Certificates 这个路径下查看。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;有一个情况也是我注意到的，这个集群下有几个Node，但是唯独其中的那一个Node的证书更新失败。当我尝试去手动更新证书的时候，发现证书更新错误：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;An error occurred renewing default: 	
+com.ibm.websphere.crypto.KeyException: KeyStore &quot;C:/WebSphere/AppServer/profiles/Dmgr01/wstemp/1623776755/workspace/cells/winwas70dCell01/nodes/winwas70dNode01/servers/webserver1/plugin-key.kdb&quot; does not exist.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在查找IBM资料和找IBM确认之后，确定恢复的办法如下：&lt;/p&gt;
+
+&lt;p&gt;1）删除CMSKeyStore下的缺失证书的定义。&lt;/p&gt;
+
+&lt;p&gt;2）勾选过期的证书，点击“renew”按钮。&lt;/p&gt;
+
+&lt;p&gt;3）重启所有有问题的节点的服务，顺序：停止APP Server，Nodeagent， 然后启动Nodeagent，启动APP Server。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;注意：这种方法无论在证书过期前还是过期后都是有效的，即使Node的状态是一个“？”也没关系。只要确定DMGR所在的服务器跟Nodeagent所在服务器之间的相关端口都开启了就行（最主要的应该是SOAP端口，Nodeagent默认为8878，可以在DMGR服务器上执行：telnet nodeagentserver 8878 去验证一下）。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;IBM support center的资料原文如下，里面有证书无法更新的原因，供参考：&lt;/p&gt;
+
+&lt;h2 id=&quot;technote-troubleshooting&quot;&gt;Technote (troubleshooting)&lt;/h2&gt;
+
+&lt;div style=&quot;font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; text-indent: 0pt; word-spacing: normal; background-color: rgb(255, 255, 255); border: 0px rgb(0, 0, 0); clear: both; cursor: auto; direction: ltr; float: none; list-style: disc outside none; margin: 0px; outline: invert none 0px; table-layout: auto; vertical-align: baseline; visibility: inherit; z-index: auto; background-position: 0% 0%;&quot;&gt;
+
+  &lt;h2 id=&quot;problemabstract&quot;&gt;Problem(Abstract)&lt;/h2&gt;
+
+  &lt;p&gt;When the personal certificate in your WAS NodeDefaultKeyStore or CellDefaultKeyStore expires, you need to renew it (either manually or automatically using the expiration monitor).&lt;br /&gt;
+This might fail with an error message, that the CMSKeystore is not available.&lt;/p&gt;
+
+  &lt;h2 id=&quot;symptom&quot;&gt;Symptom&lt;/h2&gt;
+
+  &lt;div style=&quot;border: 0px rgb(0, 0, 0); cursor: auto; direction: ltr; float: none; line-height: 1.2; list-style: disc outside none; margin: 0px; outline: invert none 0px; table-layout: auto; text-indent: 0pt; vertical-align: baseline; visibility: inherit; word-spacing: normal; z-index: auto; background-position: 0% 0%;&quot;&gt;
+
+    &lt;p&gt;The expiring certificate is not renewed in the NodeDefaultKeyStore, although the ISC already shows the new personal certificate.&lt;/p&gt;
+
+    &lt;p&gt;Steps to recreate:&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;Login to the AdminConsole (ISC)&lt;/li&gt;
+      &lt;li&gt;Go to Security -&amp;gt; SSL Certificate and Key Management&lt;/li&gt;
+      &lt;li&gt;Key Stores and certificates -&amp;gt; NodeDefaultKeyStore -&amp;gt; Personal Certificates&lt;/li&gt;
+      &lt;li&gt;select the personal certificat that you want to renew (normally it’s called “default”)&lt;/li&gt;
+      &lt;li&gt;Press the “Renew” Button&lt;/li&gt;
+      &lt;li&gt;If the plugin-key.kdb cannot be accessed by the DMgr, you will an error similar to this:  &lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;p&gt;An error occurred renewing default: com.ibm.websphere.crypto.KeyException: KeyStore “C:/WebSphere/AppServer/profiles/Dmgr01/wstemp/1623776755/workspace/cells/winwas70dCell01/nodes/winwas70dNode01/servers/webserver1/plugin-key.kdb” does not exist.  &lt;/p&gt;
+
+    &lt;p&gt;Along with a CWPKI0033E error in the DMgr’s SystemOut.log, telling the same problem.
+  7. Despite of the error above, &lt;strong&gt;the&lt;/strong&gt; &lt;strong&gt;list of certificates will already show you the new certificate with the new expiration date, but this is a false notification!&lt;/strong&gt;  &lt;/p&gt;
+
+    &lt;p&gt;If you logout and login again, you will find that there is still the old personal certificate in the NodeDefaultKeyStore!&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+    &lt;h2 id=&quot;cause&quot;&gt;Cause&lt;/h2&gt;
+
+    &lt;div style=&quot;border: 0px rgb(0, 0, 0); cursor: auto; direction: ltr; float: none; line-height: 1.2; list-style: disc outside none; margin: 0px; outline: invert none 0px; table-layout: auto; text-indent: 0pt; vertical-align: baseline; visibility: inherit; word-spacing: normal; z-index: auto; background-position: 0% 0%;&quot;&gt;
+
+      &lt;p&gt;The WebServer Plugin needs the signer certificate from the Node’s personal certificate to ensure a secure Plugin-WAS connection.&lt;/p&gt;
+
+      &lt;p&gt;If the plugin-key.kdb ist not available at the defined location of the CMSKeyStore (or not accessible due to file permission problems), then the automatic signer exchange is not possible for the Deployment Manager - hence the renewal of the certificate cannot complete and is interrupted.&lt;/p&gt;
+
+    &lt;/div&gt;
+
+    &lt;h2 id=&quot;resolving-the-problem&quot;&gt;Resolving the problem&lt;/h2&gt;
+
+    &lt;div style=&quot;border: 0px rgb(0, 0, 0); cursor: auto; direction: ltr; float: none; line-height: 1.2; list-style: disc outside none; margin: 0px; outline: invert none 0px; table-layout: auto; text-indent: 0pt; vertical-align: baseline; visibility: inherit; word-spacing: normal; z-index: auto; background-position: 0% 0%;&quot;&gt;
+
+      &lt;p&gt;You either need to ensure, that all keystores and truststores which are defined in the cell are accessible, including the CMSKeyStore for the plugin.&lt;br /&gt;
+If for some reason the plugin-key.kdb has been removed and is no longer required in this cell, the CMSKeyStore definition should also be deleted in the list of keystores in the ISC.&lt;/p&gt;
+
+    &lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>如何重新部署Websphere Console控制台</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/websphere-console"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/websphere-console</id>
+   <content type="html">
+&lt;p&gt;对于StandAlone服务器，跳转到${profile_home}/bin。&lt;/p&gt;
+
+&lt;p&gt;对于ND集群，控制台是部署在DMGR上的，要跳转到${WAS_HOME}/bin。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;然后执行这个命令删除：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wsadmin.bat -lang jython -f [deployConsole.py](http://deployConsole.py) remove  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行这个命令重新安装：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;wsadmin.bat -lang jython -f [deployConsole.py](http://deployConsole.py) install  
+&lt;/code&gt;&lt;/pre&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Websphere自动化管理方法集和脚本示例</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/websphere"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/websphere</id>
+   <content type="html">
+&lt;p&gt;作为IBM Websphere产品的运维工程师，我们都知道Websphere提供了两种进行管理的工具：基于WEB界面的图形化工具，还有wsadmin工具。&lt;/p&gt;
+
+&lt;p&gt;在做日常维护做一些小改动的时候，图形工具当然是最佳选择，但是在创建一个全新的环境或者在做迁移的时候，或者有一些固定的批量动作需要定时执行的时候，图形工具并不是最快最省力的方式，这时就需要用到wsadmin工具了。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;wsadmin内置五大对象，每个对象负责特定的一些功能，我们可以通过JACL语法和Jython语法来调用这些内置对象。当然很明显Jython要比JACL强大的多，而且对于熟悉高级编程语言的人来说，Jython也更简单（跟Python语法一致），所以在编写自动化脚本的时候，基本的思路就是：Jython负责逻辑部分，调用wsadmin的内置对象实现特定的功能。&lt;/p&gt;
+
+&lt;p&gt;要说从头开始编写一套可以直接使用的脚本其实也是挺复杂的，正好我从IBM网站上找到了一个Websphere方法集，叫wasadminlib.py，既然有现成的那就用起来吧。本文主要目的是分享这个文件，并且介绍一下基本的使用方法。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;下载&lt;/h2&gt;
+
+&lt;p&gt;下载地址：&lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/02/03/wsadminlib.py&quot;&gt;http://dellyqiao.qiniudn.com/2015/02/03/wsadminlib.py&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;如何使用&lt;/h2&gt;
+
+&lt;h3 id=&quot;pywasadminlibpy&quot;&gt;1. 创建一个个人的py文件，用来放置自己的逻辑代码。并且把这个文件跟wasadminlib.py放置在同一个文件夹下&lt;/h3&gt;
+
+&lt;p&gt;这里我们创建一个createJAAS.py，用来创建JAAS认证别名。&lt;/p&gt;
+
+&lt;h3 id=&quot;createjaaspywasadminlibpy&quot;&gt;2. 在createJAAS.py中引入wasadminlib.py&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;execfile(&#39;wsadminlib.py&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;注意！这里要用execfile，不要用import&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;3. 编写自己的逻辑代码&lt;/h3&gt;
+
+&lt;p&gt;这里我把自己的创建JAAS的逻辑代码贴出来：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;execfile(&#39;wsadminlib.py&#39;)
+
+//我们要从JAAS.txt中读取需要创建的认证别名，用户名和密码。
+f = open(&quot;JAAS.txt&quot;)
+line = f.readline()
+while line:
+    print line
+    attrs = line.split(&#39;,&#39;)
+    //这里的createJAAS就是wasadminlib.py提供的方法
+    createJAAS(attrs[0], attrs[1], attrs[2])
+    line = f.readline()
+f.close()
+
+AdminConfig.save()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来也要创建一个JAAS.txt文件，内容如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;testing1, user1, testing1
+testing2, user2, testing2
+testing3, user3, testing3
+testing4, user4, testing4
+testing5, user5, testing5
+testing6, user6, testing6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个文件里的三列分别代表：别名，用户名，密码。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;注意在编写JAAS.txt文件的时候，理论上是不应该有空格的，但是在我的测试环境Websphere8.0中，实际上是可以自动忽略前后的空格，所以加上也无所谓，观感上也会稍微好一点。如果不放心可以不加空格。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;4. 测试和调用&lt;/h3&gt;
+
+&lt;p&gt;//跳转到脚本所在的位置
+	cd C:\WASScript\&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;//如果没有设置安全性，那可以不用添加 -username 和 -password 参数
+c:\IBM\WebSphere\AppServer\profiles\AppSrv01\bin\wsadmin.bat -lang jython -f createJAAS.py -username xxxx -password xxxx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;测试的时候需要注意：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;可以先注释掉&lt;code&gt;AdminConfig.save()&lt;/code&gt;，这行代码用来保存之前所有的配置，所以在确定语法以及一切都没问题之前，先不要让这句代码生效。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果想要测试wasadminlib.py的功能，可以直接用wsadmin工具测试。方法如下：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; //以Jython语法打开wsadmin工具
+ c:\IBM\WebSphere\AppServer\profiles\AppSrv01\bin\wsadmin.bat -lang jython
+ //引入wsadminlib.py
+ execfile(&#39;wsadminlib.py&#39;)
+ //现在就可以直接在这个交互的命令行里使用wsadminlib.py里面的方法了
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-4&quot;&gt;脚本示例&lt;/h2&gt;
+
+&lt;p&gt;上面的例子中我写了一个创建JAAS的方法，下面例举了创建DataSourceProvider和DataSource的方法：&lt;/p&gt;
+
+&lt;h3 id=&quot;dsprovider&quot;&gt;创建DSProvider：&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;execfile(&#39;wsadminlib.py&#39;)
+
+f = open(&quot;DBProvider.txt&quot;)
+line = f.readline()
+
+
+while line:
+	attrs = line.split(&#39;,&#39;)
+	print attrs
+	
+	//createJdbcProvider方法里的第一个参数server不是server的名字，而是Websphere为你的server生成的唯一的ID，如果想要把provider创建在Cell或Node下也一样，要找出对应的唯一ID。这个ID可以用wsadminlib.py提供的getXXXID()来找到，也可以从对应的scope的resources.xml文件里找到。
+	serverID = getServerId(attrs[0],attrs[1])
+	providerID = createJdbcProvider(serverID, attrs[2], attrs[3], attrs[4], attrs[5], attrs[6])
+f.close()
+
+AdminConfig.save()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;相关的DBProvider.txt如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;//可以根据需求修改脚本和这个文件。比如如果你的provider是要创建到Node这个scope之下的，第二个参数“server1”就没用了，在脚本中也需要调用getNodeID(attrs[0])来获取到“dellyserverNode01”的唯一ID。
+dellyserverNode01,server1,mssql1,C:/drivers/mysql-driver.jar,C:/drivers/mysql-driver.jar,com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource,MySQL by Script,None
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;datasource&quot;&gt;创建DataSource：&lt;/h3&gt;
+
+&lt;p&gt;wsadminlib.py提供了两种创建DataSource的方法，这个是简单通用的那种，仅仅是创建一个基本的DataSource，具体的DB name，DB server name，等等，都需要手动去创建。另一个方法是createDataSource_ext，需要提供很多的参数，有兴趣的自己搞一下吧。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;execfile(&#39;wsadminlib.py&#39;)
+
+
+f = open(&quot;DataSource.txt&quot;)
+line = f.readline()
+
+while line:
+    attrs = line.split(&#39;,&#39;)
+    print attrs
+    
+    //注意：wsadminlib.py提供了一些获取某些ID（比如server，cell，node）的方法，但是没有提供获取JDBCProvider的唯一ID的方法，像这种需求就可以用getObjectByXXX来获取，除了byName还可以ByNodeName，等等。具体请查看wsadminlib.py本身。
+    providerID = getObjectByName(attrs[0])
+
+    print createDataSource(providerID, attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], attrs[6])
+    line = f.readline()
+
+f.close()
+
+AdminConfig.save()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;相关的DataSource.txt：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mysql_driver,user,userstable,jdbc/user,10,testing1,com.ibm.websphere.rsadapter.GenericDataStoreHelper
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;所有脚本可以从这里下载：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/02/03/WASScript.zip&quot;&gt;http://dellyqiao.qiniudn.com/2015/02/03/WASScript.zip&lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>WAS日常维护中的重启时机——总结</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/was"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/was</id>
+   <content type="html">
+&lt;p&gt;本笔记会不断更新，用来记录一下在WAS日常维护中的重启时机问题。 &lt;/p&gt;
+
+&lt;p&gt;在做WAS的维护过程中，生产环境要求最大可能的不要有中断，所以重启的时机其实是一个非常值得记住的东西，有的时候因为没有重启或者重启的java进程不正确而导致大量的时间浪费也是非常正常的。谨以此文记录一下我个人的经验总结：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;JDBC：&lt;/p&gt;
+
+&lt;p&gt;1）创建数据源、数据Provider的时候：一定需要重启！&lt;/p&gt;
+
+&lt;p&gt;如果创建的时候选择的scope是Cell，那就需要重启DMGR；如果scope是Node，那就需要重启对应的Nodeagent；如果scope是Cluster，那就需要重启cluster下面所有的Application Server（可以逐一重启以确保高可用性）；如果scope是Application Server，那就需要重启Application Server。&lt;/p&gt;
+
+&lt;p&gt;2）修改数据源、数据Provider的时候：根据创建时候选择的scope不同而不同。&lt;/p&gt;
+
+&lt;p&gt;如果创建时候选择的scope是Cell，修改数据源后不需要重启任何东西，只需要保存并同步配置即可！&lt;/p&gt;
+
+&lt;p&gt;如果创建时候选择的scope是其他的，就需要重启对应的进程（Node scope重启nodeagent，cluster scope重启cluster，server scope重启server）。&lt;/p&gt;
+
+&lt;p&gt;PS：在可选的scope中有Cell和CellManager，从我个人经验来说，在使用上是没有差别的。感觉上可能IBM是建议我们把需要创建到Cell上的资源统统选择为CellManager，因为如果部署默认应用的话，是会再CellManager上默认给创建一个资源的。具体是否如此，以后需要多查阅去确认了。。。&lt;/p&gt;
+
+&lt;p&gt;另PS：不论你的JDBC资源创建在哪个Scope之下，如果有条件的话尽量把影响到的应用重启一下。因为尽管理论上来说是跟上面我说的情况相同的，但是实际上也许是Websphere本身的bug，有的建立在Server级别下的JDBC修改过后重启Server不起作用，还需要重启nodeagent；有时建立在Cell级别的数据源改动后也需要重启Server。所以，重启吧，尽量保证我们的应用服务器可以应用到最新的配置。&lt;/p&gt;
+
+&lt;p&gt;Application：&lt;/p&gt;
+
+&lt;p&gt;1）修改Application上面的设置：不需要重启，只需要保存并同步配置即可。&lt;/p&gt;
+
+&lt;p&gt;验证：可以修改一下Context Root或者JDBC引用来试试。&lt;/p&gt;
+
+&lt;p&gt;PS：Integrated Solution Console事实上也是一个部署在DMGR JVM上的一个应用程序，所以对控制台的任何更改也是都不需要重启的。&lt;/p&gt;
+
+&lt;p&gt;JVM：&lt;/p&gt;
+
+&lt;p&gt;1）修改Application Server，NodeAgent，DMGR的设置：必须重启才会生效。&lt;/p&gt;
+
+&lt;p&gt;暂且先记录这么多，如果有其他重启时机相关的问题，会继续更新。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>如何从Symantec为自己的网站购买SSL证书</title>
+   <link href="http://blog.dellyqiao.com/security/2015/03/11/symantecssl"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/security/2015/03/11/symantecssl</id>
+   <content type="html">
+&lt;p&gt;当我们的网站有加密会话的需求的时候，我们会把所有的请求从HTTP协议转向HTTPS协议。使用HTTPS协议加密session的话我们就需要用到安全证书。当然我们可以自己生成安全证书，但是没人能证明你的安全证书本身足够安全。所以，我们需要从业界公认的证书提供商处去购买一个安全性强的证书，让他们来证明你的网站的会话确实可以被加密。。。。。。&lt;/p&gt;
+
+&lt;p&gt;基于这样的需求，有实力的公司会选择信誉良好的证书提供商，以证明他们的网站确实很安全（在访问银行类保险公司类的网站的时候基本上每一个网页都会有HTTPS加密，浏览器的地址栏旁边会提示说安全证书哪家最强云云……），价格问题会放在其次。&lt;/p&gt;
+
+&lt;p&gt;Symantec就是其中一个比较不错的证书提供商。但是他的网站的易用性确实不怎么好，很多时候申请的信息会莫名其妙的自动被修改。这篇文章是基于我自己的大量的证书申请经历创建的，按照本文的方法做，保你申请无忧。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+&lt;p&gt;本文以申请IBM HTTP Server的证书为例。另外Symantec网站的证书申请流程也已经经过了数次变更，目前的步骤仅适用于现在的情况。具体步骤如下：&lt;/p&gt;
+
+&lt;h2 id=&quot;csr&quot;&gt;1. 创建证书申请CSR文件&lt;/h2&gt;
+
+&lt;p&gt;IBM HTTP Server（IHS）的证书由几部分组成：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;kdb文件：用来存放安全证书的容器，存放公钥和私钥&lt;/li&gt;
+  &lt;li&gt;cer文件：证书文件，也就是从证书提供商（以后简称CA —— Certificate Authority 身份认证机构，本文特指Symantec）得到的个人证书，私钥&lt;/li&gt;
+  &lt;li&gt;csr文件：证书request文件，申请证书时得告诉CA你需要的是什么样的证书，那些信息就放在这个文件里&lt;/li&gt;
+  &lt;li&gt;sth文件：kdb是需要设置密码的，这个文件就是用来放置密码的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意，除了kdb文件和sht文件之外，其他文件的扩展名都是任意的，csr,arm,txt统统没问题，关键的是文件的内容要符合规范需求。&lt;/p&gt;
+
+&lt;p&gt;下面介绍如何生成CSR文件：&lt;/p&gt;
+
+&lt;p&gt;IHS证书使用IHS自带的ikeyman去创建。打开{IHS Home}/bin/ikeyman，然后点击新建：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-1.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;继续，为这个KDB设置密码，记住勾选将密码存储到文件：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-2.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;密码设置完之后就能进入个人证书请求的界面了。选中个人证书请求项：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-3.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;最前面的四项是最重要的。&lt;/strong&gt; &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;密钥标签：为即将申请到的个人证书起一个名字，如果你打算在这个KDB中放置多个证书，那就需要认真起名，便于以后在配置文件中能正确地设置。&lt;/li&gt;
+  &lt;li&gt;密钥大小：定义密钥的大小，2048是一个不错的选择。&lt;/li&gt;
+  &lt;li&gt;签名算法：这里看个人的需求。现在基本上都需要申请SHA256加密算法的证书，因为如果你选择SHA128，新版本的Chrome浏览器会认为你的网站加密算法太弱，不够安全。既然钱花到了，自然得买个好的。&lt;/li&gt;
+  &lt;li&gt;共用名：这里要填写你的网站的域名。这儿要跟网站域名严格匹配，否则你的网站将会出现证书与域名不匹配的警告。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;其他项目根据自己的情况填写就好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-4.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;保存过后会生成一个certreq.arm文件，用任何编辑器打开这个文件即可看到里面的内容。把里面的内容拷贝出来。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-5.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;symantec&quot;&gt;2. 在Symantec网站上购买证书&lt;/h2&gt;
+
+&lt;p&gt;首先，登录Symantec Trust Center网站，&lt;a href=&quot;https://trustcenter-enterprise.websecurity.symantec.com&quot;&gt;https://trustcenter-enterprise.websecurity.symantec.com&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;登录之后按照提示添加要购买的证书的域名相关的公司信息。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;填写下图中的所有项目，最终要的项目是“Organization Information”和“Organization Contact”。注意：Organization公司名一定要填写真实完整的公司名，要填写在工商局注册的名字，Symantec自己有一个数据库，他们会去验证你的公司是否真实有效。&lt;/p&gt;
+
+&lt;p&gt;联系人也要填写能联系到的人，在购买新证书的时候Symantec的支持团队会打电话给这个人确认你的订单。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;填完确定后就能看到刚刚填写的信息了。现在继续在”Domains authenticated”里添加跟这个“Organization”相关的域名。&lt;/p&gt;
+
+&lt;p&gt;你也可以看到“Organizations”是一个列表，不止可以填一个。像我这样的工作性质，作为乙方，位甲方去购买证书的情况，这个设置是非常有用的，因为我的甲方有很多个国家的很多分公司，每个分公司的联络人都不一样。&lt;/p&gt;
+
+&lt;p&gt;在“Domains Authenticated”里面填写好之后，比如我的“Organizations”是dellyserver，授权的域名包含了www.dellyserver.com，那么当我购买www.dellyserver.com的安全证书的时候就会直接调用我在之前填写的“dellyserver”公司的信息（包括地区，联系人，公司名，等等）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上面的部分设置好之后就可以开始获取证书了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;选择一个证书的类型。每种证书的价格都是不一样的，根据个人需求选择需要的证书。一般选择“Secure Site Pro”就OK：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来就要用到我们的CSR了。“Server Type”中选择要购买的证书类型。我们需要IHS证书，所以选择Other。接下来把CSR文件里的内容粘贴到下面的框里。点击下一步。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;出现了一个警告信息，然后在右侧也出现了“Common Name”，说明证书申请已经被识别出来了。警告信息可以无视，重新点击下一步。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来到达了订单Summary，注意看好各项信息是否正确。&lt;/p&gt;
+
+&lt;p&gt;注意：这里的“Location” “Country”这些项目有时候不会跟你的CSR申请完全一致。比如如果你的Symantec账户注册的时候选择的所在地是香港，而之前在设置Organization的时候也没有完全设置正确，那么我们在位泰国的这家公司购买证书的时候，这个City、Location就会很有可能变成中国。如果出现这种情况，也可以先下单，之后给Symantec的Support团队发邮件告诉他们做一下修正。&lt;/p&gt;
+
+&lt;p&gt;（根据之前的经验，之前有段时间就算你的Organization设置正确了，这个location也会出问题。）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;确认订单之后新买的证书就会出现在自己的SSL证书库中了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这时Symantec网站上的相关操作就完成了，等待Symantec打电话核实订单就OK。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;3. 获取并导入证书&lt;/h2&gt;
+
+&lt;p&gt;在经过几天的等待之后（一般两个工作日就差不多了），你将会收到Symantec发来的邮件：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们的证书已经准备好了！所以，点开邮件中的连接，然后点击“Get started”:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;进入到下载证书的界面，不管之前申请的证书是什么类型，现在都可以下载全类型的证书文件。（这个功能也是前段时间改版后才出现的）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们选择IHS，然后点击“Download”：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;下载到的是一个压缩包，里面包含简要说明（getting_started.txt），个人证书（ssl_certificate.arm），Symantec提供的G4证书（IntermediateCA.arm），还有Symantec的G5证书（crossRootCA.arm）。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;用ikeyman打开我们之前创建的KDB文件，选择“Personal Certificates”项目，然后点击右侧的“Receive”按钮&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;选择“ssl_certificate.arm”，并且点击确定：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这时将会看到在“Personal Certificates”项目下多出来一条“* xxxxxxx”的项目，这个就说明我们得到的个人证书已经正常导入到证书里了。也可以惦记个人证书申请项目，会发现申请的条目会自动消失。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来选择“Signer Certificates”签署人证书项目，这个项目是用来放置CA提供的公钥证书的。&lt;/p&gt;
+
+&lt;p&gt;进入此项目之后，点击“Add”，分别选择我们得到的G4和G5证书，在取名的时候可以写G4和G5.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;添加G4和G5之后，CA证书还是不够，继续点击右侧的“Populate”按钮，把所有IHS的ikeyman工具内置的CA证书全部导入到KDB文件中。照图操作即可：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-10.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后CA证书导入完成，这个证书也就完全做好了。接下来就是修改HTTP Server的配置文件，引入这个KDB文件即可。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-11.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;全文到此结束。如果在过程中有任何问题，也可以直接联系我进行讨论。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>用Shell生成Zabbix监控的数字报表</title>
+   <link href="http://blog.dellyqiao.com/server/2015/03/11/shellzabbix"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/2015/03/11/shellzabbix</id>
+   <content type="html">
+&lt;p&gt;我们都知道Zabbix是一个非常强大的监控工具，我们公司也在用Zabbix监控所有网站的状态。&lt;/p&gt;
+
+&lt;p&gt;最近有一个需求，就是我们需要生成一份报告，报告里要包含前一天一整天的时间节点和对应的响应时间，这样的报告用来统计网站的可用性达到了什么水准。比如一个Excel格式的报表就ok。&lt;/p&gt;
+
+&lt;p&gt;Zabbix本身自带报告功能，可是都是图像的，并没有数据格式的。虽然没有提供数据格式的报表，但是Zabbix提供了一套API，可以根据需求获取对应的数据（JSON格式），于是我就写了个脚本，用来把每个监控的网址的监控数据输出到一个CSV文件中。（后续可以用Excel做一个宏去把所有收集到的CSV文件集合成一个XLS文件，这个Excel文件可以下载到：）&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/03/11README.xls&quot;&gt;README.xls&lt;/a&gt;  &lt;/p&gt;
+
+&lt;p&gt;PS：服务器上面没有任何高级编程语言的编译工具或者运行环境，所以一切数据都用shell脚本去处理。用shell处理Json，蛋疼的不是一点点。。。。。。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;本脚本可以收集前一天所有监控的URL的响应速度数据，每个URL对应一个单独的CSV文件。收集完之后会把所有的CSV和README.xls打包发给预订的邮箱。当你收到这个zip包之后，解压，打开README.xls，点击里面的大按钮就可以生成一个集成的报表了，集成的报表中，每个URL对应一个excel标签，方便查看。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;脚本如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/bash  
+  
+##获取api的授权码，后面获取需要的信息的时候要用到。  
+  
+##先根据官方方法获取授权，之后会有一段输出信息，其中包含授权码，用awk处理一下就能得到那串码了。  
+authjson=`curl -l -X POST -H &#39;content-type: application/json&#39; -d &#39;{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;user.authenticate&quot;,&quot;params&quot;:{&quot;user&quot;:&quot;Admin&quot;,&quot;password&quot;:&quot;zabbix&quot;},&quot;id&quot;:1}&#39; http://127.0.0.1/zabbix/api_jsonrpc.php`  
+authstr=`echo $authjson | awk -F &quot;[,:\&quot;]&quot; &#39;{print $11}&#39;`  
+echo $authstr  
+  
+##报告的初始时间和结束时间（前一天的0点到24点）  
+from=`date &quot;+%Y-%m-%d 00:00:00&quot; -d&quot;-1day&quot;`  
+echo $from  
+now=`date &quot;+%Y-%m-%d 00:00:00&quot;`  
+  
+##转换为Linux时间格式，Zabbix只支持这种格式。  
+from=`date -d &quot;$from&quot; &#39;+%s&#39;`  
+now=`date -d &quot;$now&quot; &#39;+%s&#39;`  
+  
+##每隔监控的网址在数据库中都有对应的一条记录，现在直接从数据库中获取所有的网址对应的ID。  
+  
+##getID.sql的内容如下：  
+  
+##select items.itemid from items join hosts on (items.hostid=hosts.hostid) where items.description like &#39;%response time%&#39; and hosts.host like &#39;%WebSite%&#39; and items.status=0; (sql文件可以根据实际情况编写，只要能得到所有受监控网址的ID就好。)  
+  
+  
+mysql --user=root --password=zabbix zabbix &amp;lt; getMalaysiaID.sql &amp;gt; /etc/scripts/outputMYID.txt  
+  
+  
+##mysql命令获取到的ID是有一个表头的，去掉。  
+sed &#39;1d&#39; /etc/scripts/outputMYID.txt &amp;gt; /etc/scripts/outputMYID_Daily.txt  
+  
+##清理以前的临时文件  
+rm -rf /etc/scripts/dailyreports/tmpjson/*.txt  
+  
+##获取每一个ID对应的网址的历史监控记录，Json格式，用时间段来做限定。  
+for i in `cat /etc/scripts/outputMYID_Daily.txt`  
+do  
+jsonstr=&quot;{\&quot;jsonrpc\&quot;: \&quot;2.0\&quot;,\&quot;method\&quot;:\&quot;history.get\&quot;,\&quot;params\&quot;:{\&quot;history\&quot;:0,\&quot;itemids\&quot;:[\&quot;$i\&quot;],\&quot;time_from\&quot;:\&quot;$from\&quot;,\&quot;time_till\&quot;:\&quot;$now\&quot;,\&quot;output\&quot;:\&quot;extend\&quot;},\&quot;auth\&quot;: \&quot;$authstr\&quot;,\&quot;id\&quot;: 1}&quot;  
+gethistory=&quot;curl -l -X POST -H &#39;Content-Type: application/json&#39; -d &#39;&quot;$jsonstr&quot;&#39; http://127.0.0.1/zabbix/api_jsonrpc.php&quot;  
+echo $gethistory &amp;gt; /etc/scripts/tmp.sh  
+chmod a+x /etc/scripts/tmp.sh  
+/etc/scripts/tmp.sh &amp;gt; /etc/scripts/dailyreports/tmpjson/$i.txt  
+done  
+  
+##新建一个文件夹!- -  
+now=`date &quot;+%Y%m%d&quot;`  
+mkdir /etc/scripts/dailyreports/dailyreports$now  
+  
+##处理获取到的Json数据了  
+for i in `ls /etc/scripts/dailyreports/tmpjson/`  
+do  
+rm /etc/scripts/dailyreports/tmp/*  
+  
+##获取所有的响应时间的记录  
+  
+cat /etc/scripts/dailyreports/tmpjson/$i | sed -e &#39;s/[{}]/&#39;&#39;/g&#39; | awk -v k=&quot;text&quot; &#39;{n=split($0,a,&quot;,&quot;); for (i=1; i&amp;lt;=n; i++) print a[i]}&#39; | grep value | grep -o &#39;[0-9]\\.[0-9]*&#39; &amp;gt; /etc/scripts/dailyreports/tmp/values  
+  
+##获取所有的时间节点的记录  
+cat /etc/scripts/dailyreports/tmpjson/$i | sed -e &#39;s/[{}]/&#39;&#39;/g&#39; | awk -v k=&quot;text&quot; &#39;{n=split($0,a,&quot;,&quot;); for (i=1; i&amp;lt;=n; i++) print a[i]}&#39; | grep clock | grep -o &#39;[0-9]*&#39; &amp;gt; /etc/scripts/dailyreports/tmp/clocks_org  
+  
+##获取到的时间节点要处理成人看的格式。  
+for c in `cat /etc/scripts/dailyreports/tmp/clocks_org`  
+do  
+date -d@$c &#39;+%Y-%m-%d %H:%M:%S&#39; &amp;gt;&amp;gt; /etc/scripts/dailyreports/tmp/clocks_new  
+done  
+  
+##设置新文件的文件名  
+itemidstr=`echo $i | awk -F [.] &#39;{print $1}&#39;`  
+itemname=`mysql --user=root --password=zabbix zabbix -e &quot;select key_ from items where itemid=$itemidstr;&quot; | awk -F [\\[,] &#39;{print $2}&#39;`  
+  
+##创建一个报告文件，并且加入表头  
+echo &quot;Monitored URL:,$itemname,&quot; &amp;gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+echo &quot;Clock,Response Time(s),&quot; &amp;gt;&amp;gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+  
+##把时间节点的记录跟响应时间的记录合成一个文件，并且追加到刚刚的报告文件里。  
+paste -d &quot;,&quot; /etc/scripts/dailyreports/tmp/clocks_new /etc/scripts/dailyreports/tmp/values /dev/null &amp;gt;&amp;gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+  
+done  
+  
+##清理临时文件  
+rm -rf /etc/scripts/dailyreports/tmpjson/*.txt  
+  
+##把所有获得的报告都收集起来，然后把写好宏的Excel文件也收集到一起，打包发给需要的人。  
+  
+##到时候在excel文件里会有一堆说明，点击哪儿哪儿的按钮就可以得到一份合适的Excel的报告啦。  
+mkdir /etc/scripts/dailyreports/dailyreports$now/csv  
+mv /etc/scripts/dailyreports/dailyreports$now/*.csv /etc/scripts/dailyreports/dailyreports$now/csv/  
+cp /etc/scripts/dailyreports/README.xls /etc/scripts/dailyreports/dailyreports$now/  
+cd /etc/scripts/dailyreports/  
+zip -r dailyreports$now.zip dailyreports$now/  
+  
+cd /root/sendEmail-v1.51  
+  
+./sendEmail –f sender@sender.com -t receiver@receiver.com -u KLDC DMZ1 Daily SLA Report for WebHosting -m KLDC DMZ1 Daily SLA Report For WebHosting -s 192.168.169.23:25 -a /etc/scripts/dailyreports/dailyreports$now.zip  
+  
+  
+rm -rf /etc/scripts/dailyreports/dailyreports*
+&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Log housekeeping日常维护之日志管理</title>
+   <link href="http://blog.dellyqiao.com/server/middleware/2015/03/11/log-housekeeping"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/middleware/2015/03/11/log-housekeeping</id>
+   <content type="html">
+&lt;p&gt;服务器的日常维护总需要维护日志，常常用到的命令无非就是两种：&lt;/p&gt;
+
+&lt;h4 id=&quot;n&quot;&gt;1）把N天以前的日志全部删掉&lt;/h4&gt;
+
+&lt;p&gt;Windows系统用forfiles：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;forfiles /s /m *.log /d -60 /p “D:/logs/“ /c “cmd /c del @file&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;参数解释：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;/s 搜索子文件夹&lt;/li&gt;
+  &lt;li&gt;/m mask,文件的标志符号&lt;/li&gt;
+  &lt;li&gt;/d date，-60就是指60天以前&lt;/li&gt;
+  &lt;li&gt;/p path，要做搜索的一个路径&lt;/li&gt;
+  &lt;li&gt;/c 后面要跟上需要执行的操作 &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;Linux系统用find命令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;find /var/log/ -name .log -mtime +60 -exec rm -rf {} \;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;具体的用法可以man find来获取，find工具太博大精深了，拣自己需要用到的看一下就好了。&lt;/p&gt;
+
+&lt;h4 id=&quot;log&quot;&gt;2）把当前的log文件压缩一下&lt;/h4&gt;
+
+&lt;p&gt;压缩需要配合应用服务器的log输出的格式，比如Websphere可以设置每天rotate一次日志，定时把第一天的日志变成 SystemOut-2014-11-27.log类似这样的格式。这样的话我们借助脚本只把已经归档出来的日志压缩一下就行，然后设置好定时执行就好了。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Windows系统:&lt;/p&gt;
+
+    &lt;p&gt;需要使用工具了，下载个gzip.exe，zip.exe之类的，然后写一个脚本，类似于这样：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  G:
+  cd G:\logs\WebSphere\server1
+
+  For /F %%F in (&#39;dir /b G:\logs\WebSphere\server1\\*.log&#39;) DO (
+  if NOT %%F == SystemErr.log if not %%F == SystemOut.log IF NOT EXIST %%F.gz G:\gzip.exe -q -9 %%F
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;这样，Websphere正在使用的SystemOut.log和SystemErr.log文件就不会受到影响，其他的日志一概压缩归档。如果需要定时执行的话设置个计划任务就好。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Linux系统：&lt;/p&gt;
+
+    &lt;p&gt;选择比较多，一般Linux系统都自带gzip，tar这类的归档压缩工具，比如可以用这个命令：&lt;code&gt;gzip SystemOut-*.log&lt;/code&gt;， 直接把归档出来的日志都压缩。如果需要定时执行的话设置一下crontab就好了。&lt;/p&gt;
+
+    &lt;p&gt;Crontab的设置如下：&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;&lt;code&gt;crontab -e&lt;/code&gt; 进入编辑模式。crontab的编辑模式使用的时Vi编辑器的操作方式，在编辑之前先弄懂vi怎么操作，否则麻烦很大。&lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;添加这一行：&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code&gt; 10 0 * * * gzip /var/log/SystemOut-*.log &amp;gt;/dev/null 2&amp;gt;&amp;amp;1
+&lt;/code&gt;&lt;/pre&gt;
+
+        &lt;p&gt;代表每天0点10分自动执行这个gzip /var/log/SystemOut-*.log命令，很简单吧。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;还有另外一种比较特别的情况：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3）Apache 服务器的access.log的清理：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果Apache服务器恰好没有设置自动归档，那随着网站访问量增长，access日志会非常大，如果想清理日志又不希望宕机的话，可以采用下面的办法：&lt;/p&gt;
+
+&lt;p&gt;仅针对Linux，切记。 Windows怎么做我不知道。。。。。。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mv access_log access_log.old
+
+kill -1 `cat httpd.pid`
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个httpd.pid就是进程号，这种方法可以不重启整个进程而仅仅启动需要启动的线程，就可以创建出来新的access_log并且不宕机了。&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Linux系统添加虚拟IP（Suse linux为例）</title>
+   <link href="http://blog.dellyqiao.com/server/2015/03/11/linuxipsuse-linux"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/2015/03/11/linuxipsuse-linux</id>
+   <content type="html">
+&lt;p&gt;之前有提到Windows服务器添加多个虚拟IP的方法，只需要用图形化界面就可以了，但是Linux服务器就没那么简单。所以总结了这么一篇教程，记录一下如何在Linux服务器上添加虚拟IP。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;1）以Root权限登录，或者登陆以后su - 获取root权限。&lt;/p&gt;
+
+&lt;p&gt;2）跳转到Network设置的位置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd /etc/sysconfig/network-scripts
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;3）查看一下现有的网络适配器有哪些：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ls ifcfg-eth*
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到一个或一些类似于： ifcfg-eth-id-12:34:56:78:90:ab 这样的文件，这一串数字和字母的组合（12:34:56:78:90:ab）就是网卡的MAC码。&lt;/p&gt;
+
+&lt;p&gt;4）接下来就编辑这个文件。&lt;/p&gt;
+
+&lt;p&gt;打开这个文件：&lt;code&gt;vi ifcfg-eth-id-12:34:xxxxxx&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到类似于如下的字段：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;BOOTPROTO=&#39;static&#39;  
+BROADCAST=&#39;192.168.1.1&#39;  
+IPADDR=&#39;192.168.1.1&#39;  
+NETMASK=&#39;255.255.255.0&#39;  
+NETWORK=&#39;192.168.1.1&#39;  
+STARTMODE=&#39;onboot&#39;  
+USERCONTROL=&#39;no&#39;  
+_nm_name=&#39;bus-pci-0000:01:04.0&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来要做的，是添加如下的几行：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;IPADDR1=&#39;192.168.1.2&#39;  
+NETMASK1=&#39;255.255.255.0&#39;  
+LABEL1=&#39;0&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;5）保存关闭文件，然后重启network服务：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/etc/init.d/network restart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样就已经成功了，直接ifconfig查看一下吧，是不是已经有新添加的IP地址了。当然可以通过ping那个新添加的IP来测试一下是否已经成功。&lt;/p&gt;
+
+&lt;p&gt;其他的Linux distribution可能网卡配置的路径不一样，但是大体原理是一样的，如果有类似的需求，就可以以本文作为参考了。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Linux服务器的一些audit的方法</title>
+   <link href="http://blog.dellyqiao.com/server/security/2015/03/11/linuxaudit"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/security/2015/03/11/linuxaudit</id>
+   <content type="html">
+&lt;p&gt;背景：&lt;/p&gt;
+
+&lt;p&gt;JBoss服务被重启，根据JBoss log output的说法，那个JBoss服务应该是被某人重启过，所以现在要找出到底是谁做的。（JBoss stopping Output可以参照这里：&lt;a href=&quot;https://developer.jboss.org/wiki/ShutdownLogs&quot;&gt;https://developer.jboss.org/wiki/ShutdownLogs&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;首先，找到最近连接过server的所有用户：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;last
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出结果类似这样的：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;pre&gt;&lt;code&gt;reboot system boot 2.6.16.60-0.113. Sun Oct 19 06:50 (7+22:09)
+root pts/0 10.50.164.31 Sun Oct 19 06:17 - down (00:24)
+reboot system boot 2.6.16.60-0.113. Sun Oct 19 06:11 (00:30)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到哪个用户在什么时间登录这台服务器的。&lt;/p&gt;
+
+&lt;p&gt;找到有嫌疑的用户之后呢，看一下这个用户的信息：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cat /etc/passwd | grep xxx(用户名）
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样就可以看到用户名的信息了。&lt;/p&gt;
+
+&lt;p&gt;接下来查看一下这个用户的命令记录：&lt;/p&gt;
+
+&lt;p&gt;首先用root账户登录，然后&lt;code&gt;su 用户名&lt;/code&gt;，root账户是可以直接su到用户的账户的。&lt;/p&gt;
+
+&lt;p&gt;然后执行：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;history
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;默认情况下，history的输出是不会有时间戳的，那我们就给他加上：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;export HISTTIMEFORMAT=&quot;%d/%m/%y %T &quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后再执行history，这样这个用户执行的所有命令和时间全都一览无遗了。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Linux Shell Script training</title>
+   <link href="http://blog.dellyqiao.com/coding/2015/03/11/linux-shell-script-training"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/coding/2015/03/11/linux-shell-script-training</id>
+   <content type="html">
+&lt;p&gt;&lt;strong&gt;1、写脚本实现，可以用shell、perl等。在目录/tmp下找到100个以abc开头的文件，然后把这些文件的第一行保存到文件new中。&lt;/strong&gt;    &lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/bash
+cd /tmp
+for file in `ls abc* | head -100`; do
+    head -1 $file &amp;gt;&amp;gt; new
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;分析&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;先&lt;code&gt;ls abc* | head -100&lt;/code&gt; 找到100个以abc开头的文件，然后把每个文件的第一行都存到new文件里&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;2、写脚本实现，可以用shell、perl等。把文件b中有的，但是文件a中没有的所有行，保存为文件c，并统计c的行数。&lt;/strong&gt;  &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/bash
+diff A B &amp;gt; tmpfile
+grep -A2 &#39;^[0-9]\{1,\}a[0-9]\{1,\}&#39; tmpfile | grep &#39;^&amp;gt; &#39; | cut -d &quot; &quot; -f 2 &amp;gt; C
+rm -rf tmpfile
+wc -l C
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;分析&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;先diff一下并且把结果放到tmpfile里面。&lt;br /&gt;
+diff的结果，如果是A文件里没有但是B文件里有的，那么将会是类似于如下的结果：  &lt;code&gt;5a6 &amp;gt; xxxxxxxxxxxx&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;我们需要的内容是”&amp;gt;”后面的内容，所以需要吧tmpfile做一下处理：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;grep -A2 &#39;^[0-9]{1,}a[0-9]{1,}&#39; tmpfile&lt;/code&gt;可以找到有类似5a6起的相邻两行，然后再把每一组的第二行找出来，然后再把”&amp;gt; “之后的实体内容找出来，这些内容就是真正的A里面没有但是B里有的内容了。然后得到的内容放到C里。&lt;/p&gt;
+
+&lt;p&gt;C文件的行数就很简单了，wc -l C，搞定。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Java面试题练习   计算格点</title>
+   <link href="http://blog.dellyqiao.com/coding/2015/03/11/java---"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/coding/2015/03/11/java---</id>
+   <content type="html">
+&lt;p&gt;&lt;strong&gt;题目：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;面试题#给定平面上的两个格点P1(x1,y1)，P2(x2,y2)，在线段P1P2上，除P1、P2外，一共有多少个格点？格点定义为x和y都是整数的点。关注微信公众账号“待字闺中”，了解和讨论参考分析。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;分析：&lt;/strong&gt; 常规思路：从一个点开始，X坐标逐渐往另一个点以1的距离靠近，然后计算一下对应的每个Y坐标是不是整数。&lt;/p&gt;
+
+&lt;p&gt;好思路：&lt;em&gt;暂时没想到。。。。。。。&lt;/em&gt;  &lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;java&quot;&gt;&lt;strong&gt;Java代码实现&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;package auguest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class GetPoints {
+
+    /**
+     * @param args
+     * #面试题#给定平面上的两个格点P1(x1,y1)，P2(x2,y2)，在线段P1P2上，除P1、P2外，一共有多少个格点？格点定义为x和y都是整数的点。
+     */
+    public static void main(String[] args) {
+        Point point1 = new Point(-30, -30);
+        Point point2 = new Point(31, 31);
+
+        List&amp;lt;Point&amp;gt; points = getPoints(point1, point2);
+        for (Point point : points) {
+            System.out.println(point);
+        }
+
+    }
+
+    public static List&amp;lt;Point&amp;gt; getPoints(Point point1, Point point2) {
+        List&amp;lt;Point&amp;gt; points = new ArrayList&amp;lt;Point&amp;gt;();
+
+        int lengthX = point2.getX() - point1.getX();
+        int lengthY = point2.getY() - point1.getY();
+
+        if (lengthX == 0) {
+            for (int i=1; i&amp;lt;lengthY; i++) {
+                Point p = new Point(point1.getX(), point1.getY()+i);
+                points.add(p);
+            }
+        } else if (lengthY == 0) {
+            for (int i=1; i&amp;lt;lengthX; i++) {
+                Point p = new Point(point1.getX()+1, point1.getY());
+                points.add(p);
+            }
+        } else {
+            for (int i=1; i&amp;lt;lengthX; i++) {
+                int tmpX = point1.getX() + i;
+                int tmpY = tmpX * lengthY % lengthX;
+                if (tmpY == 0) {
+                    points.add(new Point(tmpX, tmpX * lengthY / lengthX));
+                }
+            }
+        }
+
+        return points;
+    }
+
+}
+
+
+class Point {
+    private int x;
+    private int y;
+
+    public Point() {
+        x = 0;
+        y = 0;
+    }
+
+    public Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Point: x=&quot; + this.x + &quot;, y=&quot; + this.y;
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>设置IIS服务器监听特定IP的特定端口（IIS与IHS或Apache共存的解决方案）</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/iisipiisihsapache"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/iisipiisihsapache</id>
+   <content type="html">
+&lt;p&gt;在某些场景中，需要IIS与Apache类的中间件产品共存的情况。如果你的服务器换过网卡，也许会出现跟本文类似的IIS无法启动的情况。如果碰到了同样的问题，可以参考本文去修复。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;IIS启动时错误弹窗，信息如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&quot;The network location cannot be reached, xxxxxx&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Windows报的这种弹窗错误，也只能通过Windows自带的事件管理器里查看了。直接运行：eventvwr，打开SYSTEM项，看到新地址没有被监听的错误，服务器无法接受来自这个IP的请求。&lt;/p&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;问题分析&lt;/h3&gt;
+
+&lt;p&gt;多方搜集资料后发现，如果是首次配置IIS，那么用IIS的图形界面工具添加绑定就没问题了。&lt;/p&gt;
+
+&lt;p&gt;但是如果换过网卡，仅通过图形界面无法让IIS去监听某一个IP地址的d某个端口，必须要用命令行&lt;code&gt;httpcfg&lt;/code&gt;工具来把监听列表更新一下才可以。猜想这个监听列表是属于系统文件的一部分，IIS在启动的时候可能是会依据这个文件作为更高优先级别的端口绑定。&lt;/p&gt;
+
+&lt;p&gt;按照如下步骤进行配置：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code&gt;httpcfg query iplisten&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;列出现在的监听列表。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code&gt;httpcfg delete iplisten -i 10.50.165.45&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;移除旧的监听IP地址。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code&gt;httpcfg set iplisten -i 10.52.21.125&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;添加新的IP地址到监听列表。&lt;/p&gt;
+
+&lt;p&gt;再次测试依然失败。。。为什么？重启一下Server就好了。。。。。。(注意是重启服务器，重启IIS服务不会起作用的）&lt;/p&gt;
+
+&lt;p&gt;Server重启之后查看一下监听的端口和IP：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;netstat -ano | findstr 10.52.21.125
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看到进程4监听10.52.21.125的80和443端口。进程4是一个系统进程，IIS貌似也是属于挂在这个进程里边的一个子进程（猜想。。。不太懂IIS）。&lt;/p&gt;
+
+&lt;p&gt;好了IIS设置好了，接下来配置Apache的配置文件，让virtual host的IP不同于IIS（比如设置为10.52.21.45），同样也可以正常启动。&lt;/p&gt;
+
+&lt;p&gt;所以现在这台服务器既可以接受向IP：10.52.21.125发送的请求（IIS会处理这些请求），也可以接受向IP：10.52.21.45发送的请求（IHS会处理这些请求）。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>IHS从旧版本到新版本的迁移</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/ihs"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/ihs</id>
+   <content type="html">
+&lt;h3 id=&quot;ihs6ihs8&quot;&gt;如何把IHS6迁移到IHS8？&lt;/h3&gt;
+
+&lt;p&gt;IHS的迁移比较简单，正好前几天做了一个IHS6到IHS8的迁移，全新的服务器，全新的IHS8安装，这里就以IHS6到IHS8为例介绍一下简要的迁移步骤和需要注意的地方。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;步骤&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;拷贝文件&lt;/p&gt;
+
+    &lt;p&gt;把老服务器上的httpd.conf文件拷贝到新服务器上。同时需要把SSL证书，DocumentRoot目录全部都考过去。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;修改配置文件&lt;/p&gt;
+
+    &lt;p&gt;修改httpd.conf文件，把监听的IP改为新服务器的IP地址，HostName等等配置都要做响应的改变。&lt;/p&gt;
+
+    &lt;p&gt;如果要配置的服务所监听的IP是一个虚拟IP，那就在服务器上添加好虚拟IP。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;尝试启动IHS服务&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;
+ cd &amp;lt;IHS_HOME&amp;gt;/bin
+ httpd -k start -f &amp;lt;IHS_HOME&amp;gt;/conf/httpd.conf
+&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;在Windows系统下，如果启动的时候没有任何错误，就把这个服务作为Windows服务添加到服务管理里，以便于自动启动。&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;
+ cd &amp;lt;IHS_HOME&amp;gt;/bin
+ httpd -k install -n IHS-yourservice -f &amp;lt;IHS_HOME&amp;gt;/conf/httpd.conf
+&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;如下图：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/19/installservice.png/scale&quot; alt=&quot;installservice&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;遇到的问题及解决方案&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;第一次尝试启动的时候出现了Syntax Error，也就是语法错误。&lt;/p&gt;
+
+    &lt;p&gt;这样的问题比较容易解决，找到错误信息中对应的行，发现错误改掉就好了。&lt;/p&gt;
+
+    &lt;p&gt;IHS6到8，下面这行配置一定需要修改：&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;
+  LoadModule access_module modules/mod_access.so
+ &lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;需要改成：&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;
+  Loadmodule authz_host_module modules/mod_authz_host.so
+ &lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;这是IHS接收用户访问的模块有变动，修改之后就没问题了。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;尝试启动的时候错误信息里没有Syntax Error（说明语法没问题），但是启动不起来，创建socket失败之类的。&lt;/p&gt;
+
+    &lt;p&gt;这样的问题多半是端口被占用引起的，解决方法如下：&lt;/p&gt;
+
+    &lt;p&gt;比如我们的IHS服务需要监听80端口，用&lt;code&gt;netstat -ano | findstr 80&lt;/code&gt; (Linux的话就用&lt;code&gt;netsh -ano | grep 80&lt;/code&gt;）找到哪个应用正在监听这个端口，这个命令可以看到监听端口的PID。&lt;/p&gt;
+
+    &lt;p&gt;随后打开任务管理器，打开菜单的 视图 – 选择列 – 勾选PID那一项，就可以从任务管理器里找到那个应用到底是什么了。&lt;/p&gt;
+
+    &lt;p&gt;在我配置的过程中，发现占用80端口的是IHS安装时默认启用的那个IHS服务，所以关掉它，改成手动启动就没问题了。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/19/porttest.png/scale&quot; alt=&quot;showport&quot; /&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;图中进程1184正在监听端口80.&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>在IBM HTTP Server中配置URL重定向</title>
+   <link href="http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl</id>
+   <content type="html">
+&lt;p&gt;之前总结在Apache中实现URL重定向跳转的功能，方法如下：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;比如要想把dellyserver/abc/下所有的资源都重定向到www.baidu.com，我的dellyserver是在DMZ中，这台server无法访问百度的服务器。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;!-- more --&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;第一步，写一个html文件，就叫test.html吧，放到网站的根目录。test.html只是个空白网页，只需要在&amp;lt;head&amp;gt;标签里加上下面这行JS代码：&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;pre&gt;window.location.href=&quot;http://www.baidu.com”&lt;/pre&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;第二步，在httpd.conf中添加配置如下：&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteCond %{HTTP_HOST} ^dellyserver [NC] 
+
+RewriteRule ^/abc/(.*)$ /test.html [L]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;这样所有到达http://dellyserver/abc/xxxx的资源都会被定向到test.html，当test.html下载到本地的时候，浏览器会执行html文件中的JS代码：&amp;lt;pre&amp;gt;window.location.href=”http://www.baidu.com”&amp;lt;/pre&amp;gt;，这样浏览器会自动给http://www.baidu.com发送请求并且获得响应，费了一番功夫但是也确实达到了重定向的效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;IHS是基于Apache的，按理说这种方法也应该能工作的，但是起作用的情况仅限静态网站的情况。&lt;/p&gt;
+
+&lt;p&gt;如果IHS通过Plugin进行URI的处理，那么用上面的方法并不会生效，而是会直接跳出500错误。因为IHS会先通过plugin匹配用户的URI请求，然后再搜索DocumentRoot下地文件去匹配请求。&lt;/p&gt;
+
+&lt;p&gt;如果请求abc.jsp，如果plugin无法处理对应的请求，IHS就会直接返回500错误，因为jsp只能被WAS处理，DocumentRoot下的文件全部都是静态html文件。&lt;/p&gt;
+
+&lt;p&gt;那么应该如何配置才能让IHS首先去适配rewrite模块填写的规则呢？如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteRule ^/abc/(.*)$ /test.html [L,R=301]*
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;R=301 代表/abc/下所有的资源都永久转移到新的位置了，这样IHS就会去直接执行这条规则而不是去尝试plugin匹配了。  &lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Hadoop Cluster集群配置心得（低配置集群+自动同步配置）</title>
+   <link href="http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop-cluster"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop-cluster</id>
+   <content type="html">
+&lt;p&gt;本文为本人原创，首发到炼数成金 &lt;a href=&quot;http://f.dataguru.cn/thread-138720-1-1.html&quot;&gt;http://f.dataguru.cn/thread-138720-1-1.html&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;情况是这样的，我没有一个非常强劲的电脑来搞出一个性能非常NB的服务器集群，相信很多人也跟我差不多，所以现在把我的低配置集群经验拿出来写一下。&lt;/p&gt;
+
+&lt;p&gt;我的配备：1）五六年前的赛扬单核处理器2G内存笔记本 2）公司给配的ThinkpadT420，i5双核处理器4G内存（可用内存只有3.4G，是因为装的是32位系统的缘故吧。。。）&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;就算是用公司配置的电脑，做出来三台1G内存的虚拟机也显然是不现实的。企业笔记本运行的软件多啊，什么都不做空余内存也才不到3G。所以呢，我的想法就是：&lt;/p&gt;
+
+&lt;p&gt;用我自己的笔记本（简称PC1）做Master节点，用来跑Jobtracker,Namenode 和SecondaryNamenode；用公司的笔记本跑两个虚拟机（简称VM1和VM2），用来做Slave节点，跑Tasktracker和Datanode。这么做的话，就需要让PC1，VM1和VM2处于同一个网段里，保证他们之间可以互相连通。&lt;/p&gt;
+
+&lt;p&gt;网络环境：我的两台电脑都是通过一个无线路由上网。&lt;/p&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;&lt;strong&gt;1. 构建跟外部的电脑同一网段的虚拟机配置过程：&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;准备工作：构建一个集群，首先前提条件是每台服务器都要有一个固定的IP地址，然后才可能进行后续的操作。所以呢，先把我的两台笔记本电脑全部设置成固定IP（注意，如果像我一样使用无线路由上网，那就要把无线网卡的IP设置成固定IP）。用来做Master节点的PC1:192.168.33.150，用来跑虚拟机的宿主笔记本：192.168.33.157。目标：VM1和VM2的IP地址分别设置成192.168.33.151和152。&lt;/p&gt;
+
+&lt;p&gt;步骤：&lt;/p&gt;
+
+&lt;p&gt;1）新建VM1虚拟机。&lt;/p&gt;
+
+&lt;p&gt;2）打开VM1的网卡设置界面，连接方式选Bridge。（桥接）&lt;/p&gt;
+
+&lt;p&gt;关于桥接的具体信息，可以百度一下。我们需要知道的，就是用桥接的方式，可以让虚拟机通过本机的网关来上网，所以就可以跟本机处于同一个网段，互相之间可以进行通信。&lt;/p&gt;
+
+&lt;p&gt;3）我用的是VMware Workstation8，就以他为例：菜单Edit——VirtualNetwork Editor。&lt;/p&gt;
+
+&lt;p&gt;4）选择WMnet0（这个是VMware安装时默认预留出来为桥接这种连接方式做的一个配置文件），然后点击下面的bridgedto，就是要连接到哪个网卡上，要通过哪个网卡来上网。如果选择“自动“不可以正常上网的话，就手动选，选择连接到网络的那块网卡就可以了。（比如我的是无线网卡连路由器上网的，所以这里就选我自己的无线网卡就好）&lt;/p&gt;
+
+&lt;p&gt;5）然后，点击OK。进入系统内部，设置IP地址为固定IP：192.168.33.151。我使用图形界面设置的。具体不同的Linux系统请查阅相关的网络配置文档。&lt;/p&gt;
+
+&lt;p&gt;6）现在就可以互相ping一下了。如果可以ping通，那就说明互相连上了。&lt;/p&gt;
+
+&lt;p&gt;如果不能，那就ifconfig查看一下各自的IP是否设置成功了，是否需要重新连接，之类的。&lt;/p&gt;
+
+&lt;p&gt;按照这个步骤来，应该是没什么问题的。。。如果有哪些地方不明白或者设置出问题的，可以告诉我，互相交流看看。&lt;/p&gt;
+
+&lt;h3 id=&quot;ssh&quot;&gt;&lt;strong&gt;2. SSH&lt;/strong&gt;设置：&lt;/h3&gt;
+
+&lt;p&gt;虚拟机设置好之后就可以设置SSH了。当然在这之前要先建立好账户，三台服务器都建立一个相同的账户。&lt;/p&gt;
+
+&lt;p&gt;Ubuntu默认是没有SSH server的（CentOS默认可以选择安装上），所以按照老师视频里设置好SSHKey之后是不可能互相SSH到的。（可以通过各种命令验证，比如&lt;code&gt;telnet localhost 22&lt;/code&gt;来验证到底本机上的22端口有没有程序在监听，显示连接失败的话那当然就是SSH Server没有设置咯。或者通过&lt;code&gt;netstat –ano | grep ssh&lt;/code&gt;之类的命令来查看。）&lt;/p&gt;
+
+&lt;p&gt;关于SSH的安装，貌似现在OpenSSH是属于Linux系统上实际的SSH实现标准了，Ubuntu也可以很方便的安装OpenSSH。命令如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo apt-get installopenssh-server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;一行命令就够了。装完之后telnet试试先，可以验证是否安装成功。&lt;/p&gt;
+
+&lt;p&gt;然后再按照老师视频里面的办法，生成公私密钥，把公钥全部聚在一起传播到每台服务器上。就可以实现无密码登陆了。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;注意！在authorized_key&lt;/strong&gt;&lt;strong&gt;放到指定位置之后，千万要手动SSH&lt;/strong&gt;&lt;strong&gt;到所有的节点上一次！&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;比如像我的，要从PC1输入命令：ssh &lt;vm1 ip=&quot;&quot;&gt;和ssh &lt;vm2ip&gt;来手动SSH到另外的所有节点上一次，看到是否要信任目标主机的提示后，输入yes，然后这才算是真的设置完成了。这是一个必要的操作，只有这样才可以把其他所有server的公钥都添加到本机的信任列表里，才能真的实现无任何提示的免密码登入。&lt;/vm2ip&gt;&lt;/vm1&gt;&lt;/p&gt;
+
+&lt;p&gt;否则，在启动其他节点上的守护进程时会显示无法连接到对应的节点，无法启动之类的提示。&lt;/p&gt;
+
+&lt;p&gt;这样的话，我的低配置集群环境就大概准备好了。&lt;/p&gt;
+
+&lt;h3 id=&quot;hadoop&quot;&gt;&lt;strong&gt;3. 接下来就是配置Hadoop了。&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;关于Hadoop的配置，我的想法：这么大个集群，肯定得有个同步的机制吧，不然每次改一下配置文件就需要在所有的节点上改一次，那得是多大的工作量啊。。。。。。于是，看了一下权威指南教材269页开始的配置，确实是有这个配置的。此外还有一些配置是老师没有讲到的，也一并以我自己的理解和实践为例，写出来吧。&lt;/p&gt;
+
+&lt;p&gt;主要的配置文件其实就是hadoop-env.sh和core-site.xml，hdfs-site.xml和mapred-site.xml。&lt;/p&gt;
+
+&lt;h4 id=&quot;hadoop-envsh&quot;&gt;&lt;strong&gt;1. hadoop-env.sh：&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;首先，配置JAVA_HOME。这个不用说了，从oracle下载最新的gz包直接解压，设置好路径就好。&lt;/p&gt;
+
+&lt;p&gt;然后这些配置我觉得非常有用：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;export HADOOP_HEAPSIZE=400
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个是用来设置分配给守护进程的内存空间的。守护进程其实也全部都是Java进程，可以通过这个来设置JVM的Heapsize。我这里设置的是400MB。默认的是1000MB。&lt;/p&gt;
+
+&lt;p&gt;正好也说一下我的设计。因为我的是低配置的，所以如果全部都按照默认的设置来，比如我自己的那台2G笔记本上跑Jobtracker，Namenode和SecoundaryNamenode，每个进程分配1000M，那如果真的是有大量的数据进来了，分配的这个内存空间就会被充满，到时候我的电脑绝对崩溃。&lt;/p&gt;
+
+&lt;p&gt;所以，我的设计方案如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;我的老笔记本（2G内存）：Jobtracker：400M，Namenode：800M，SecondaryNamenode：800M。（照我的理解，Namenode对内存和IO进行集中的管理，所以是需要大量的空间来运作的）&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;虚拟机VM1和2（每台1.2G内存）：Tasktracker：400M，Datanode：400M，然后Tasktracker开启的Map任务和Reduce任务子进程各1个，每个分配200M内存。&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;个人感觉这样至少电脑不会爆掉吧。。。。。。等到以后真的开始进行数据处理的时候再看看怎么个情况吧，现在也只是根据自己粗浅的认识来这么配置的。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;export HADOOP_NAMENODE_OPTS=&quot;-Xmx800m -Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS&quot;
+
+export HADOOP_SECONDARYNAMENODE_OPTS=&quot;-Xmx800m -Dcom.sun.management.jmxremote $HADOOP_SECONDARYNAMENODE_OPTS&quot;
+
+##这两个配置就是所说的Namenode和SecondaryNamenode分配800M的Heapsize。根据验证，这样设置是没问题的。
+
+export HADOOP_MASTER=dellypc-master:/home/$USER/hadoop-0.20.2
+
+host:path where hadoop code should be rsync&#39;d from. Unset by default.
+#hadoop的code从哪里进行同步，默认为不同步。只要设置好了这个，就可以在每次更改配置文件的时候只更改一份配置文件，启动的时候启动信息里可以看到，所有的节点都会从设置的位置同步配置文件。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;比如，我的Master节点hostname是dellypc-master，hadoop的所有配置文件都放在了/home/delly/hadoop-0.20.2这里（$USER会被识别成当前的用户名，也就是delly），那么每次启动hadoop守护进程的时候，hadoop都会自动先从dellypc-master的/home/delly/hadoop-0.20.2这个位置把所有的配置文件全部同步下来，然后才会进行启动的操作。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;值得注意的是，这个配置文件的保存地不一定非得是hadoop集群中的某一台机器，根据权威指南文档说的，可以是外部的一台server。&lt;/strong&gt;这样其实还挺好的，真的用起来的时候可以搞一台专门用来存放配置的机器，服务器集群肯定要通过防火墙隔离到DMZ网络中，然后开通这台配置机到集群机器的RPC文件同步端口，然后每次需要改配置就直接通过这台集群外的机器更改，并且启动集群守护程序的时候同步到所有节点，非常的安全和好用啊。&lt;/p&gt;
+
+&lt;p&gt;继续配置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;export HADOOP_SLAVE_SLEEP=0.1
+
+##Seconds to sleep between slave commands. Unset by default. This can be useful in large clusters, where, e.g., slave rsyncs can otherwise arrive faster than the master can service them.
+##不知道具体原理是怎么回事，但是这个配置看起来好像是在启动的时候，主节点会抽空闲时间休息0.1秒钟，避免请求同时到达主节点导致负载过高宕掉。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;hadoop-env.sh的配置就写到这里了，还有其他log位置，pid位置之类的，就自行设置一下就好。部分设置都是似懂非懂的感觉好像有用就设置了，也许以后会理解更深一点可以知道怎样设置地更正确。&lt;/p&gt;
+
+&lt;h4 id=&quot;core-sitexml&quot;&gt;2. core-site.xml：&lt;/h4&gt;
+
+&lt;p&gt;除了视频教程里说的设置hdfs的位置和端口之外（相信&lt;code&gt;fs.default.name&lt;/code&gt;也是指定了namenode运行在哪台server上的吧。。），还配置了下面的东西：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+&amp;lt;name&amp;gt;io.file.buffer.size&amp;lt;/name&amp;gt;
+&amp;lt;value&amp;gt;131072&amp;lt;/value&amp;gt;
+&amp;lt;!-- 设置缓冲区辅助IO操作，默认4K，这里设置成128KB --&amp;gt;
+&amp;lt;final&amp;gt;true&amp;lt;/final&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;hdfs-sitexml&quot;&gt;3. hdfs-site.xml：&lt;/h4&gt;
+
+&lt;p&gt;也是除了视频中的设置，还设置了：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+&amp;lt;name&amp;gt;dfs.name.dir&amp;lt;/name&amp;gt;
+&amp;lt;value&amp;gt;/home/delly/hadoop-0.20.2/name,/media/backup/hadoop-backup/namedata&amp;lt;/value&amp;gt;
+&amp;lt;final&amp;gt;true&amp;lt;/final&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Namenode存放永久性元数据的目录，这里设置了两个目录，万一其中一个目录中数据出问题了，那么另一个作为冗余数据可以进行恢复&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+&amp;lt;name&amp;gt;fs.checkpoint.dir&amp;lt;/name&amp;gt;
+&amp;lt;value&amp;gt;/home/delly/hadoop-0.20.2/namesecondary,/media/backup/hadoop-backup/namesecondarydata&amp;lt;/value&amp;gt;
+&amp;lt;final&amp;gt;true&amp;lt;/final&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;同上，只不过是secondaryNamenode存放的位置&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;dfs.data.dir&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;/home/delly/hadoop-0.20.2/data&amp;lt;/value&amp;gt;
+
+&amp;lt;/property&amp;gt;
+
+（datanode存放数据块的位置，默认是tmp文件夹，不安全吧。。。）
+
+&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;dfs.replication&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;2&amp;lt;/value&amp;gt;
+
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;（数据复制的份数，不太理解到底是什么数据的复制，有懂的同学求指教啊）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;dfs.block.size&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;134217728&amp;lt;/value&amp;gt;
+
+&amp;lt;!-- 128MB --&amp;gt;
+
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;（HDFS块大小，默认64M，这里设置成128M，减小namenode内存压力）&lt;/p&gt;
+
+&lt;h4 id=&quot;mapred-sitexml&quot;&gt;4. 然后mapred-site.xml文件：&lt;/h4&gt;
+
+&lt;p&gt;主要是额外配置了如下的东西，指定map任务和reduce任务子进程最多有多少个，以及他们的内存（我分配了200M）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;mapred.tasktracker.map.tasks.maximum&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;1&amp;lt;/value&amp;gt;
+
+&amp;lt;final&amp;gt;true&amp;lt;/final&amp;gt;
+
+&amp;lt;/property&amp;gt;
+
+  
+
+
+&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;mapred.tasktracker.reduce.tasks.maximum&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;1&amp;lt;/value&amp;gt;
+
+&amp;lt;final&amp;gt;true&amp;lt;/final&amp;gt;
+
+&amp;lt;/property&amp;gt;
+
+  
+
+
+&amp;lt;property&amp;gt;
+
+&amp;lt;name&amp;gt;mapred.child.java.opts&amp;lt;/name&amp;gt;
+
+&amp;lt;value&amp;gt;-Xmx200m&amp;lt;/value&amp;gt;
+
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;主要配置的东西就写到这里吧。&lt;/p&gt;
+
+&lt;p&gt;我现在有一个巨大的疑问，hadoop是如何控制哪个进程在哪个节点上运行的？&lt;/p&gt;
+
+&lt;p&gt;在配置文件里，我只看到了hdfs的主机（这个应该就是会指定namenode所在的主机吧？），然后还有jobtracker所在的主机，但是，SecondaryNamenode和Tasktracker，datanode到底要在哪个节点上执行，配置文件里完全没有配置，但是SecoundaryNamenode确实在我预想的主节点上跑起来了，datanode和tasktracker确实在两个slave节点上跑起来了，这是为什么？&lt;/p&gt;
+
+&lt;p&gt;有人能解答疑问吗？非常感谢！&lt;/p&gt;
+
+&lt;p&gt;经过测试和查看资料，这个疑问已解决： &lt;a href=&quot;http://f.dataguru.cn/thread-138720-1-1.html&quot;&gt;http://f.dataguru.cn/thread-138720-1-1.html&lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>如何确定Hadoop守护进程分别会在哪台机器上运行</title>
+   <link href="http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop</id>
+   <content type="html">
+&lt;p&gt;经过一段时间的配置，Hadoop环境总算运行起来了，但是，为何主节点就没有跑tasktracker和datanode进程，slave节点也没有跑secondary进程，Hadoop是如何控制的呢？&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;经过看权威指南（267页）和跟群里同学讨论，还有自己测试，最终确定：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;tasktracker和datanode这两个守护进程 —— 只会在conf/slaves文件里指定的那些节点上运行&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;secondarynamenode 这个守护进程 —— 只会在conf/masters文件里指定的那个节点上运行&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;namenode和jobtracker这两个守护进程 —— 他们只会在同一台server上运行，可以通过core-site.xml和mapred-site.xml来确定要运行的主机。并且，假如说配置文件里指定的是node1，那么必须要在node1这台server上运行start脚本。否则，tasktracker，datanode和secondarynamenode这些进程都能顺利启动，而namenode和jobtracker无法启动。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;实际测试结果：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;我的配置环境&lt;/strong&gt;：（请对下面频繁出现的delly表示淡定和理解。。。因为我的英文名叫Delly。。。）&lt;/p&gt;
+
+&lt;p&gt;dellypc-master，dellypc-1，dellypc-2三台主机。&lt;/p&gt;
+
+&lt;p&gt;其中，masters文件里记录了dellypc-master（表示secondarynamenode在dellypc-master上运行），slaves文件里记录了dellypc-1和dellypc-2（表示datanode和tasktracker要在dellypc-1和dellypc-2上运行）。&lt;/p&gt;
+
+&lt;p&gt;core-site.xml文件里：hdfs://dellypc-master:9000， mapred-site.xml文件里：&lt;value&gt;dellypc-master:9001&lt;/value&gt;。（表示namenode跟jobtracker都在dellypc-master上运行，分别监听9000和9001端口）&lt;/p&gt;
+
+&lt;h4 id=&quot;section&quot;&gt;正常情况：&lt;/h4&gt;
+
+&lt;p&gt;在dellypc-master上执行start-all.sh脚本，完全正常。&lt;/p&gt;
+
+&lt;p&gt;结果：&lt;/p&gt;
+
+&lt;p&gt;dellypc-master：namenode，jobtracker和secondarynamenode&lt;/p&gt;
+
+&lt;p&gt;dellypc-1：tasktracker和datanode&lt;/p&gt;
+
+&lt;p&gt;dellypc-2：tasktracker和datanode&lt;/p&gt;
+
+&lt;h4 id=&quot;section-1&quot;&gt;测试1：&lt;/h4&gt;
+
+&lt;p&gt;在dellypc-1上执行start-all.sh脚本，namenode和jobtracker没有启动，其他进程正常启动。&lt;/p&gt;
+
+&lt;p&gt;结果：&lt;/p&gt;
+
+&lt;p&gt;dellypc-master：secondarynamenode&lt;/p&gt;
+
+&lt;p&gt;dellypc-1：tasktracker和datanode&lt;/p&gt;
+
+&lt;p&gt;dellypc-2：tasktracker和datanode&lt;/p&gt;
+
+&lt;h4 id=&quot;section-2&quot;&gt;测试2：&lt;/h4&gt;
+
+&lt;p&gt;修改core-site.xml： &lt;value&gt;hdfs://dellypc-1:9000&lt;/value&gt;&lt;/p&gt;
+
+&lt;p&gt;修改mapred-site.xml： &lt;value&gt;dellypc-1:9001&lt;/value&gt;&lt;/p&gt;
+
+&lt;p&gt;然后，再dellypc-1上执行start-all.sh，&lt;/p&gt;
+
+&lt;p&gt;结果：&lt;/p&gt;
+
+&lt;p&gt;dellypc-master：secondarynamenode&lt;/p&gt;
+
+&lt;p&gt;dellypc-1：tasktracker，datanode和jobtracker&lt;/p&gt;
+
+&lt;p&gt;dellypc-2：tasktracker和datanode&lt;/p&gt;
+
+&lt;p&gt;奇怪的是namenode没有启动起来！按照预期，namenode应该会在dellypc-1上启动的嘛。。。为什么？&lt;/p&gt;
+
+&lt;p&gt;纠结了一会儿，大概想出来问题的关键了：因为在dellypc-1上没有格式化的hdfs文件系统，所以无法正常启动namenode。&lt;/p&gt;
+
+&lt;p&gt;也许你会跟我一样想说格式化一下试试呗，于是我就做了。。。但是格式化的时候失败了，因为我在hdfs-site.xml这个文件里设置了两个namenode元数据存储的目录，但是dellypc-1上没有其中的一个目录。于是我想就改回去吧。配置改回去，结果发现，datanode启动不了了。。。。。所以说啊，这个hdfs应该是一种分布式系统，跟所有的节点可能都会有关联。。。&lt;/p&gt;
+
+&lt;p&gt;最后又把dellypc-1和dellypc-2上的hadoop文件夹删掉，又重新从主节点拷贝了一份，这才恢复了正常。&lt;/p&gt;
+
+&lt;p&gt;这些试验，足够解决我的疑问了。希望也同样能帮到有同样疑问的同学。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Fix vulnerability: HTTP Server Prone To Slow Denial Of Service Attack</title>
+   <link href="http://blog.dellyqiao.com/security/2015/03/11/fix-vulnerability-http-server-prone-to-slow-denial-of-service-attack"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/security/2015/03/11/fix-vulnerability-http-server-prone-to-slow-denial-of-service-attack</id>
+   <content type="html">
+&lt;h2 id=&quot;vulnerability-description&quot;&gt;Vulnerability description&lt;/h2&gt;
+
+&lt;p&gt;A denial of service vulnerability is present in some HTTP servers.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-to-fix-this-apache-vulnerability&quot;&gt;How to fix this Apache vulnerability&lt;/h2&gt;
+
+&lt;p&gt;1) Ensure your Apache is supports the reqtimeout module&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;mod_reqtimeout Module is available in Apache 2.2.15 and later.&lt;/li&gt;
+  &lt;li&gt;mod_reqtimeout module defaulted to disabled in version 2.3.14 and earlier.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;2) Add Below entries into httpd.conf file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;LoadModule reqtimeout_module /usr/lib64/apache2-prefork/mod_reqtimeout.so
+&amp;lt;IfModule reqtimeout_module&amp;gt;
+	RequestReadTimeout header=10-20,minrate=500
+	RequestReadTimeout body=10,minrate=500
+&amp;lt;/IfModule&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/13/屏幕快照 2015-02-13 下午11.06.52.png/scale&quot; alt=&quot;pic&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;3) Restart Apache Service:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/etc/init.d/apache2 restart
+&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>利用Apache服务器实现URL跳转</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/apacheurl"/>
+   <updated>2015-03-11T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/apacheurl</id>
+   <content type="html">
+&lt;p&gt;此文记录一下如何利用Apache服务器进行URL跳转。开发人员可能会说用JavaScript或者后台代码可以很容易实现，但是不管是什么样的代码，都需要首先载入页面，之后才能实现跳转功能，体验并不是很好，如果在Apache服务器上设置好的话，由于服务器的配置已经预先读取到内存里了，所以当请求到达Apache的时候直接就可以进行相应地跳转，迅速可靠。&lt;/p&gt;
+
+&lt;p&gt;Apache的URL重定向是利用rewrite_module实现的，这个模块功能十分强大，作为一个实用主义者我只取需要用到的功能。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：如果想要做的跳转是跨服务器的跳转，那么Apache所在的服务器必须得能访问目标服务器。比如说Apache在服务器A上，要想把abc.com/abc重定向到www.baidu.com，那么从服务器A上至少得能访问到www.baidu.com，否则跳转是不会成功的。所以说如果服务器在DMZ里，四面都有防火墙，那就请参照本文最后面的配置方法。&lt;/p&gt;
+
+&lt;p&gt;如何配置此模块：&lt;/p&gt;
+
+&lt;p&gt;1）找到这个模块的配置，把前面的注释符号去掉。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;LoadModule rewrite_module modules/mod_rewrite.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;2）在&lt;code&gt;&amp;lt;virtualhost&amp;gt;&lt;/code&gt; 的配置中，添加如下配置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteEngine On
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;配置完成。&lt;/p&gt;
+
+&lt;p&gt;注意：RewriteEngine必须要在virtualhost里启用，否则不会生效。&lt;/p&gt;
+
+&lt;p&gt;在这行配置下面就可以写跳转的规则了。下面是常见的几种情况：&lt;/p&gt;
+
+&lt;h4 id=&quot;url&quot;&gt;1）单个指定URL的跳转。&lt;/h4&gt;
+
+&lt;p&gt;比如要把/abc.html重定向到/def.html：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Redirect /abc.thml /def.html
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;section&quot;&gt;2）有相同特征的域名的跳转。&lt;/h4&gt;
+
+&lt;p&gt;比如说把所有/abc/之下的所有页面都重定向到/def/1.html：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteRule ^/abc/(.*)$ /def/1.html
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;rewrite_module支持正则表达式，^表示URI的开头，.表示任意字符，*表示出现N次，$表示结尾。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-1&quot;&gt;3）还有一种情况，域名更换，但是所有资源的位置没有改变。&lt;/h4&gt;
+
+&lt;p&gt;比如，访问http://dellyserver/abc/abcd.html的时候跳转到http://abc.dellyserver/abcd.html，是要根据所请求的资源动态跳转，而不是跳到一个特定的页面。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteCond %{HTTP_HOST} ^dellyserver [NC]
+##声明一下请求的URL的hostname是dellyserver
+
+RewriteCond %{REQUEST_URI} ^/abc/
+##声明一下请求的URI是/abc/xxxxxx
+
+RewriteRule ^/abc/(.*) &amp;lt;http://abc.dellyserver/$1&amp;gt; [R=permanent,L]
+##在以上两个条件都符合的时候，执行这个跳转，$1代表的是http://dellyserver/abc/后面的部分
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;4） 最后一种情况，跨服务器跳转，并且源服务器无法访问目标服务器的情况。&lt;/p&gt;
+
+&lt;p&gt;比如要想把dellyserver/abc/下所有的资源都重定向到www.baidu.com，我的dellyserver是在DMZ中，这台server无法访问百度的服务器。&lt;/p&gt;
+
+&lt;p&gt;这种时候，根据我目前的知识，唯一能想到的办法应该是借助程序代码了。&lt;/p&gt;
+
+&lt;p&gt;第一步，写一个html文件，就叫test.html吧，放到网站的根目录。test.html只是个空白网页，只需要在&amp;lt;head&amp;gt;标签里加上下面这行JS代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;pre&amp;gt;window.location.href=&quot;http://www.baidu.com”&amp;lt;/pre&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;第二步，在httpd.conf中添加配置如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;RewriteCond %{HTTP_HOST} ^dellyserver [NC]
+
+RewriteRule ^/abc/(.*)$ /test.html [L]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样所有到达http://dellyserver/abc/xxxx的资源都会被定向到test.html，当test.html下载到本地的时候，浏览器会执行html文件中的JS代码：&amp;lt;pre&amp;gt;window.location.href=”http://www.baidu.com”&amp;lt;/pre&amp;gt;，这样浏览器会自动给http://www.baidu.com发送请求并且获得响应，费了一番功夫但是也确实达到了重定向的效果。  &lt;/p&gt;
+
+&lt;p&gt;就这些了，rewrite_module非常强大，有更多需求的同学可以继续深入研究下这个东西。希望我本文能起到抛砖引玉的作用吧。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>WebSphere应用服务器学习笔记</title>
-   <link href="http://dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes"/>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes"/>
    <updated>2015-03-09T00:00:00+08:00</updated>
-   <id>http://dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes</id>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/09/WebSphere-Learning-Notes</id>
    <content type="html">&lt;p&gt;WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。&lt;/p&gt;
 
 &lt;!-- more --&gt;
@@ -332,9 +1957,9 @@
  
  <entry>
    <title>Linux学习笔记</title>
-   <link href="http://dellyqiao.com/server/2015/03/09/Linux-Learning-Notes"/>
+   <link href="http://blog.dellyqiao.com/server/2015/03/09/Linux-Learning-Notes"/>
    <updated>2015-03-09T00:00:00+08:00</updated>
-   <id>http://dellyqiao.com/server/2015/03/09/Linux-Learning-Notes</id>
+   <id>http://blog.dellyqiao.com/server/2015/03/09/Linux-Learning-Notes</id>
    <content type="html">&lt;pre&gt;&lt;code&gt;echo $SHELL
 ##永久改变shell
 chsh -s /bin/bash [username]
@@ -412,9 +2037,9 @@ touch 建新文件或修改现有文件的上次访问或修改时间。
  
  <entry>
    <title>ITIL Learning Note</title>
-   <link href="http://dellyqiao.com/management/2015/03/09/ITIL-Learning-Note"/>
+   <link href="http://blog.dellyqiao.com/management/2015/03/09/ITIL-Learning-Note"/>
    <updated>2015-03-09T00:00:00+08:00</updated>
-   <id>http://dellyqiao.com/management/2015/03/09/ITIL-Learning-Note</id>
+   <id>http://blog.dellyqiao.com/management/2015/03/09/ITIL-Learning-Note</id>
    <content type="html">&lt;p&gt;IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.&lt;/p&gt;
 
 &lt;!-- more --&gt;
@@ -492,9 +2117,9 @@ This stage includes determining risks, constraints, and whether the service will
  
  <entry>
    <title>解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</title>
-   <link href="http://dellyqiao.com/middleware/2015/02/09/Resolve-Error-500"/>
+   <link href="http://blog.dellyqiao.com/middleware/2015/02/09/Resolve-Error-500"/>
    <updated>2015-02-09T00:00:00+08:00</updated>
-   <id>http://dellyqiao.com/middleware/2015/02/09/Resolve-Error-500</id>
+   <id>http://blog.dellyqiao.com/middleware/2015/02/09/Resolve-Error-500</id>
    <content type="html">&lt;p&gt;这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。&lt;/p&gt;
 
 &lt;p&gt;文章内容仅适用于IHS和WAS分别安装在不同服务器上的情况，文章里提到的一些错误在其他情况下也许根本就不会发生。&lt;/p&gt;
@@ -529,29 +2154,28 @@ This stage includes determining risks, constraints, and whether the service will
 
 &lt;h3 id=&quot;plugincfglog&quot;&gt;1）首先看plugin_cfg.log，错误信息如下：&lt;/h3&gt;
 
-&lt;p&gt;```
-[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream&lt;/p&gt;
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-&lt;p&gt;[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one&lt;/p&gt;
+[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc&#39;on host ‘wasserver&#39;; will try another one
 
-&lt;p&gt;[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc’on host ‘wasserver’; will try another one&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc&#39;on host ‘wasserver&#39;; will try another one
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2
 
-&lt;p&gt;[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
-```&lt;/p&gt;
+[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;这段错误的LOG完全给不出有用的信息，只是在说无法建立连接，导致请求处理失败。&lt;/p&gt;
 
@@ -567,33 +2191,32 @@ This stage includes determining risks, constraints, and whether the service will
 
 &lt;p&gt;果然发现问题了，在plugin log里有这么一段：&lt;/p&gt;
 
-&lt;p&gt;```
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client-&amp;gt;stream=00000000&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client-&amp;gt;stream=00000000
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
 
-&lt;p&gt;[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect&lt;/p&gt;
+[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0
 
-&lt;p&gt;[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
-```&lt;/p&gt;
+[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;实际上看到这一行：Setting the transport(case 1): wasserver on port 9444 就大概明白了，IHS在进行请求转发的时候使用的不是9081，而是9444，9444是wc_default_secure端口，也就是WAS服务器容器的安全传输端口。而9444端口在IHS和WAS之间并没有打开。&lt;/p&gt;
 

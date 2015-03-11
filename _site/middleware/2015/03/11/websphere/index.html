@@ -1,0 +1,348 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>Websphere自动化管理方法集和脚本示例</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>Websphere自动化管理方法集和脚本示例 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>11 March 2015</span>
+    </div>
+    <div class="content">
+      
+<p>作为IBM Websphere产品的运维工程师，我们都知道Websphere提供了两种进行管理的工具：基于WEB界面的图形化工具，还有wsadmin工具。</p>
+
+<p>在做日常维护做一些小改动的时候，图形工具当然是最佳选择，但是在创建一个全新的环境或者在做迁移的时候，或者有一些固定的批量动作需要定时执行的时候，图形工具并不是最快最省力的方式，这时就需要用到wsadmin工具了。</p>
+
+<!-- more -->
+
+<p>wsadmin内置五大对象，每个对象负责特定的一些功能，我们可以通过JACL语法和Jython语法来调用这些内置对象。当然很明显Jython要比JACL强大的多，而且对于熟悉高级编程语言的人来说，Jython也更简单（跟Python语法一致），所以在编写自动化脚本的时候，基本的思路就是：Jython负责逻辑部分，调用wsadmin的内置对象实现特定的功能。</p>
+
+<p>要说从头开始编写一套可以直接使用的脚本其实也是挺复杂的，正好我从IBM网站上找到了一个Websphere方法集，叫wasadminlib.py，既然有现成的那就用起来吧。本文主要目的是分享这个文件，并且介绍一下基本的使用方法。</p>
+
+<h2 id="section">下载</h2>
+
+<p>下载地址：<a href="http://dellyqiao.qiniudn.com/2015/02/03/wsadminlib.py">http://dellyqiao.qiniudn.com/2015/02/03/wsadminlib.py</a></p>
+
+<h2 id="section-1">如何使用</h2>
+
+<h3 id="pywasadminlibpy">1. 创建一个个人的py文件，用来放置自己的逻辑代码。并且把这个文件跟wasadminlib.py放置在同一个文件夹下</h3>
+
+<p>这里我们创建一个createJAAS.py，用来创建JAAS认证别名。</p>
+
+<h3 id="createjaaspywasadminlibpy">2. 在createJAAS.py中引入wasadminlib.py</h3>
+
+<pre><code>execfile('wsadminlib.py')
+</code></pre>
+
+<p><strong>注意！这里要用execfile，不要用import</strong></p>
+
+<h3 id="section-2">3. 编写自己的逻辑代码</h3>
+
+<p>这里我把自己的创建JAAS的逻辑代码贴出来：</p>
+
+<pre><code>execfile('wsadminlib.py')
+
+//我们要从JAAS.txt中读取需要创建的认证别名，用户名和密码。
+f = open("JAAS.txt")
+line = f.readline()
+while line:
+    print line
+    attrs = line.split(',')
+    //这里的createJAAS就是wasadminlib.py提供的方法
+    createJAAS(attrs[0], attrs[1], attrs[2])
+    line = f.readline()
+f.close()
+
+AdminConfig.save()
+</code></pre>
+
+<p>接下来也要创建一个JAAS.txt文件，内容如下：</p>
+
+<pre><code>testing1, user1, testing1
+testing2, user2, testing2
+testing3, user3, testing3
+testing4, user4, testing4
+testing5, user5, testing5
+testing6, user6, testing6
+</code></pre>
+
+<p>这个文件里的三列分别代表：别名，用户名，密码。</p>
+
+<p><strong>注意在编写JAAS.txt文件的时候，理论上是不应该有空格的，但是在我的测试环境Websphere8.0中，实际上是可以自动忽略前后的空格，所以加上也无所谓，观感上也会稍微好一点。如果不放心可以不加空格。</strong></p>
+
+<h3 id="section-3">4. 测试和调用</h3>
+
+<p>//跳转到脚本所在的位置
+	cd C:\WASScript\</p>
+
+<pre><code>//如果没有设置安全性，那可以不用添加 -username 和 -password 参数
+c:\IBM\WebSphere\AppServer\profiles\AppSrv01\bin\wsadmin.bat -lang jython -f createJAAS.py -username xxxx -password xxxx
+</code></pre>
+
+<p>测试的时候需要注意：</p>
+
+<ol>
+  <li>可以先注释掉<code>AdminConfig.save()</code>，这行代码用来保存之前所有的配置，所以在确定语法以及一切都没问题之前，先不要让这句代码生效。</li>
+  <li>
+    <p>如果想要测试wasadminlib.py的功能，可以直接用wsadmin工具测试。方法如下：</p>
+
+    <pre><code> //以Jython语法打开wsadmin工具
+ c:\IBM\WebSphere\AppServer\profiles\AppSrv01\bin\wsadmin.bat -lang jython
+ //引入wsadminlib.py
+ execfile('wsadminlib.py')
+ //现在就可以直接在这个交互的命令行里使用wsadminlib.py里面的方法了
+</code></pre>
+  </li>
+</ol>
+
+<h2 id="section-4">脚本示例</h2>
+
+<p>上面的例子中我写了一个创建JAAS的方法，下面例举了创建DataSourceProvider和DataSource的方法：</p>
+
+<h3 id="dsprovider">创建DSProvider：</h3>
+
+<pre><code>execfile('wsadminlib.py')
+
+f = open("DBProvider.txt")
+line = f.readline()
+
+
+while line:
+	attrs = line.split(',')
+	print attrs
+	
+	//createJdbcProvider方法里的第一个参数server不是server的名字，而是Websphere为你的server生成的唯一的ID，如果想要把provider创建在Cell或Node下也一样，要找出对应的唯一ID。这个ID可以用wsadminlib.py提供的getXXXID()来找到，也可以从对应的scope的resources.xml文件里找到。
+	serverID = getServerId(attrs[0],attrs[1])
+	providerID = createJdbcProvider(serverID, attrs[2], attrs[3], attrs[4], attrs[5], attrs[6])
+f.close()
+
+AdminConfig.save()
+</code></pre>
+
+<p>相关的DBProvider.txt如下：</p>
+
+<pre><code>//可以根据需求修改脚本和这个文件。比如如果你的provider是要创建到Node这个scope之下的，第二个参数“server1”就没用了，在脚本中也需要调用getNodeID(attrs[0])来获取到“dellyserverNode01”的唯一ID。
+dellyserverNode01,server1,mssql1,C:/drivers/mysql-driver.jar,C:/drivers/mysql-driver.jar,com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource,MySQL by Script,None
+</code></pre>
+
+<h3 id="datasource">创建DataSource：</h3>
+
+<p>wsadminlib.py提供了两种创建DataSource的方法，这个是简单通用的那种，仅仅是创建一个基本的DataSource，具体的DB name，DB server name，等等，都需要手动去创建。另一个方法是createDataSource_ext，需要提供很多的参数，有兴趣的自己搞一下吧。</p>
+
+<pre><code>execfile('wsadminlib.py')
+
+
+f = open("DataSource.txt")
+line = f.readline()
+
+while line:
+    attrs = line.split(',')
+    print attrs
+    
+    //注意：wsadminlib.py提供了一些获取某些ID（比如server，cell，node）的方法，但是没有提供获取JDBCProvider的唯一ID的方法，像这种需求就可以用getObjectByXXX来获取，除了byName还可以ByNodeName，等等。具体请查看wsadminlib.py本身。
+    providerID = getObjectByName(attrs[0])
+
+    print createDataSource(providerID, attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], attrs[6])
+    line = f.readline()
+
+f.close()
+
+AdminConfig.save()
+</code></pre>
+
+<p>相关的DataSource.txt：</p>
+
+<pre><code>mysql_driver,user,userstable,jdbc/user,10,testing1,com.ibm.websphere.rsadapter.GenericDataStoreHelper
+</code></pre>
+
+<hr />
+
+<p>所有脚本可以从这里下载：</p>
+
+<p><a href="http://dellyqiao.qiniudn.com/2015/02/03/WASScript.zip">http://dellyqiao.qiniudn.com/2015/02/03/WASScript.zip</a></p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
+    		middleware <span class="badge badge-info">10</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/2015/03/11/was" title="WAS日常维护中的重启时机——总结">&larr; WAS日常维护中的重启时机——总结</a></li>
+      
+        <li><a href="/archive.html">Archive</a></li>
+      
+        <li class="next"><a href="/middleware/2015/03/11/websphere-console" title="如何重新部署Websphere Console控制台">如何重新部署Websphere Console控制台 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- 多说评论框 start -->
+	<div class="ds-thread" data-category="<#article/category/id#>" data-thread-key="<#article/id#>" data-title="<#article/title#>" data-author-key="<#article/author/id#>"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"dellyqiao"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2015 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

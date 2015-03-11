@@ -52,30 +52,28 @@ http://was_server:9081/abc.jsp -- abc.jsp可以正常显示
 
 ### 1）首先看plugin_cfg.log，错误信息如下：
 
-```
-[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+	[Wed Dec 03 15:40:13 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+	[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
+	[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
+	[Wed Dec 03 15:40:18 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
 
-[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+	[Wed Dec 03 15:40:23 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereGetStream: Connect timeout fired
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereExecute: Failed to create the stream
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to ‘wasserverNode01_abc'on host ‘wasserver'; will try another one
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereWriteRequestReadResponse: Failed to find an app server to handle this request
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ESI: getResponse: failed to get response: rc = 2
 
-[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
-```
-  
+	[Wed Dec 03 15:40:28 2014] 00000dbc 00000e78 - ERROR: ws_common: websphereHandleRequest: Failed to handle request
+ 
 
 
 这段错误的LOG完全给不出有用的信息，只是在说无法建立连接，导致请求处理失败。
@@ -101,33 +99,31 @@ http://was_server:9081/abc.jsp -- abc.jsp可以正常显示
 
   
 
-```
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_server_group: lockedServerGroupUseServer: Server wasserver_abc picked, weight 2.
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereFindTransport: Finding the transport
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DETAIL: ws_common: websphereFindTransport: Setting the transport(case 1): wasserver on port 9444
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client->stream=00000000
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server reqInfo is OKuseExistingStream=0, client->stream=00000000
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - DEBUG: ws_common: websphereGetStream: Getting the stream to the app server
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
 
-[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect
+	[Wed Dec 03 17:17:07 2014] 00001220 000012a4 - TRACE: ws_common: websphereGetStream: Have a connect timeout of 5; Setting socket to not block for the connect
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: errno 0
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: RET 0
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: READ SET 0
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: WRITE SET 0
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - TRACE: EXCEPT SET 0
 
-[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
-```
+	[Wed Dec 03 17:17:12 2014] 00001220 000012a4 - ERROR: ws_common: websphereGetStream: Connect timeout fired
   
 
 实际上看到这一行：Setting the transport(case 1): wasserver on port 9444 就大概明白了，IHS在进行请求转发的时候使用的不是9081，而是9444，9444是wc_default_secure端口，也就是WAS服务器容器的安全传输端口。而9444端口在IHS和WAS之间并没有打开。

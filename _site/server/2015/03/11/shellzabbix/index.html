@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>用Shell生成Zabbix监控的数字报表</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>用Shell生成Zabbix监控的数字报表 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>11 March 2015</span>
+    </div>
+    <div class="content">
+      
+<p>我们都知道Zabbix是一个非常强大的监控工具，我们公司也在用Zabbix监控所有网站的状态。</p>
+
+<p>最近有一个需求，就是我们需要生成一份报告，报告里要包含前一天一整天的时间节点和对应的响应时间，这样的报告用来统计网站的可用性达到了什么水准。比如一个Excel格式的报表就ok。</p>
+
+<p>Zabbix本身自带报告功能，可是都是图像的，并没有数据格式的。虽然没有提供数据格式的报表，但是Zabbix提供了一套API，可以根据需求获取对应的数据（JSON格式），于是我就写了个脚本，用来把每个监控的网址的监控数据输出到一个CSV文件中。（后续可以用Excel做一个宏去把所有收集到的CSV文件集合成一个XLS文件，这个Excel文件可以下载到：）</p>
+
+<!-- more -->
+
+<p><a href="http://dellyqiao.qiniudn.com/2015/03/11README.xls">README.xls</a>  </p>
+
+<p>PS：服务器上面没有任何高级编程语言的编译工具或者运行环境，所以一切数据都用shell脚本去处理。用shell处理Json，蛋疼的不是一点点。。。。。。</p>
+
+<p><strong>本脚本可以收集前一天所有监控的URL的响应速度数据，每个URL对应一个单独的CSV文件。收集完之后会把所有的CSV和README.xls打包发给预订的邮箱。当你收到这个zip包之后，解压，打开README.xls，点击里面的大按钮就可以生成一个集成的报表了，集成的报表中，每个URL对应一个excel标签，方便查看。</strong></p>
+
+<p>脚本如下：</p>
+
+<pre><code>#!/bin/bash  
+  
+##获取api的授权码，后面获取需要的信息的时候要用到。  
+  
+##先根据官方方法获取授权，之后会有一段输出信息，其中包含授权码，用awk处理一下就能得到那串码了。  
+authjson=`curl -l -X POST -H 'content-type: application/json' -d '{"jsonrpc":"2.0","method":"user.authenticate","params":{"user":"Admin","password":"zabbix"},"id":1}' http://127.0.0.1/zabbix/api_jsonrpc.php`  
+authstr=`echo $authjson | awk -F "[,:\"]" '{print $11}'`  
+echo $authstr  
+  
+##报告的初始时间和结束时间（前一天的0点到24点）  
+from=`date "+%Y-%m-%d 00:00:00" -d"-1day"`  
+echo $from  
+now=`date "+%Y-%m-%d 00:00:00"`  
+  
+##转换为Linux时间格式，Zabbix只支持这种格式。  
+from=`date -d "$from" '+%s'`  
+now=`date -d "$now" '+%s'`  
+  
+##每隔监控的网址在数据库中都有对应的一条记录，现在直接从数据库中获取所有的网址对应的ID。  
+  
+##getID.sql的内容如下：  
+  
+##select items.itemid from items join hosts on (items.hostid=hosts.hostid) where items.description like '%response time%' and hosts.host like '%WebSite%' and items.status=0; (sql文件可以根据实际情况编写，只要能得到所有受监控网址的ID就好。)  
+  
+  
+mysql --user=root --password=zabbix zabbix &lt; getMalaysiaID.sql &gt; /etc/scripts/outputMYID.txt  
+  
+  
+##mysql命令获取到的ID是有一个表头的，去掉。  
+sed '1d' /etc/scripts/outputMYID.txt &gt; /etc/scripts/outputMYID_Daily.txt  
+  
+##清理以前的临时文件  
+rm -rf /etc/scripts/dailyreports/tmpjson/*.txt  
+  
+##获取每一个ID对应的网址的历史监控记录，Json格式，用时间段来做限定。  
+for i in `cat /etc/scripts/outputMYID_Daily.txt`  
+do  
+jsonstr="{\"jsonrpc\": \"2.0\",\"method\":\"history.get\",\"params\":{\"history\":0,\"itemids\":[\"$i\"],\"time_from\":\"$from\",\"time_till\":\"$now\",\"output\":\"extend\"},\"auth\": \"$authstr\",\"id\": 1}"  
+gethistory="curl -l -X POST -H 'Content-Type: application/json' -d '"$jsonstr"' http://127.0.0.1/zabbix/api_jsonrpc.php"  
+echo $gethistory &gt; /etc/scripts/tmp.sh  
+chmod a+x /etc/scripts/tmp.sh  
+/etc/scripts/tmp.sh &gt; /etc/scripts/dailyreports/tmpjson/$i.txt  
+done  
+  
+##新建一个文件夹!- -  
+now=`date "+%Y%m%d"`  
+mkdir /etc/scripts/dailyreports/dailyreports$now  
+  
+##处理获取到的Json数据了  
+for i in `ls /etc/scripts/dailyreports/tmpjson/`  
+do  
+rm /etc/scripts/dailyreports/tmp/*  
+  
+##获取所有的响应时间的记录  
+  
+cat /etc/scripts/dailyreports/tmpjson/$i | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i&lt;=n; i++) print a[i]}' | grep value | grep -o '[0-9]\\.[0-9]*' &gt; /etc/scripts/dailyreports/tmp/values  
+  
+##获取所有的时间节点的记录  
+cat /etc/scripts/dailyreports/tmpjson/$i | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i&lt;=n; i++) print a[i]}' | grep clock | grep -o '[0-9]*' &gt; /etc/scripts/dailyreports/tmp/clocks_org  
+  
+##获取到的时间节点要处理成人看的格式。  
+for c in `cat /etc/scripts/dailyreports/tmp/clocks_org`  
+do  
+date -d@$c '+%Y-%m-%d %H:%M:%S' &gt;&gt; /etc/scripts/dailyreports/tmp/clocks_new  
+done  
+  
+##设置新文件的文件名  
+itemidstr=`echo $i | awk -F [.] '{print $1}'`  
+itemname=`mysql --user=root --password=zabbix zabbix -e "select key_ from items where itemid=$itemidstr;" | awk -F [\\[,] '{print $2}'`  
+  
+##创建一个报告文件，并且加入表头  
+echo "Monitored URL:,$itemname," &gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+echo "Clock,Response Time(s)," &gt;&gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+  
+##把时间节点的记录跟响应时间的记录合成一个文件，并且追加到刚刚的报告文件里。  
+paste -d "," /etc/scripts/dailyreports/tmp/clocks_new /etc/scripts/dailyreports/tmp/values /dev/null &gt;&gt; /etc/scripts/dailyreports/dailyreports$now/$itemidstr.csv  
+  
+done  
+  
+##清理临时文件  
+rm -rf /etc/scripts/dailyreports/tmpjson/*.txt  
+  
+##把所有获得的报告都收集起来，然后把写好宏的Excel文件也收集到一起，打包发给需要的人。  
+  
+##到时候在excel文件里会有一堆说明，点击哪儿哪儿的按钮就可以得到一份合适的Excel的报告啦。  
+mkdir /etc/scripts/dailyreports/dailyreports$now/csv  
+mv /etc/scripts/dailyreports/dailyreports$now/*.csv /etc/scripts/dailyreports/dailyreports$now/csv/  
+cp /etc/scripts/dailyreports/README.xls /etc/scripts/dailyreports/dailyreports$now/  
+cd /etc/scripts/dailyreports/  
+zip -r dailyreports$now.zip dailyreports$now/  
+  
+cd /root/sendEmail-v1.51  
+  
+./sendEmail –f sender@sender.com -t receiver@receiver.com -u KLDC DMZ1 Daily SLA Report for WebHosting -m KLDC DMZ1 Daily SLA Report For WebHosting -s 192.168.169.23:25 -a /etc/scripts/dailyreports/dailyreports$now.zip  
+  
+  
+rm -rf /etc/scripts/dailyreports/dailyreports*
+</code></pre>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#server-ref">
+    		server <span class="badge badge-info">5</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination">
+      <ul>
+      
+        <li class="prev"><a href="/server/middleware/2015/03/11/log-housekeeping" title="Log housekeeping日常维护之日志管理">&larr; Log housekeeping日常维护之日志管理</a></li>
+      
+        <li><a href="/archive.html">Archive</a></li>
+      
+        <li class="next"><a href="/security/2015/03/11/symantecssl" title="如何从Symantec为自己的网站购买SSL证书">如何从Symantec为自己的网站购买SSL证书 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- 多说评论框 start -->
+	<div class="ds-thread" data-category="<#article/category/id#>" data-thread-key="<#article/id#>" data-title="<#article/title#>" data-author-key="<#article/author/id#>"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"dellyqiao"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2015 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>WAS日常维护中的重启时机——总结</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>WAS日常维护中的重启时机——总结 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>11 March 2015</span>
+    </div>
+    <div class="content">
+      
+<p>本笔记会不断更新，用来记录一下在WAS日常维护中的重启时机问题。 </p>
+
+<p>在做WAS的维护过程中，生产环境要求最大可能的不要有中断，所以重启的时机其实是一个非常值得记住的东西，有的时候因为没有重启或者重启的java进程不正确而导致大量的时间浪费也是非常正常的。谨以此文记录一下我个人的经验总结：</p>
+
+<!-- more -->
+
+<p>JDBC：</p>
+
+<p>1）创建数据源、数据Provider的时候：一定需要重启！</p>
+
+<p>如果创建的时候选择的scope是Cell，那就需要重启DMGR；如果scope是Node，那就需要重启对应的Nodeagent；如果scope是Cluster，那就需要重启cluster下面所有的Application Server（可以逐一重启以确保高可用性）；如果scope是Application Server，那就需要重启Application Server。</p>
+
+<p>2）修改数据源、数据Provider的时候：根据创建时候选择的scope不同而不同。</p>
+
+<p>如果创建时候选择的scope是Cell，修改数据源后不需要重启任何东西，只需要保存并同步配置即可！</p>
+
+<p>如果创建时候选择的scope是其他的，就需要重启对应的进程（Node scope重启nodeagent，cluster scope重启cluster，server scope重启server）。</p>
+
+<p>PS：在可选的scope中有Cell和CellManager，从我个人经验来说，在使用上是没有差别的。感觉上可能IBM是建议我们把需要创建到Cell上的资源统统选择为CellManager，因为如果部署默认应用的话，是会再CellManager上默认给创建一个资源的。具体是否如此，以后需要多查阅去确认了。。。</p>
+
+<p>另PS：不论你的JDBC资源创建在哪个Scope之下，如果有条件的话尽量把影响到的应用重启一下。因为尽管理论上来说是跟上面我说的情况相同的，但是实际上也许是Websphere本身的bug，有的建立在Server级别下的JDBC修改过后重启Server不起作用，还需要重启nodeagent；有时建立在Cell级别的数据源改动后也需要重启Server。所以，重启吧，尽量保证我们的应用服务器可以应用到最新的配置。</p>
+
+<p>Application：</p>
+
+<p>1）修改Application上面的设置：不需要重启，只需要保存并同步配置即可。</p>
+
+<p>验证：可以修改一下Context Root或者JDBC引用来试试。</p>
+
+<p>PS：Integrated Solution Console事实上也是一个部署在DMGR JVM上的一个应用程序，所以对控制台的任何更改也是都不需要重启的。</p>
+
+<p>JVM：</p>
+
+<p>1）修改Application Server，NodeAgent，DMGR的设置：必须重启才会生效。</p>
+
+<p>暂且先记录这么多，如果有其他重启时机相关的问题，会继续更新。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
+    		middleware <span class="badge badge-info">10</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination">
+      <ul>
+      
+        <li class="prev"><a href="/security/2015/03/11/symantecssl" title="如何从Symantec为自己的网站购买SSL证书">&larr; 如何从Symantec为自己的网站购买SSL证书</a></li>
+      
+        <li><a href="/archive.html">Archive</a></li>
+      
+        <li class="next"><a href="/middleware/2015/03/11/websphere" title="Websphere自动化管理方法集和脚本示例">Websphere自动化管理方法集和脚本示例 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- 多说评论框 start -->
+	<div class="ds-thread" data-category="<#article/category/id#>" data-thread-key="<#article/id#>" data-title="<#article/title#>" data-author-key="<#article/author/id#>"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"dellyqiao"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2015 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+
