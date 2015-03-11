@@ -4,7 +4,7 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-11T18:22:08+08:00</updated>
+ <updated>2015-03-11T18:26:05+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
@@ -1138,9 +1138,9 @@ class Point {
  
  <entry>
    <title>在IBM HTTP Server中配置URL重定向</title>
-   <link href="http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl"/>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/11/ibm-http-serverurl"/>
    <updated>2015-03-11T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl</id>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/11/ibm-http-serverurl</id>
    <content type="html">
 &lt;p&gt;之前总结在Apache中实现URL重定向跳转的功能，方法如下：&lt;/p&gt;
 

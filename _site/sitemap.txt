@@ -22,7 +22,7 @@ http://blog.dellyqiao.com/coding/2015/03/11/linux-shell-script-training
 http://blog.dellyqiao.com/coding/2015/03/11/java---
 http://blog.dellyqiao.com/middleware/2015/03/11/iisipiisihsapache
 http://blog.dellyqiao.com/middleware/2015/03/11/ihs
-http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl
+http://blog.dellyqiao.com/middleware/2015/03/11/ibm-http-serverurl
 http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop-cluster
 http://blog.dellyqiao.com/hadoop/2015/03/11/hadoop
 http://blog.dellyqiao.com/security/2015/03/11/fix-vulnerability-http-server-prone-to-slow-denial-of-service-attack

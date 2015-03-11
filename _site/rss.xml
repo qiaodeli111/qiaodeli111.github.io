@@ -5,8 +5,8 @@
         <description>Delly's Publisher - Delly Qiao</description>
         <link>http://blog.dellyqiao.com</link>
         <link>http://blog.dellyqiao.com</link>
-        <lastBuildDate>2015-03-11T18:22:08+08:00</lastBuildDate>
-        <pubDate>2015-03-11T18:22:08+08:00</pubDate>
+        <lastBuildDate>2015-03-11T18:26:05+08:00</lastBuildDate>
+        <pubDate>2015-03-11T18:26:05+08:00</pubDate>
         <ttl>1800</ttl>
 
 
@@ -1179,8 +1179,8 @@ RewriteRule ^/abc/(.*)$ /test.html [L]
 &lt;p&gt;R=301 代表/abc/下所有的资源都永久转移到新的位置了，这样IHS就会去直接执行这条规则而不是去尝试plugin匹配了。  &lt;/p&gt;
 
 </description>
-                <link>http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl</link>
-                <guid>http://blog.dellyqiao.com/middlew/2015/03/11/ibm-http-serverurl</guid>
+                <link>http://blog.dellyqiao.com/middleware/2015/03/11/ibm-http-serverurl</link>
+                <guid>http://blog.dellyqiao.com/middleware/2015/03/11/ibm-http-serverurl</guid>
                 <pubDate>2015-03-11T00:00:00+08:00</pubDate>
         </item>
 

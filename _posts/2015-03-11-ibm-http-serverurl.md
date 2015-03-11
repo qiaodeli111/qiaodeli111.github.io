@@ -2,7 +2,7 @@
 layout: post
 title: "在IBM HTTP Server中配置URL重定向"
 description: ""
-category: "Middlew"
+category: "Middleware"
 ---
 {% include JB/setup %}
 
