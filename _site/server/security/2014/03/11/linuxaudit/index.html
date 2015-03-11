@@ -3,8 +3,8 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>ITIL Learning Note</title>
-    
+    <title>Linux服务器的一些audit的方法</title>
+    <meta name="description" content="">
     <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
@@ -102,87 +102,58 @@
       <div class="content col-md-9">
         
 <div class="page-header">
-  <h2>ITIL Learning Note </h2>
+  <h2>Linux服务器的一些audit的方法 </h2>
 </div>
 
 <div class="row-fluid post-full">
   <div class="span12">
     <div class="date">
-      <span>09 March 2015</span>
+      <span>11 March 2014</span>
     </div>
     <div class="content">
-      <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
+      
+<p>背景：</p>
 
-<!-- more -->
-<p>## ITIL Service Life Cycle ##</p>
+<p>JBoss服务被重启，根据JBoss log output的说法，那个JBoss服务应该是被某人重启过，所以现在要找出到底是谁做的。（JBoss stopping Output可以参照这里：<a href="https://developer.jboss.org/wiki/ShutdownLogs">https://developer.jboss.org/wiki/ShutdownLogs</a></p>
 
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
+<p>首先，找到最近连接过server的所有用户：</p>
 
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
-
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
-
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
-
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
-
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
-
-<pre><code>structure
-|
-patterns of behavior
-|
-events
+<pre><code>last
 </code></pre>
 
-<p>The ITIL Service Life Cycle contains five key stages:</p>
+<p>输出结果类似这样的：</p>
 
-<ul>
-  <li>
-    <p>Service Strategy</p>
+<!-- more -->
 
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
+<pre><code>reboot system boot 2.6.16.60-0.113. Sun Oct 19 06:50 (7+22:09)
+root pts/0 10.50.164.31 Sun Oct 19 06:17 - down (00:24)
+reboot system boot 2.6.16.60-0.113. Sun Oct 19 06:11 (00:30)
+</code></pre>
 
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
+<p>可以看到哪个用户在什么时间登录这台服务器的。</p>
 
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
+<p>找到有嫌疑的用户之后呢，看一下这个用户的信息：</p>
 
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
+<pre><code>cat /etc/passwd | grep xxx(用户名）
+</code></pre>
 
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
+<p>这样就可以看到用户名的信息了。</p>
 
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
+<p>接下来查看一下这个用户的命令记录：</p>
 
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
+<p>首先用root账户登录，然后<code>su 用户名</code>，root账户是可以直接su到用户的账户的。</p>
 
-<h3 id="service-strategy">Service Strategy</h3>
+<p>然后执行：</p>
 
+<pre><code>history
+</code></pre>
+
+<p>默认情况下，history的输出是不会有时间戳的，那我们就给他加上：</p>
+
+<pre><code>export HISTTIMEFORMAT="%d/%m/%y %T "
+</code></pre>
+
+<p>然后再执行history，这样这个用户执行的所有命令和时间全都一览无遗了。</p>
 
     </div>
 
@@ -195,8 +166,12 @@ This stage includes determining risks, constraints, and whether the service will
 
   
      
-    	<li><a class="btn btn-info" href="/categories.html#management-ref">
-    		management <span class="badge badge-info">1</span>
+    	<li><a class="btn btn-info" href="/categories.html#server-ref">
+    		server <span class="badge badge-info">6</span>
+    	</a></li>
+     
+    	<li><a class="btn btn-info" href="/categories.html#security-ref">
+    		security <span class="badge badge-info">4</span>
     	</a></li>
     
   
@@ -215,11 +190,11 @@ This stage includes determining risks, constraints, and whether the service will
     <div class="pagination  pagination-centered">
       <ul>
       
-        <li class="prev"><a href="/middleware/2014/12/09/Resolve-Error-500" title="解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）">&larr; 解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></li>
+        <li class="prev"><a href="/coding/2014/03/11/linux-shell-script-training" title="Linux Shell Script training">&larr; Linux Shell Script training</a></li>
       
         <li><a href="/archive.html">Archive</a></li>
       
-        <li class="next"><a href="/server/2015/03/09/Linux-Learning-Notes" title="Linux学习笔记">Linux学习笔记 &rarr;</a></li>
+        <li class="next"><a href="/server/2014/03/11/linuxipsuse-linux" title="Linux系统添加虚拟IP（Suse linux为例）">Linux系统添加虚拟IP（Suse linux为例） &rarr;</a></li>
       
       </ul>
     </div>

@@ -3,8 +3,8 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>ITIL Learning Note</title>
-    
+    <title>如何确定Hadoop守护进程分别会在哪台机器上运行</title>
+    <meta name="description" content="">
     <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
@@ -102,87 +102,93 @@
       <div class="content col-md-9">
         
 <div class="page-header">
-  <h2>ITIL Learning Note </h2>
+  <h2>如何确定Hadoop守护进程分别会在哪台机器上运行 </h2>
 </div>
 
 <div class="row-fluid post-full">
   <div class="span12">
     <div class="date">
-      <span>09 March 2015</span>
+      <span>11 March 2014</span>
     </div>
     <div class="content">
-      <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
+      
+<p>经过一段时间的配置，Hadoop环境总算运行起来了，但是，为何主节点就没有跑tasktracker和datanode进程，slave节点也没有跑secondary进程，Hadoop是如何控制的呢？</p>
 
 <!-- more -->
-<p>## ITIL Service Life Cycle ##</p>
 
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
+<p>经过看权威指南（267页）和跟群里同学讨论，还有自己测试，最终确定：</p>
 
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
+<blockquote>
+  <p>tasktracker和datanode这两个守护进程 —— 只会在conf/slaves文件里指定的那些节点上运行</p>
+</blockquote>
 
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
+<blockquote>
+  <p>secondarynamenode 这个守护进程 —— 只会在conf/masters文件里指定的那个节点上运行</p>
+</blockquote>
 
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
+<blockquote>
+  <p>namenode和jobtracker这两个守护进程 —— 他们只会在同一台server上运行，可以通过core-site.xml和mapred-site.xml来确定要运行的主机。并且，假如说配置文件里指定的是node1，那么必须要在node1这台server上运行start脚本。否则，tasktracker，datanode和secondarynamenode这些进程都能顺利启动，而namenode和jobtracker无法启动。</p>
+</blockquote>
 
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
+<p>实际测试结果：</p>
 
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
+<p><strong>我的配置环境</strong>：（请对下面频繁出现的delly表示淡定和理解。。。因为我的英文名叫Delly。。。）</p>
 
-<pre><code>structure
-|
-patterns of behavior
-|
-events
-</code></pre>
+<p>dellypc-master，dellypc-1，dellypc-2三台主机。</p>
 
-<p>The ITIL Service Life Cycle contains five key stages:</p>
+<p>其中，masters文件里记录了dellypc-master（表示secondarynamenode在dellypc-master上运行），slaves文件里记录了dellypc-1和dellypc-2（表示datanode和tasktracker要在dellypc-1和dellypc-2上运行）。</p>
 
-<ul>
-  <li>
-    <p>Service Strategy</p>
+<p>core-site.xml文件里：hdfs://dellypc-master:9000， mapred-site.xml文件里：<value>dellypc-master:9001</value>。（表示namenode跟jobtracker都在dellypc-master上运行，分别监听9000和9001端口）</p>
 
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
+<h4 id="section">正常情况：</h4>
 
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
+<p>在dellypc-master上执行start-all.sh脚本，完全正常。</p>
 
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
+<p>结果：</p>
 
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
+<p>dellypc-master：namenode，jobtracker和secondarynamenode</p>
 
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
+<p>dellypc-1：tasktracker和datanode</p>
 
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
+<p>dellypc-2：tasktracker和datanode</p>
 
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
+<h4 id="section-1">测试1：</h4>
 
-<h3 id="service-strategy">Service Strategy</h3>
+<p>在dellypc-1上执行start-all.sh脚本，namenode和jobtracker没有启动，其他进程正常启动。</p>
 
+<p>结果：</p>
+
+<p>dellypc-master：secondarynamenode</p>
+
+<p>dellypc-1：tasktracker和datanode</p>
+
+<p>dellypc-2：tasktracker和datanode</p>
+
+<h4 id="section-2">测试2：</h4>
+
+<p>修改core-site.xml： <value>hdfs://dellypc-1:9000</value></p>
+
+<p>修改mapred-site.xml： <value>dellypc-1:9001</value></p>
+
+<p>然后，再dellypc-1上执行start-all.sh，</p>
+
+<p>结果：</p>
+
+<p>dellypc-master：secondarynamenode</p>
+
+<p>dellypc-1：tasktracker，datanode和jobtracker</p>
+
+<p>dellypc-2：tasktracker和datanode</p>
+
+<p>奇怪的是namenode没有启动起来！按照预期，namenode应该会在dellypc-1上启动的嘛。。。为什么？</p>
+
+<p>纠结了一会儿，大概想出来问题的关键了：因为在dellypc-1上没有格式化的hdfs文件系统，所以无法正常启动namenode。</p>
+
+<p>也许你会跟我一样想说格式化一下试试呗，于是我就做了。。。但是格式化的时候失败了，因为我在hdfs-site.xml这个文件里设置了两个namenode元数据存储的目录，但是dellypc-1上没有其中的一个目录。于是我想就改回去吧。配置改回去，结果发现，datanode启动不了了。。。。。所以说啊，这个hdfs应该是一种分布式系统，跟所有的节点可能都会有关联。。。</p>
+
+<p>最后又把dellypc-1和dellypc-2上的hadoop文件夹删掉，又重新从主节点拷贝了一份，这才恢复了正常。</p>
+
+<p>这些试验，足够解决我的疑问了。希望也同样能帮到有同样疑问的同学。</p>
 
     </div>
 
@@ -195,8 +201,8 @@ This stage includes determining risks, constraints, and whether the service will
 
   
      
-    	<li><a class="btn btn-info" href="/categories.html#management-ref">
-    		management <span class="badge badge-info">1</span>
+    	<li><a class="btn btn-info" href="/categories.html#hadoop-ref">
+    		hadoop <span class="badge badge-info">2</span>
     	</a></li>
     
   
@@ -215,11 +221,11 @@ This stage includes determining risks, constraints, and whether the service will
     <div class="pagination  pagination-centered">
       <ul>
       
-        <li class="prev"><a href="/middleware/2014/12/09/Resolve-Error-500" title="解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）">&larr; 解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></li>
+        <li class="prev"><a href="/security/2014/03/11/fix-vulnerability-http-server-prone-to-slow-denial-of-service-attack" title="Fix vulnerability: HTTP Server Prone To Slow Denial Of Service Attack">&larr; Fix vulnerability: HTTP Server Prone To Slow Denial Of Service Attack</a></li>
       
         <li><a href="/archive.html">Archive</a></li>
       
-        <li class="next"><a href="/server/2015/03/09/Linux-Learning-Notes" title="Linux学习笔记">Linux学习笔记 &rarr;</a></li>
+        <li class="next"><a href="/hadoop/2014/03/11/hadoop-cluster" title="Hadoop Cluster集群配置心得（低配置集群+自动同步配置）">Hadoop Cluster集群配置心得（低配置集群+自动同步配置） &rarr;</a></li>
       
       </ul>
     </div>

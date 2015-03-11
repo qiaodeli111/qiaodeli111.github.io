@@ -3,8 +3,8 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>ITIL Learning Note</title>
-    
+    <title>批量检测网站访问速度</title>
+    <meta name="description" content="">
     <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
@@ -102,87 +102,131 @@
       <div class="content col-md-9">
         
 <div class="page-header">
-  <h2>ITIL Learning Note </h2>
+  <h2>批量检测网站访问速度 </h2>
 </div>
 
 <div class="row-fluid post-full">
   <div class="span12">
     <div class="date">
-      <span>09 March 2015</span>
+      <span>11 March 2014</span>
     </div>
     <div class="content">
-      <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
+      
+<p>需求如下：</p>
+
+<p>我有一大堆需要维护的网站，每天早上都需要检查所有的网站是否存在异常然后给management发一份报告。简单来说需要查看每个网站的响应速度是否超过了设定的阈值（比如&lt;10秒）。</p>
+
+<p>如何达成？以前用zabbix监控所有的网站，但是那东西太大型了，我需要一个能在本机运行而且耗费资源很少的工具，所以这里就要用到ab和abs。</p>
 
 <!-- more -->
-<p>## ITIL Service Life Cycle ##</p>
 
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
+<p>ab和abs是Apache附带的一个工具，在Apache安装目录的bin文件夹里就能找到，ab用来测试http网站，abs可以测https。想要使用这个工具的话可以下载Apache。如果不想要整个apache目录的话可以只保留bin文件夹，也是没有问题的。</p>
 
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
+<p>我们工作所用的电脑都是windows系统，所以写一个简单的windows脚本来实现批量检查吧。</p>
 
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
+<p>1） 写一个脚本，比如scan.bat，内容如下：</p>
 
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
-
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
-
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
-
-<pre><code>structure
-|
-patterns of behavior
-|
-events
+<pre><code>@echo off
+for /F %%u in (serverlist.txt) do echo %%u &gt;&gt; Report.txt &amp;&amp; bin\abs %%u | findstr Time | findstr per | findstr (mean) &gt;&gt; Report.txt &gt;&gt; Report.txt
 </code></pre>
 
-<p>The ITIL Service Life Cycle contains five key stages:</p>
+<p>2） 创建一个放置网址的文件 serverlist.txt，把所有需要检测的网站都放进去，比如：</p>
 
-<ul>
-  <li>
-    <p>Service Strategy</p>
+<pre><code>https://www.baidu.com/
+http://abc.com/index.html
+</code></pre>
 
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
+<p><strong>注意：如果网址没有指定URI，比如http://www.baidu.com/，在网址的最后必须要加上”/”，否则ab和abs无法识别！</strong></p>
 
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
+<p>3） 把Apache的bin文件夹拷贝到同目录下，运行scan.bat。</p>
 
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
+<p>输出结果如下：</p>
 
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
+<pre><code>http://www.baidu.com/   
+Time per request: 655.037 [ms] (mean)
 
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
+http://www.sina.com/
+Time per request: 633.037 [ms] (mean)
+</code></pre>
 
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
+<p>不要问我为什么输出的结果这么难看，不好意思用windows脚本处理字符串实在太蛋疼了。。。。。。</p>
 
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
+<p>如果有Linux系统的话，你可以做的更好，比如吧响应时间的毫秒转换成秒，然后跟阈值比较，大于阈值的可以直接输出个Fail之类的，自由发挥好了。</p>
 
-<h3 id="service-strategy">Service Strategy</h3>
+<p>附上abs工具的用法：</p>
 
+<pre><code>Usage: bin\abs.exe [options] [http[s]://]hostname[:port]/path 
+
+Options are:
+
+-n requests Number of requests to perform
+
+-c concurrency Number of multiple requests to make
+
+-t timelimit Seconds to max. wait for responses
+
+-b windowsize Size of TCP send/receive buffer, in bytes
+
+-p postfile File containing data to POST. Remember also to set -T
+
+-u putfile File containing data to PUT. Remember also to set -T
+
+-T content-type Content-type header for POSTing, eg.
+
+'application/x-www-form-urlencoded'
+
+Default is 'text/plain'
+
+-v verbosity How much troubleshooting info to print
+
+-w Print out results in HTML tables
+
+-i Use HEAD instead of GET
+
+-x attributes String to insert as table attributes
+
+-y attributes String to insert as tr attributes
+
+-z attributes String to insert as td or th attributes
+
+-C attribute Add cookie, eg. 'Apache=1234. (repeatable)
+
+-H attribute Add Arbitrary header line, eg. 'Accept-Encoding: gzip'
+
+Inserted after all normal header lines. (repeatable)
+
+-A attribute Add Basic WWW Authentication, the attributes
+
+are a colon separated username and password.
+
+-P attribute Add Basic Proxy Authentication, the attributes
+
+are a colon separated username and password.
+
+-X proxy:port Proxyserver and port number to use
+
+-V Print version number and exit
+
+-k Use HTTP KeepAlive feature
+
+-d Do not show percentiles served table.
+
+-S Do not show confidence estimators and warnings.
+
+-g filename Output collected data to gnuplot format file.
+
+-e filename Output CSV file with percentages served
+
+-r Don't exit on socket receive errors.
+
+-h Display usage information (this message)
+
+-Z ciphersuite Specify SSL/TLS cipher suite (See openssl ciphers)
+
+-f protocol Specify SSL/TLS protocol
+
+(SSL2, SSL3, TLS1 or ALL)
+</code></pre>
 
     </div>
 
@@ -195,8 +239,8 @@ This stage includes determining risks, constraints, and whether the service will
 
   
      
-    	<li><a class="btn btn-info" href="/categories.html#management-ref">
-    		management <span class="badge badge-info">1</span>
+    	<li><a class="btn btn-info" href="/categories.html#server-ref">
+    		server <span class="badge badge-info">6</span>
     	</a></li>
     
   
@@ -215,11 +259,11 @@ This stage includes determining risks, constraints, and whether the service will
     <div class="pagination  pagination-centered">
       <ul>
       
-        <li class="prev"><a href="/middleware/2014/12/09/Resolve-Error-500" title="解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）">&larr; 解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></li>
+        <li class="prev"><a href="/security/2014/03/11/symantecssl" title="如何从Symantec为自己的网站购买SSL证书">&larr; 如何从Symantec为自己的网站购买SSL证书</a></li>
       
         <li><a href="/archive.html">Archive</a></li>
       
-        <li class="next"><a href="/server/2015/03/09/Linux-Learning-Notes" title="Linux学习笔记">Linux学习笔记 &rarr;</a></li>
+        <li class="next"><a href="/middleware/2014/03/11/was" title="WAS日常维护中的重启时机——总结">WAS日常维护中的重启时机——总结 &rarr;</a></li>
       
       </ul>
     </div>

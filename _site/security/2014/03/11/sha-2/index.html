@@ -3,8 +3,8 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>ITIL Learning Note</title>
-    
+    <title>检测服务器环境是否支持SHA 2加密的证书</title>
+    <meta name="description" content="">
     <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
@@ -102,87 +102,63 @@
       <div class="content col-md-9">
         
 <div class="page-header">
-  <h2>ITIL Learning Note </h2>
+  <h2>检测服务器环境是否支持SHA 2加密的证书 </h2>
 </div>
 
 <div class="row-fluid post-full">
   <div class="span12">
     <div class="date">
-      <span>09 March 2015</span>
+      <span>11 March 2014</span>
     </div>
     <div class="content">
-      <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
+      
+<p>最近几天，相信很多网站管理员都收到了Symantec的一封邮件，关于Chrome将在11月的version 39中停止对使用SHA-1签名算法的数字证书的支持。所以为了避免网站遭遇任何问题，请各位客户把自己网站的证书全部更新为使用SHA-2签名算法的证书。 （在2015年12月31日之后才会过期的证书可以在Symantec上免费更换，在那之前的，如果需要更换的话就得重新掏钱了。）</p>
+
+<p>相信很多管理员都已经开始考虑两个问题了：</p>
+
+<p>1） 如何更换证书。</p>
+
+<p>2） 自己网站使用的环境是否支持SHA-2证书。</p>
 
 <!-- more -->
-<p>## ITIL Service Life Cycle ##</p>
 
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
+<p>关于问题1），更换证书非常简单，重新生成证书请求文件CSR，然后再Symantec的Trust Center里面找到对应的证书，然后再Order标签下面会有一个“Replace”的链接，点击以后直接把新的CSR内容贴进去，按照提示进行更新即可。请求提交后两到三个工作日之后就可以得到新的证书CER文件了。</p>
 
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
+<p>关于问题2），SHA-2证书的兼容性：</p>
 
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
+<p>Symantec提供了一个支持的服务器环境的列表，包括所有支持的服务器类型，OS类型，应用服务器类型，浏览器类型，等等，可以从这个链接获取到这些信息。</p>
 
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
+<p>https://knowledge.verisign.com/support/ssl-certificates-support/index?page=content&amp;id=SO25586&amp;actp=search&amp;viewlocale=en_US&amp;searchid=1411053709765</p>
 
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
+<p>但是呢，这个链接并没有IBM HTTP Server的兼容性列表。根据Symantec提供的的信息，对于IHS来说，<strong>所有GSKit组件的版本在7.0.4.14以上的IHS都可以支持SHA-2.</strong></p>
 
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
+<p>关于GSKit组件版本的查询，可以参考这个链接：</p>
 
-<pre><code>structure
-|
-patterns of behavior
-|
-events
-</code></pre>
+<p><a href="http://www-01.ibm.com/support/docview.wss?uid=swg21041570">http://www-01.ibm.com/support/docview.wss?uid=swg21041570</a></p>
 
-<p>The ITIL Service Life Cycle contains five key stages:</p>
+<p>根据我的经验，所有IHS6.1以上的版本的GSKit组件都是在7.0.4.14之上的，供参考。</p>
 
-<ul>
-  <li>
-    <p>Service Strategy</p>
+<p>以下是Symantec邮件的全文，又到了网站管理员开始忙碌和公司破财的时候了，要知道换一个证书可以1000刀啊，真的不便宜。。。</p>
 
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
+<p>We would like to inform you of Google’s intent to phase out support for certificates using a SHA-1 hashing algorithm via degraded visual indicators and warnings in the Chrome™ browser. These changes are expected to take effect in the production version of Chrome version 39 in November 2014. You can find more information regarding the proposed plan on Google’s blog.</p>
 
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
+<p>As a proactive measure, in order to help ensure that Chrome 39 users visiting your websites do not encounter any UI degraded indicators, Symantec recommends the following:   </p>
 
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
+<ol>
+  <li>Identify certificates that have a SHA-1 algorithm using SSL Toolbox. For more information, please refer to Knowledge Center article SO26442.   </li>
+  <li>Replace any SHA-1 certificates that expire beyond December 31, 2015, with SHA-2 certificates at no additional cost. For more information, please refer to Knowledge Center article SO17490.</li>
+</ol>
 
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
+<p>Please note that SHA-1 root certificates will not be affected by the plan.</p>
 
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
+<p>Here are some additional resources for your reference:   </p>
 
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
-
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
-
-<h3 id="service-strategy">Service Strategy</h3>
-
+<p>• <br />
+Symantec SHA-1 information page <br />
+• <br />
+Symantec Community Forum: Website Security Solutions <br />
+• <br />
+Upcoming Webcast: Get Answers to Your Questions on Google SHA-1 Deprecation Plans</p>
 
     </div>
 
@@ -195,8 +171,8 @@ This stage includes determining risks, constraints, and whether the service will
 
   
      
-    	<li><a class="btn btn-info" href="/categories.html#management-ref">
-    		management <span class="badge badge-info">1</span>
+    	<li><a class="btn btn-info" href="/categories.html#security-ref">
+    		security <span class="badge badge-info">4</span>
     	</a></li>
     
   
@@ -215,11 +191,11 @@ This stage includes determining risks, constraints, and whether the service will
     <div class="pagination  pagination-centered">
       <ul>
       
-        <li class="prev"><a href="/middleware/2014/12/09/Resolve-Error-500" title="解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）">&larr; 解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></li>
+        <li class="prev"><a href="/server/middleware/2014/03/11/log-housekeeping" title="Log housekeeping日常维护之日志管理">&larr; Log housekeeping日常维护之日志管理</a></li>
       
         <li><a href="/archive.html">Archive</a></li>
       
-        <li class="next"><a href="/server/2015/03/09/Linux-Learning-Notes" title="Linux学习笔记">Linux学习笔记 &rarr;</a></li>
+        <li class="next"><a href="/server/2014/03/11/shellzabbix" title="用Shell生成Zabbix监控的数字报表">用Shell生成Zabbix监控的数字报表 &rarr;</a></li>
       
       </ul>
     </div>

@@ -3,8 +3,8 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8">
-    <title>ITIL Learning Note</title>
-    
+    <title>在IBM HTTP Server中配置URL重定向</title>
+    <meta name="description" content="">
     <meta name="author" content="Delly Qiao">
 
     <!-- Enable responsive viewport -->
@@ -102,86 +102,56 @@
       <div class="content col-md-9">
         
 <div class="page-header">
-  <h2>ITIL Learning Note </h2>
+  <h2>在IBM HTTP Server中配置URL重定向 </h2>
 </div>
 
 <div class="row-fluid post-full">
   <div class="span12">
     <div class="date">
-      <span>09 March 2015</span>
+      <span>11 March 2014</span>
     </div>
     <div class="content">
-      <p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
+      
+<p>之前总结在Apache中实现URL重定向跳转的功能，方法如下：</p>
+
+<blockquote>
+  <p>比如要想把dellyserver/abc/下所有的资源都重定向到www.baidu.com，我的dellyserver是在DMZ中，这台server无法访问百度的服务器。</p>
+</blockquote>
 
 <!-- more -->
-<p>## ITIL Service Life Cycle ##</p>
+<blockquote>
+  <p>第一步，写一个html文件，就叫test.html吧，放到网站的根目录。test.html只是个空白网页，只需要在&lt;head&gt;标签里加上下面这行JS代码：</p>
+</blockquote>
 
-<p>The core of the ITIL framework is the ITIL Service Life Cycle. It provides a comprehensive approach to the various aspects of Service Management.</p>
+<blockquote>
+  <pre>window.location.href="http://www.baidu.com”</pre>
+</blockquote>
 
-<p>The ITIL Service Life Cycle has various components. Applying these components ensures that Service Management processes are efficient and effective. It also ensures there’s a balance between a strong, stable structure and an environment that can improve and adapt to business needs.</p>
+<blockquote>
+  <p>第二步，在httpd.conf中添加配置如下：</p>
+</blockquote>
 
-<p>The ITIL Service Life Cycle provides a structure that enables you to organize information and processes into an interconnected framework.</p>
+<pre><code>RewriteCond %{HTTP_HOST} ^dellyserver [NC] 
 
-<p>Without this structure, you would have no way of determining the relative importance of information items or the connections between them.</p>
-
-<p>The ITIL Service Life Cycle also provides guidelines to help understand the structure and the connection between processes and components. It helps determine how changes in an area can affect the whole system or part of it.</p>
-
-<p>You can use the structure to determine patterns of behavior that lead to the occurrence of events. Then you can control or change these events by simply changing the structure.</p>
-
-<pre><code>structure
-|
-patterns of behavior
-|
-events
+RewriteRule ^/abc/(.*)$ /test.html [L]
 </code></pre>
 
-<p>The ITIL Service Life Cycle contains five key stages:</p>
+<blockquote>
+  <p>这样所有到达http://dellyserver/abc/xxxx的资源都会被定向到test.html，当test.html下载到本地的时候，浏览器会执行html文件中的JS代码：&lt;pre&gt;window.location.href=”http://www.baidu.com”&lt;/pre&gt;，这样浏览器会自动给http://www.baidu.com发送请求并且获得响应，费了一番功夫但是也确实达到了重定向的效果。</p>
+</blockquote>
 
-<ul>
-  <li>
-    <p>Service Strategy</p>
+<p>IHS是基于Apache的，按理说这种方法也应该能工作的，但是起作用的情况仅限静态网站的情况。</p>
 
-    <blockquote>
-      <p>In the Service Strategy stage, you determine the underlying principles used for developing the policies, objectives, guidelines, and processes required throughout the Service Life Cycle. You also identify business opportunities.
-Service Strategy is a critical stage of the Service Life Cycle because the decisions made in this stage impact all subsequent stages.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Design</p>
+<p>如果IHS通过Plugin进行URI的处理，那么用上面的方法并不会生效，而是会直接跳出500错误。因为IHS会先通过plugin匹配用户的URI请求，然后再搜索DocumentRoot下地文件去匹配请求。</p>
 
-    <blockquote>
-      <p>Service Design is the stage in which the required service is designed and developed. The design created in this stage encompasses all aspects of the service and is based on the principles identified in the Service Strategy stage.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service transition</p>
+<p>如果请求abc.jsp，如果plugin无法处理对应的请求，IHS就会直接返回500错误，因为jsp只能被WAS处理，DocumentRoot下的文件全部都是静态html文件。</p>
 
-    <blockquote>
-      <p>In the Service Transition stage, you create the framework to ensure that the designed service is effectively and efficiently implemented in the live environment.
-This stage includes determining risks, constraints, and whether the service will meet business requirement. This ensures that actual performance matches expected performance.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Service Operation</p>
+<p>那么应该如何配置才能让IHS首先去适配rewrite模块填写的规则呢？如下：</p>
 
-    <blockquote>
-      <p>During the Service Operation stage, you perform all activities and processes required to run services effectively. The Service Operation stage ensures that the framework developed in the Service Transition stage is implemented.</p>
-    </blockquote>
-  </li>
-  <li>
-    <p>Continual Service Improvement</p>
+<pre><code>RewriteRule ^/abc/(.*)$ /test.html [L,R=301]*
+</code></pre>
 
-    <blockquote>
-      <p>The Continual Service Improvement or CSI stage is an overarching stage for maintaining service quality. You use the CSI stage to improve the effectiveness and efficiency of the processes involved in every other stage of the ITIL Service Life Cycle.</p>
-    </blockquote>
-  </li>
-</ul>
-
-<p>Each stage of the ITIL Service Life Cycle is represented by a volume in the ITIL Core Library. Together, these volumes provide an integrated approach to Service Management throughout the ITIL Service Life Cycle.</p>
-
-<p>Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.</p>
-
-<h3 id="service-strategy">Service Strategy</h3>
+<p>R=301 代表/abc/下所有的资源都永久转移到新的位置了，这样IHS就会去直接执行这条规则而不是去尝试plugin匹配了。  </p>
 
 
     </div>
@@ -195,8 +165,8 @@ This stage includes determining risks, constraints, and whether the service will
 
   
      
-    	<li><a class="btn btn-info" href="/categories.html#management-ref">
-    		management <span class="badge badge-info">1</span>
+    	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
+    		middleware <span class="badge badge-info">12</span>
     	</a></li>
     
   
@@ -215,11 +185,11 @@ This stage includes determining risks, constraints, and whether the service will
     <div class="pagination  pagination-centered">
       <ul>
       
-        <li class="prev"><a href="/middleware/2014/12/09/Resolve-Error-500" title="解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）">&larr; 解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></li>
+        <li class="prev"><a href="/hadoop/2014/03/11/hadoop-cluster" title="Hadoop Cluster集群配置心得（低配置集群+自动同步配置）">&larr; Hadoop Cluster集群配置心得（低配置集群+自动同步配置）</a></li>
       
         <li><a href="/archive.html">Archive</a></li>
       
-        <li class="next"><a href="/server/2015/03/09/Linux-Learning-Notes" title="Linux学习笔记">Linux学习笔记 &rarr;</a></li>
+        <li class="next"><a href="/middleware/2014/03/11/ibm-renewing-personal-was-certificate-fails-if-plugin-keykdb-is-unavailable" title="解决Websphere内置证书更新失败——IBM Renewing personal WAS certificate fails if plugin key.kdb is unavailable">解决Websphere内置证书更新失败——IBM Renewing personal WAS certificate fails if plugin key.kdb is unavailable &rarr;</a></li>
       
       </ul>
     </div>
