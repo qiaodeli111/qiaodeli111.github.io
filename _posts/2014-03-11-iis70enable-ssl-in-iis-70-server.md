@@ -2,7 +2,7 @@
 layout: post
 title: 在IIS7.0中配置自签名证书(Enable SSL in IIS 7.0 Server)
 description: ""
-category: "Middleware"
+category: "Security"
 ---
 {% include JB/setup %}
 

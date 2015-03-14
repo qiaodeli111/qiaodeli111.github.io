@@ -4,13 +4,852 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-11T21:57:08+08:00</updated>
+ <updated>2015-03-13T20:07:28+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
    <email>qiaodeli1@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Zabbix   Update from 1.8.3 to 1.8.12</title>
+   <link href="http://blog.dellyqiao.com/monitoring/2015/03/13/zabbix---update-from-183-to-1812"/>
+   <updated>2015-03-13T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/monitoring/2015/03/13/zabbix---update-from-183-to-1812</id>
+   <content type="html">
+&lt;p&gt;This document is to introduce how to upgrade the Zabbix from 1.8.3 to 1.8.12 to suit OpenSuse 11.4.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note: As this is not a full new configuration, so this document is only for Zabbix version update from 1.8.3 to 1.8.12, cannot be treated as a full installation guide.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;As this is a little update during 1.8.x, so no need to touch the DB. Steps attached here, please follow the steps strictly, all the command are provided here.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;reference&quot;&gt;Reference:&lt;/h3&gt;
+
+&lt;p&gt;You may find more information from below links:&lt;/p&gt;
+
+&lt;p&gt;Install zabbix from Source: &lt;a href=&quot;https://www.zabbix.com/documentation/1.8/manual/installation/installation_from_source&quot;&gt;https://www.zabbix.com/documentation/1.8/manual/installation/installation_from_source&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Upgrade proceduler: (section 3.6) &lt;a href=&quot;https://www.zabbix.com/documentation/1.8/manual/about/installation_and_upgrade&quot;&gt;https://www.zabbix.com/documentation/1.8/manual/about/installation_and_upgrade&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Dependency packages: (Chinese) &lt;a href=&quot;http://os.51cto.com/art/201104/252989.htm&quot;&gt;http://os.51cto.com/art/201104/252989.htm&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;download&quot;&gt;Download:&lt;/h3&gt;
+
+&lt;p&gt;You may get all the required packages from here: &lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/03/13/Zabbix_Update_packages.zip&quot;&gt;Download&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;steps&quot;&gt;Steps:&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Remove the old version Zabbix 1.8.3.   &lt;/p&gt;
+
+    &lt;p&gt;You may run: &lt;code&gt;rpm -qa | grep zabbix&lt;/code&gt; to check all the installed zabbix packages. Please confirm all the installed packages have been removed before perform the new installation.  &lt;/p&gt;
+
+    &lt;p&gt;Before remove:  &lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+    &lt;p&gt;After:  &lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Install the dependency packages: &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; gcc  
+ make  
+ mysql-devel  
+ curl-devel  
+ net-snmp-devel 
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;(Above packages could be find from the OpenSuse 11.4 OS iso file, and most of the Linux distrubution should have includes these tools already.)  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; iksemel-1.4.tar.gz 
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;&lt;em&gt;install this package with below steps&lt;/em&gt;:&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;
+        &lt;p&gt;Upload file iksemel-1.4.tar.gz to /tmp, then &lt;code&gt;cd /tmp&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;code&gt;tar –zxf iksemel-1.4.tar.gz&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;code&gt;cd iksemel-1.4&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;code&gt;./configure&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;code&gt;make&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;code&gt;make install&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Upload the file zabbix-1.8.12.tar.gz to /tmp, then &lt;code&gt;cd /tmp&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;tar –zxf zabbix-1.8.12.tar.gz&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;cd zabbix-1.8.12&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;./configure --enable-server --enable-proxy --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;make install&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;ln -sf /usr/local/lib/libiksemel.so.3 /lib/&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;Basically, till now, the new version Zabbix have been installed, please run &lt;code&gt;zabbix_server –V&lt;/code&gt; to verify the version of zabbix.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Copy the config file to folder: /etc/zabbix:  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; cd /tmp/zabbix-1.8.12  
+ cp misc/conf/zabbix_server.conf /etc/zabbix/  
+ cp misc/conf/zabbix_proxy.conf /etc/zabbix/  
+ cp misc/conf/zabbix_agent.conf /etc/zabbix/  
+ cp misc/conf/zabbix_agentd.conf /etc/zabbix/
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;vi /etc/zabbix/zabbix_server.conf&lt;/code&gt;  &lt;/p&gt;
+
+    &lt;p&gt;Find out below 2 lines, then modify the DB username and password: &lt;/p&gt;
+
+    &lt;p&gt;(find function in VI: type &lt;code&gt;/ DBUser&lt;/code&gt; in command mode)  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;DBUser=zabbix  
+DBPassword=zabbix
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Upload the files: zabbix_server and zabbix_agentd to /etc/init.d/, then add execute permission:&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;chmod +x /etc/init.d/zabbix_server  
+chmod +x /etc/init.d/zabbix_agentd
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Start and stop the zabbix_server and zabbix_agentd to verify the installation with below commands:  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;/etc/init.d/zabbix_server start  
+/etc/init.d/zabbix_server stop  
+ps –ef | grep zabbix  
+/etc/init.d/zabbix_agentd start  
+/etc/init.d/zabbix_agentd stop  
+ps –ef | grep zabbix  
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;After confirmed there’s no issue, start the zabbix_server and zabbix_agentd:&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;/etc/init.d/zabbix_server start  
+/etc/init.d/zabbix_agentd start  		
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;Steer into the web interface configuration:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;cd /tmp/zabbix-1.8.12/frontends/php/&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;mkdir /srv/www/htdocs/zabbix&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;code&gt;cp -a . /srv/www/htdocs/zabbix&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Now we don’t need to work with the command line any more, instead, we need to open a Web browser to access the zabbix web interface to configure our web view.&lt;/p&gt;
+
+    &lt;p&gt;Open a browser, input the address: &lt;code&gt;http://&amp;lt;IP address here&amp;gt;/zabbix/queue.php&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;If you are working locally on the Linux server, you may open the embeded Firefox (I guess all the popular Linux distribution have Firefox installed by default). &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;If you are working with Linux server remotely, you will have some choices:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Find out any PC which could access the remote server via port 80, then use PC browser to access the web page.&lt;/li&gt;
+      &lt;li&gt;Configure remote X session from local PC, you may use Putty+xming (free), or xterm (not free), and then access the Firefox on the server from local PC directly.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Click &lt;code&gt;Next&amp;gt;&amp;gt;&lt;/code&gt; Button. Then read and accept GPL v2 license.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Make sure that all software pre-requisites are met.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Configure database settings. Zabbix database must already be created.&lt;br /&gt;
+&lt;strong&gt;&lt;em&gt;Please input “zabbix” in “Name”, “User” and “Password” fields.&lt;/em&gt;&lt;/strong&gt;. &lt;/p&gt;
+
+    &lt;p&gt;Then click &lt;code&gt;Test Connection&lt;/code&gt; button, “Ok” means connection is fine.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Click Next. See summary of settings. Click next.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Download configuration file and place it under conf/.&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;
+        &lt;p&gt;Click the “Save configuration file” button.&lt;/p&gt;
+
+        &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;After saved, upload the file zabbix.conf.php to /srv/www/htdocs/zabbix/conf/. &lt;/p&gt;
+
+        &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Click &lt;code&gt;Retry&lt;/code&gt; button, there should be “Ok” appears. Then finishing installation.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/13/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Till now, all the configuration is done, input the monitoring address on browser &lt;code&gt;http://IP Address/zabbix/&lt;/code&gt; to work with the new environment.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Linux网络管理— 学习笔记</title>
+   <link href="http://blog.dellyqiao.com/server/2015/03/13/linux-"/>
+   <updated>2015-03-13T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/2015/03/13/linux-</id>
+   <content type="html">
+&lt;h3 id=&quot;osi&quot;&gt;&lt;strong&gt;OSI七层模型：&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;物理层 比特 八根网线1346用来传数据，设备之间传递比特流&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;数据链路层 帧 用Mac地址访问媒介，错误检测修正&lt;/p&gt;
+
+    &lt;p&gt;内网用Mac地址传数据&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;网络层 报文 （确定IP地址）提供逻辑地址，选择通路&lt;/p&gt;
+
+    &lt;p&gt;公网用IP地址传输局&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;传输层 TPDU 确定服务端口， TCP/UDP — 确定可靠与不可靠的传输，传输前的错误检测，流控&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;会话层 SPDU 管理和同步用户会话&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;表示层 PPDU 数据的表现形式（如文字翻译成ASCII，再翻译成机器语言），特定功能的实现-如加密&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;应用层 APDU 用户接口&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;tcpip&quot;&gt;&lt;strong&gt;TCP/IP四层模型&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;应用层 为用户提供各种服务 FTP，HTTP，&lt;/em&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;应用层&lt;/p&gt;
+    &lt;/blockquote&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;表示层&lt;/p&gt;
+    &lt;/blockquote&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;会话层&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;传输层 为应用层的尸体提供端到端的通信功能 TCP传输控制协议，UDP用户数据报协议&lt;/em&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;传输层&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;网际互联层 解决主机之间的通信问题 IP网际协议，ICMP互联网控制报文协议（ping），IGMP互联网组管理协议&lt;/em&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;pre&gt;&lt;code&gt;网络层
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;网络接口层 负责数据在网络中的交换 ARP地址解析协议&lt;/em&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;pre&gt;&lt;code&gt;数据链路层
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/blockquote&gt;
+
+    &lt;blockquote&gt;
+      &lt;pre&gt;&lt;code&gt;物理层
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;tcpiposi&quot;&gt;&lt;strong&gt;TCP/IP与OSI两种模型比较&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;共同点：&lt;/p&gt;
+
+&lt;p&gt;1）都采用了层次结构的概念&lt;/p&gt;
+
+&lt;p&gt;2）都能提供面向连接和无连接两种通信服务机制（TCP/UDP)&lt;/p&gt;
+
+&lt;p&gt;不同点：&lt;/p&gt;
+
+&lt;p&gt;1）层数不同&lt;/p&gt;
+
+&lt;p&gt;2）对可靠性要求不同（后者更高）&lt;/p&gt;
+
+&lt;p&gt;3）OSI实在协议开发前设计的，是通用的。TCP/IP是先有协议集再建立模型，不适用与非TCP/IP网络。&lt;/p&gt;
+
+&lt;p&gt;4）实际市场应用不同（OSI是理论上的模型，并没有成熟的产品。TCP/IP已经成为实际上的国际标准）&lt;/p&gt;
+
+&lt;en-media type=&quot;image/png&quot; hash=&quot;afc8ec882eaf0902a975f7342adf23b2&quot; style=&quot;height: auto;&quot; /&gt;
+
+&lt;p&gt;网关&lt;/p&gt;
+
+&lt;p&gt;1）子网内的计算机在跟不同子网设备通信时用&lt;/p&gt;
+
+&lt;p&gt;2）子网IP转换成公网IP，公网IP转成子网IP&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Linux网络配置&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;**&lt;br /&gt;
+**&lt;/p&gt;
+
+&lt;p&gt;1）ifconfig — 临时配置IP地址&lt;/p&gt;
+
+&lt;p&gt;ifconfig eth0 192.168.0.200 netmask 255.255.255.0&lt;/p&gt;
+
+&lt;p&gt;2）setup工具永久配置IP地址（RedHat系列专有）&lt;/p&gt;
+
+&lt;p&gt;setup&lt;/p&gt;
+
+&lt;p&gt;service network restart&lt;/p&gt;
+
+&lt;p&gt;3）修改网络配置文件&lt;/p&gt;
+
+&lt;p&gt;1. 网卡信息文件&lt;/p&gt;
+
+&lt;p&gt;vi /etc/sysconfig/network-scripts/ifcfg-eth0&lt;/p&gt;
+
+&lt;p&gt;BOOTPROTO=none/static/dhcp 是否自动获取IP（none，static都代表手工设定）&lt;/p&gt;
+
+&lt;p&gt;ONBOOT=yes 是否随网络服务启动（Redhat6以后默认为no）&lt;/p&gt;
+
+&lt;p&gt;UUID=“xxx” 唯一识别码（虚拟机克隆后必须手动修改）&lt;/p&gt;
+
+&lt;p&gt;IPADDR=&lt;/p&gt;
+
+&lt;p&gt;NETMASK=&lt;/p&gt;
+
+&lt;p&gt;GATEWAY=&lt;/p&gt;
+
+&lt;p&gt;DNS1=&lt;/p&gt;
+
+&lt;en-media type=&quot;image/png&quot; hash=&quot;8574ea63171d5176e7a56603839a5881&quot; style=&quot;height: auto;&quot; /&gt;
+
+&lt;p&gt;2. 主机名文件&lt;/p&gt;
+
+&lt;p&gt;vi /etc/sysconfig/network&lt;/p&gt;
+
+&lt;p&gt;NETWORKING=yes&lt;/p&gt;
+
+&lt;p&gt;HOSTNAME=imooc&lt;/p&gt;
+
+&lt;p&gt;3. DNS配置文件&lt;/p&gt;
+
+&lt;p&gt;vi /etc/resolv.conf&lt;/p&gt;
+
+&lt;p&gt;nameserver xxx.xxx.xxx.xxx&lt;/p&gt;
+
+&lt;p&gt;search localhost (比如输入imooc，自动访问imooc.localhost）&lt;/p&gt;
+
+&lt;p&gt;4）图形界面配置IP地址&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;虚拟机网络参数配置&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;1. 配置IP地址 （setup）&lt;/p&gt;
+
+&lt;p&gt;2. 启动网卡 （ONBOOT=yes）&lt;/p&gt;
+
+&lt;p&gt;service network restart&lt;/p&gt;
+
+&lt;p&gt;3. 修改UUID&lt;/p&gt;
+
+&lt;p&gt;1）删除Mac地址行&lt;/p&gt;
+
+&lt;p&gt;2）rm -rf /etc/udev/rules.d/70-persistent-net.rules 删除网卡和Mac地址绑定文件&lt;/p&gt;
+
+&lt;p&gt;3）重启系统&lt;/p&gt;
+
+&lt;p&gt;4. 设置虚拟机网络连接方式&lt;/p&gt;
+
+&lt;p&gt;桥接：利用电脑的物理网卡连接&lt;/p&gt;
+
+&lt;p&gt;NAT：可以跟本机主机通信，而且可以用公网（VMnet8）&lt;/p&gt;
+
+&lt;p&gt;HostOnly：可以跟主机通信，但是不能用公网（VMnet1）&lt;/p&gt;
+
+&lt;p&gt;5.修改桥接网卡&lt;/p&gt;
+
+&lt;p&gt;选择能通信的网卡。&lt;/p&gt;
+
+&lt;p&gt;Linux网络命令：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;网络环境查看命令&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;ifconfig 查看与配置网络状态命令&lt;/p&gt;
+
+&lt;p&gt;ifdown eth0 禁用网卡eth0&lt;/p&gt;
+
+&lt;p&gt;ifup eth0&lt;/p&gt;
+
+&lt;p&gt;netstat&lt;/p&gt;
+
+&lt;p&gt;-t 列出TCP协议端口&lt;/p&gt;
+
+&lt;p&gt;-u 列出UDP协议端口&lt;/p&gt;
+
+&lt;p&gt;-n 不使用域名与服务名，而使用IP地址和端口号&lt;/p&gt;
+
+&lt;p&gt;-l 仅显示在监听状态的连接&lt;/p&gt;
+
+&lt;p&gt;-a 列出所有的网络连接&lt;/p&gt;
+
+&lt;p&gt;-r 列出路由列，同route&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;如：netstat -an&lt;/td&gt;
+      &lt;td&gt;grep ESTABLISHED&lt;/td&gt;
+      &lt;td&gt;wc -l 列出多少服务器连接到这台机器&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;route -n == netstat -rn&lt;/p&gt;
+
+&lt;p&gt;route add default gw 192.168.1.1&lt;/p&gt;
+
+&lt;p&gt;nslookup www.baidu.com&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;网络测试命令&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;ping&lt;/strong&gt; IP -c 3&lt;/p&gt;
+
+&lt;p&gt;telnet IP port&lt;/p&gt;
+
+&lt;p&gt;taceroute IP/domain (利用ICMP协议，同ping）&lt;/p&gt;
+
+&lt;p&gt;wget http://xxxxxxx/xxx/xxx.gz (下载）&lt;/p&gt;
+
+&lt;p&gt;tcpdump -i eth0 -nnX port 21 (抓包）&lt;/p&gt;
+
+&lt;en-media type=&quot;image/png&quot; hash=&quot;dd3a77f80cc4edbbc3f6c6e29c12a973&quot; style=&quot;height: auto;&quot; /&gt;
+
+&lt;p&gt;&lt;strong&gt;SSH协议原理&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;对称加密算法：单密钥密码系统的加密方法，同一个密钥同时用来加密和解密。&lt;/p&gt;
+
+&lt;p&gt;非对称加密算法：
+&lt;en-media type=&quot;image/png&quot; hash=&quot;ad3acd4c5dc7306d255541a53e0ab7b7&quot; style=&quot;height: auto;&quot;&gt;&lt;/en-media&gt;&lt;/p&gt;
+
+&lt;en-media type=&quot;image/png&quot; hash=&quot;89715a36165a29984b0019f03211cf6b&quot; style=&quot;height: auto;&quot; /&gt;
+
+&lt;p&gt;ssh 用户@IP&lt;/p&gt;
+
+&lt;p&gt;vi ~/ssh/known_hosts&lt;/p&gt;
+
+&lt;p&gt;下载文件 scp [-r] 用户@IP:文件路径 本地路径&lt;/p&gt;
+
+&lt;p&gt;上传文件 scp [-r] 本地文件 用户@IP:上传路径&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Java面试题练习   计算兄弟数字的分析和实现</title>
+   <link href="http://blog.dellyqiao.com/programing/2015/03/13/java---"/>
+   <updated>2015-03-13T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/programing/2015/03/13/java---</id>
+   <content type="html">
+&lt;p&gt;&lt;strong&gt;陈利人面试题之：&lt;/strong&gt; 给定一个数X，他的兄弟数Y定义为：是由X中的数字组合而成，并且Y是大于X的数中最小的。例如，38276的兄弟数字为38627。给定X，求Y。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;原题及作者分析链接：&lt;/strong&gt; &lt;a href=&quot;http://mp.weixin.qq.com/mp/appmsg/show?__biz=MjM5ODIzNDQ3Mw==&amp;amp;appmsgid=10000184&amp;amp;itemidx=1&amp;amp;sign=f080024b52b8bf130bd9c1c7860e4306&quot;&gt;http://mp.weixin.qq.com/mp/appmsg/show?__biz=MjM5ODIzNDQ3Mw==&amp;amp;appmsgid=10000184&amp;amp;itemidx=1&amp;amp;sign=f080024b52b8bf130bd9c1c7860e4306&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;个人分析：&lt;/strong&gt; 个人认为，求得Y其实有两种情况： 1. X里面的最后一位数比倒数第二位数要大： 这个时候，直接交换那两位就可以得到Y了。比如：1234567，它的兄弟数字就是1234576.（由原数字组成，并且是比原数字大的数字里面的最小的一个。） - X里面的最后一位数比倒数第二位要小： 这个时候，就可以参照链接里的分析：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;假设X的形式如下：x1x2x3…xky1y2y3y4，并且其中y1&amp;gt;y2&amp;gt;y3&amp;gt;y4，xk 3 4 7 2 2 6 4 1&lt;br /&gt;
+首先找到，从右边开始的递增的、尽可能长的数位，这里是641。&lt;br /&gt;
+3 4 7 2 2 (6 4 1)&lt;br /&gt;
+则，选取前一位数字2，进行交换。641中，大于2的最小的值是4，则作如下交换：&lt;br /&gt;
+3 4 7 2 4 (6 2 1)&lt;br /&gt;
+为了得到最小值，对621，从小到大进行排序，得到&lt;br /&gt;
+3 4 7 2 4 1 2 6&lt;br /&gt;
+则，Y为34724126.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;java&quot;&gt;&lt;strong&gt;下面是我自己的Java实现&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;执行结果如下：&lt;br /&gt;
+The original numbers are: [897654, 979984653, 1234567, 3456123]&lt;br /&gt;
+Their brother numbers are: [945678, 979985346, 1234576, 3456132]  &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package auguest;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class BrotherNumber {
+    public static void main(String[] args) {
+        List&amp;lt;String&amp;gt; orgNums = Arrays.asList(&quot;897654&quot;, &quot;979984653&quot;, &quot;1234567&quot;, &quot;3456123&quot;);
+        List&amp;lt;String&amp;gt; newNums = new ArrayList&amp;lt;String&amp;gt;();
+
+        for (String orgNum : orgNums) {
+
+            newNums.add(getBrotherNumber(orgNum));
+        }
+
+        System.out.println(&quot;The original numbers are: &quot; + orgNums);
+        System.out.println(&quot;Their brother numbers are: &quot; + newNums);
+
+    }
+
+    public static String getBrotherNumber(String orgNum) {
+        //定义一个新的字符串
+        String newString = orgNum;
+        int length = orgNum.length();
+
+        char[] orgArray = orgNum.toCharArray();
+
+        //比较最后两位，如果倒数第二位比最后一位大，则需要继续处理；如果小，则可以直接交换得到兄弟数列。
+        if (compareEnd(orgArray[length-2], orgArray[length-1])) {
+
+            char[] newArray = orgNum.toCharArray();
+
+            //从倒数第二位往回找，直到找到之前的一位比当前位小的情况
+            //比如：34568765，从6开始往左找，找到“8“这一位的位置
+            int i = length - 2;
+            while (i&amp;gt;0 &amp;amp; compareEnd(orgArray[i-1], orgArray[i])) {
+                i --;
+            }
+
+            for (int j=length-1; j&amp;gt;i-1; j--) {
+                if (compareEnd(orgArray[j], orgArray[i-1])) {
+                    newArray = exchangeNumbers(orgArray, i-1, j);
+                    break;
+                }
+            }
+
+            String newFrontStr = new String(newArray, 0, i);
+
+            char[] tmpArray = new String(newArray, i, length-i).toCharArray();
+            Arrays.sort(tmpArray);
+
+            newString = newFrontStr + new String(tmpArray);
+
+        } else {
+            newString = new String(exchangeNumbers(orgArray, length-2, length-1));
+        }
+
+        return newString;
+    }
+
+
+    public static boolean compareEnd(char last2, char last1) {
+        return last2 &amp;gt; last1 ? true : false;
+    }
+
+    public static char[] exchangeNumbers(char[] orgCharArray, int pos1, int pos2) {
+        char tmpChar = orgCharArray[pos2];
+        orgCharArray[pos2] = orgCharArray[pos1];
+        orgCharArray[pos1] = tmpChar;
+        return orgCharArray;
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Iishttpexception 0x80004005 The Current Identity Does Not Have Write Access To Iistemporary Aspnet Files</title>
+   <link href="http://blog.dellyqiao.com/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files"/>
+   <updated>2015-03-13T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files</id>
+   <content type="html">
+&lt;p&gt;IIS Log中出现这个错误：&lt;/p&gt;
+
+&lt;p&gt;[HttpException (0x80004005): The current identity (NT AUTHORITY\NETWORK SERVICE) does not have write access to ‘C:\Windows\Microsoft.NET\Framework\v2.0.50727\Temporary &lt;a href=&quot;http://ASP.NET&quot;&gt;ASP.NET&lt;/a&gt; Files’.]&lt;br /&gt;
+System.Web.HttpRuntime.SetUpCodegenDirectory(CompilationSection compilationSection) +9022990&lt;br /&gt;
+System.Web.HttpRuntime.HostingInit(HostingEnvironmentFlags hostingFlags) +152  &lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;1） 进入.NET 安装目录&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;C:\Windows\Microsoft.NET\Framework\v2.0.50727
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;2） 执行此命令：&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;aspnet_regiis -ga IUSR_&amp;lt;machinename&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>在Apache中配置自签名证书(Self signed Certification in Apache)</title>
+   <link href="http://blog.dellyqiao.com/security/2015/03/13/apacheself-signed-certification-in-apache"/>
+   <updated>2015-03-13T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/security/2015/03/13/apacheself-signed-certification-in-apache</id>
+   <content type="html">
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Create a self-signed certificate to enable SSL  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; Under /etc/apache2/  
+ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ssl.key/&amp;lt;hostname&amp;gt;.key -out ./ssl.crt/&amp;lt;hostname&amp;gt;.crt
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;under /etc/apache2/vhost.d/  &lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; cp vhost-ssl.template vhost-ssl
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Edit vhost-ssl.conf, add below 2 lines in the &lt;virtualhost&gt; configuration:&lt;/virtualhost&gt;&lt;/p&gt;
+
+    &lt;p&gt;SSLCertificateFile /etc/apache2/ssl.crt/&lt;hostname&gt;.crt  
+ SSLCertificateKeyFile /etc/apache2/ssl.key/&lt;hostname&gt;.crt&lt;/hostname&gt;&lt;/hostname&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>如何从Symantec为自己的网站购买SSL证书</title>
+   <link href="http://blog.dellyqiao.com/security/2015/03/12/symantecssl"/>
+   <updated>2015-03-12T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/security/2015/03/12/symantecssl</id>
+   <content type="html">
+&lt;p&gt;当我们的网站有加密会话的需求的时候，我们会把所有的请求从HTTP协议转向HTTPS协议。使用HTTPS协议加密session的话我们就需要用到安全证书。当然我们可以自己生成安全证书，但是没人能证明你的安全证书本身足够安全。所以，我们需要从业界公认的证书提供商处去购买一个安全性强的证书，让他们来证明你的网站的会话确实可以被加密。。。。。。&lt;/p&gt;
+
+&lt;p&gt;基于这样的需求，有实力的公司会选择信誉良好的证书提供商，以证明他们的网站确实很安全（在访问银行类保险公司类的网站的时候基本上每一个网页都会有HTTPS加密，浏览器的地址栏旁边会提示说安全证书哪家最强云云……），价格问题会放在其次。&lt;/p&gt;
+
+&lt;p&gt;Symantec就是其中一个比较不错的证书提供商。但是他的网站的易用性确实不怎么好，很多时候申请的信息会莫名其妙的自动被修改。这篇文章是基于我自己的大量的证书申请经历创建的，按照本文的方法做，保你申请无忧。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+&lt;p&gt;本文以申请IBM HTTP Server的证书为例。另外Symantec网站的证书申请流程也已经经过了数次变更，目前的步骤仅适用于现在的情况。具体步骤如下：&lt;/p&gt;
+
+&lt;h2 id=&quot;csr&quot;&gt;1. 创建证书申请CSR文件&lt;/h2&gt;
+
+&lt;p&gt;IBM HTTP Server（IHS）的证书由几部分组成：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;kdb文件：用来存放安全证书的容器，存放公钥和私钥&lt;/li&gt;
+  &lt;li&gt;cer文件：证书文件，也就是从证书提供商（以后简称CA —— Certificate Authority 身份认证机构，本文特指Symantec）得到的个人证书，私钥&lt;/li&gt;
+  &lt;li&gt;csr文件：证书request文件，申请证书时得告诉CA你需要的是什么样的证书，那些信息就放在这个文件里&lt;/li&gt;
+  &lt;li&gt;sth文件：kdb是需要设置密码的，这个文件就是用来放置密码的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意，除了kdb文件和sht文件之外，其他文件的扩展名都是任意的，csr,arm,txt统统没问题，关键的是文件的内容要符合规范需求。&lt;/p&gt;
+
+&lt;p&gt;下面介绍如何生成CSR文件：&lt;/p&gt;
+
+&lt;p&gt;IHS证书使用IHS自带的ikeyman去创建。打开{IHS Home}/bin/ikeyman，然后点击新建：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-1.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;继续，为这个KDB设置密码，记住勾选将密码存储到文件：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-2.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;密码设置完之后就能进入个人证书请求的界面了。选中个人证书请求项：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-3.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;最前面的四项是最重要的。&lt;/strong&gt; &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;密钥标签：为即将申请到的个人证书起一个名字，如果你打算在这个KDB中放置多个证书，那就需要认真起名，便于以后在配置文件中能正确地设置。&lt;/li&gt;
+  &lt;li&gt;密钥大小：定义密钥的大小，2048是一个不错的选择。&lt;/li&gt;
+  &lt;li&gt;签名算法：这里看个人的需求。现在基本上都需要申请SHA256加密算法的证书，因为如果你选择SHA128，新版本的Chrome浏览器会认为你的网站加密算法太弱，不够安全。既然钱花到了，自然得买个好的。&lt;/li&gt;
+  &lt;li&gt;共用名：这里要填写你的网站的域名。这儿要跟网站域名严格匹配，否则你的网站将会出现证书与域名不匹配的警告。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;其他项目根据自己的情况填写就好。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-4.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;保存过后会生成一个certreq.arm文件，用任何编辑器打开这个文件即可看到里面的内容。把里面的内容拷贝出来。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-5.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;symantec&quot;&gt;2. 在Symantec网站上购买证书&lt;/h2&gt;
+
+&lt;p&gt;首先，登录Symantec Trust Center网站，&lt;a href=&quot;https://trustcenter-enterprise.websecurity.symantec.com&quot;&gt;https://trustcenter-enterprise.websecurity.symantec.com&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;登录之后按照提示添加要购买的证书的域名相关的公司信息。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;填写下图中的所有项目，最终要的项目是“Organization Information”和“Organization Contact”。注意：Organization公司名一定要填写真实完整的公司名，要填写在工商局注册的名字，Symantec自己有一个数据库，他们会去验证你的公司是否真实有效。&lt;/p&gt;
+
+&lt;p&gt;联系人也要填写能联系到的人，在购买新证书的时候Symantec的支持团队会打电话给这个人确认你的订单。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;填完确定后就能看到刚刚填写的信息了。现在继续在”Domains authenticated”里添加跟这个“Organization”相关的域名。&lt;/p&gt;
+
+&lt;p&gt;你也可以看到“Organizations”是一个列表，不止可以填一个。像我这样的工作性质，作为乙方，位甲方去购买证书的情况，这个设置是非常有用的，因为我的甲方有很多个国家的很多分公司，每个分公司的联络人都不一样。&lt;/p&gt;
+
+&lt;p&gt;在“Domains Authenticated”里面填写好之后，比如我的“Organizations”是dellyserver，授权的域名包含了www.dellyserver.com，那么当我购买www.dellyserver.com的安全证书的时候就会直接调用我在之前填写的“dellyserver”公司的信息（包括地区，联系人，公司名，等等）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上面的部分设置好之后就可以开始获取证书了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;选择一个证书的类型。每种证书的价格都是不一样的，根据个人需求选择需要的证书。一般选择“Secure Site Pro”就OK：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来就要用到我们的CSR了。“Server Type”中选择要购买的证书类型。我们需要IHS证书，所以选择Other。接下来把CSR文件里的内容粘贴到下面的框里。点击下一步。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;出现了一个警告信息，然后在右侧也出现了“Common Name”，说明证书申请已经被识别出来了。警告信息可以无视，重新点击下一步。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来到达了订单Summary，注意看好各项信息是否正确。&lt;/p&gt;
+
+&lt;p&gt;注意：这里的“Location” “Country”这些项目有时候不会跟你的CSR申请完全一致。比如如果你的Symantec账户注册的时候选择的所在地是香港，而之前在设置Organization的时候也没有完全设置正确，那么我们在位泰国的这家公司购买证书的时候，这个City、Location就会很有可能变成中国。如果出现这种情况，也可以先下单，之后给Symantec的Support团队发邮件告诉他们做一下修正。&lt;/p&gt;
+
+&lt;p&gt;（根据之前的经验，之前有段时间就算你的Organization设置正确了，这个location也会出问题。）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;确认订单之后新买的证书就会出现在自己的SSL证书库中了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这时Symantec网站上的相关操作就完成了，等待Symantec打电话核实订单就OK。&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;3. 获取并导入证书&lt;/h2&gt;
+
+&lt;p&gt;在经过几天的等待之后（一般两个工作日就差不多了），你将会收到Symantec发来的邮件：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们的证书已经准备好了！所以，点开邮件中的连接，然后点击“Get started”:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;进入到下载证书的界面，不管之前申请的证书是什么类型，现在都可以下载全类型的证书文件。（这个功能也是前段时间改版后才出现的）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们选择IHS，然后点击“Download”：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;下载到的是一个压缩包，里面包含简要说明（getting_started.txt），个人证书（ssl_certificate.arm），Symantec提供的G4证书（IntermediateCA.arm），还有Symantec的G5证书（crossRootCA.arm）。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;用ikeyman打开我们之前创建的KDB文件，选择“Personal Certificates”项目，然后点击右侧的“Receive”按钮&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;选择“ssl_certificate.arm”，并且点击确定：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这时将会看到在“Personal Certificates”项目下多出来一条“* xxxxxxx”的项目，这个就说明我们得到的个人证书已经正常导入到证书里了。也可以惦记个人证书申请项目，会发现申请的条目会自动消失。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来选择“Signer Certificates”签署人证书项目，这个项目是用来放置CA提供的公钥证书的。&lt;/p&gt;
+
+&lt;p&gt;进入此项目之后，点击“Add”，分别选择我们得到的G4和G5证书，在取名的时候可以写G4和G5.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;添加G4和G5之后，CA证书还是不够，继续点击右侧的“Populate”按钮，把所有IHS的ikeyman工具内置的CA证书全部导入到KDB文件中。照图操作即可：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-10.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后CA证书导入完成，这个证书也就完全做好了。接下来就是修改HTTP Server的配置文件，引入这个KDB文件即可。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-11.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;全文到此结束。如果在过程中有任何问题，也可以直接联系我进行讨论。&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>WebSphere应用服务器学习笔记</title>
@@ -961,175 +1800,10 @@ are a colon separated username and password.
  </entry>
  
  <entry>
-   <title>如何从Symantec为自己的网站购买SSL证书</title>
-   <link href="http://blog.dellyqiao.com/security/2014/03/11/symantecssl"/>
-   <updated>2014-03-11T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/security/2014/03/11/symantecssl</id>
-   <content type="html">
-&lt;p&gt;当我们的网站有加密会话的需求的时候，我们会把所有的请求从HTTP协议转向HTTPS协议。使用HTTPS协议加密session的话我们就需要用到安全证书。当然我们可以自己生成安全证书，但是没人能证明你的安全证书本身足够安全。所以，我们需要从业界公认的证书提供商处去购买一个安全性强的证书，让他们来证明你的网站的会话确实可以被加密。。。。。。&lt;/p&gt;
-
-&lt;p&gt;基于这样的需求，有实力的公司会选择信誉良好的证书提供商，以证明他们的网站确实很安全（在访问银行类保险公司类的网站的时候基本上每一个网页都会有HTTPS加密，浏览器的地址栏旁边会提示说安全证书哪家最强云云……），价格问题会放在其次。&lt;/p&gt;
-
-&lt;p&gt;Symantec就是其中一个比较不错的证书提供商。但是他的网站的易用性确实不怎么好，很多时候申请的信息会莫名其妙的自动被修改。这篇文章是基于我自己的大量的证书申请经历创建的，按照本文的方法做，保你申请无忧。&lt;/p&gt;
-
-&lt;!-- more --&gt;
-&lt;p&gt;本文以申请IBM HTTP Server的证书为例。另外Symantec网站的证书申请流程也已经经过了数次变更，目前的步骤仅适用于现在的情况。具体步骤如下：&lt;/p&gt;
-
-&lt;h2 id=&quot;csr&quot;&gt;1. 创建证书申请CSR文件&lt;/h2&gt;
-
-&lt;p&gt;IBM HTTP Server（IHS）的证书由几部分组成：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;kdb文件：用来存放安全证书的容器，存放公钥和私钥&lt;/li&gt;
-  &lt;li&gt;cer文件：证书文件，也就是从证书提供商（以后简称CA —— Certificate Authority 身份认证机构，本文特指Symantec）得到的个人证书，私钥&lt;/li&gt;
-  &lt;li&gt;csr文件：证书request文件，申请证书时得告诉CA你需要的是什么样的证书，那些信息就放在这个文件里&lt;/li&gt;
-  &lt;li&gt;sth文件：kdb是需要设置密码的，这个文件就是用来放置密码的&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;注意，除了kdb文件和sht文件之外，其他文件的扩展名都是任意的，csr,arm,txt统统没问题，关键的是文件的内容要符合规范需求。&lt;/p&gt;
-
-&lt;p&gt;下面介绍如何生成CSR文件：&lt;/p&gt;
-
-&lt;p&gt;IHS证书使用IHS自带的ikeyman去创建。打开{IHS Home}/bin/ikeyman，然后点击新建：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-1.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;继续，为这个KDB设置密码，记住勾选将密码存储到文件：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-2.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;密码设置完之后就能进入个人证书请求的界面了。选中个人证书请求项：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-3.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;最前面的四项是最重要的。&lt;/strong&gt; &lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;密钥标签：为即将申请到的个人证书起一个名字，如果你打算在这个KDB中放置多个证书，那就需要认真起名，便于以后在配置文件中能正确地设置。&lt;/li&gt;
-  &lt;li&gt;密钥大小：定义密钥的大小，2048是一个不错的选择。&lt;/li&gt;
-  &lt;li&gt;签名算法：这里看个人的需求。现在基本上都需要申请SHA256加密算法的证书，因为如果你选择SHA128，新版本的Chrome浏览器会认为你的网站加密算法太弱，不够安全。既然钱花到了，自然得买个好的。&lt;/li&gt;
-  &lt;li&gt;共用名：这里要填写你的网站的域名。这儿要跟网站域名严格匹配，否则你的网站将会出现证书与域名不匹配的警告。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;其他项目根据自己的情况填写就好。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-4.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;保存过后会生成一个certreq.arm文件，用任何编辑器打开这个文件即可看到里面的内容。把里面的内容拷贝出来。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/1-5.png/scale&quot; alt=&quot;1-1&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;symantec&quot;&gt;2. 在Symantec网站上购买证书&lt;/h2&gt;
-
-&lt;p&gt;首先，登录Symantec Trust Center网站，&lt;a href=&quot;https://trustcenter-enterprise.websecurity.symantec.com&quot;&gt;https://trustcenter-enterprise.websecurity.symantec.com&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;登录之后按照提示添加要购买的证书的域名相关的公司信息。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;填写下图中的所有项目，最终要的项目是“Organization Information”和“Organization Contact”。注意：Organization公司名一定要填写真实完整的公司名，要填写在工商局注册的名字，Symantec自己有一个数据库，他们会去验证你的公司是否真实有效。&lt;/p&gt;
-
-&lt;p&gt;联系人也要填写能联系到的人，在购买新证书的时候Symantec的支持团队会打电话给这个人确认你的订单。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;填完确定后就能看到刚刚填写的信息了。现在继续在”Domains authenticated”里添加跟这个“Organization”相关的域名。&lt;/p&gt;
-
-&lt;p&gt;你也可以看到“Organizations”是一个列表，不止可以填一个。像我这样的工作性质，作为乙方，位甲方去购买证书的情况，这个设置是非常有用的，因为我的甲方有很多个国家的很多分公司，每个分公司的联络人都不一样。&lt;/p&gt;
-
-&lt;p&gt;在“Domains Authenticated”里面填写好之后，比如我的“Organizations”是dellyserver，授权的域名包含了www.dellyserver.com，那么当我购买www.dellyserver.com的安全证书的时候就会直接调用我在之前填写的“dellyserver”公司的信息（包括地区，联系人，公司名，等等）&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;上面的部分设置好之后就可以开始获取证书了：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;选择一个证书的类型。每种证书的价格都是不一样的，根据个人需求选择需要的证书。一般选择“Secure Site Pro”就OK：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;接下来就要用到我们的CSR了。“Server Type”中选择要购买的证书类型。我们需要IHS证书，所以选择Other。接下来把CSR文件里的内容粘贴到下面的框里。点击下一步。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;出现了一个警告信息，然后在右侧也出现了“Common Name”，说明证书申请已经被识别出来了。警告信息可以无视，重新点击下一步。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;接下来到达了订单Summary，注意看好各项信息是否正确。&lt;/p&gt;
-
-&lt;p&gt;注意：这里的“Location” “Country”这些项目有时候不会跟你的CSR申请完全一致。比如如果你的Symantec账户注册的时候选择的所在地是香港，而之前在设置Organization的时候也没有完全设置正确，那么我们在位泰国的这家公司购买证书的时候，这个City、Location就会很有可能变成中国。如果出现这种情况，也可以先下单，之后给Symantec的Support团队发邮件告诉他们做一下修正。&lt;/p&gt;
-
-&lt;p&gt;（根据之前的经验，之前有段时间就算你的Organization设置正确了，这个location也会出问题。）&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;确认订单之后新买的证书就会出现在自己的SSL证书库中了。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/2-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;这时Symantec网站上的相关操作就完成了，等待Symantec打电话核实订单就OK。&lt;/p&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;3. 获取并导入证书&lt;/h2&gt;
-
-&lt;p&gt;在经过几天的等待之后（一般两个工作日就差不多了），你将会收到Symantec发来的邮件：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-1.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;我们的证书已经准备好了！所以，点开邮件中的连接，然后点击“Get started”:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-2.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;进入到下载证书的界面，不管之前申请的证书是什么类型，现在都可以下载全类型的证书文件。（这个功能也是前段时间改版后才出现的）&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-3.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;我们选择IHS，然后点击“Download”：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-4.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;下载到的是一个压缩包，里面包含简要说明（getting_started.txt），个人证书（ssl_certificate.arm），Symantec提供的G4证书（IntermediateCA.arm），还有Symantec的G5证书（crossRootCA.arm）。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-5.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;用ikeyman打开我们之前创建的KDB文件，选择“Personal Certificates”项目，然后点击右侧的“Receive”按钮&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-6.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;选择“ssl_certificate.arm”，并且点击确定：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-7.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;这时将会看到在“Personal Certificates”项目下多出来一条“* xxxxxxx”的项目，这个就说明我们得到的个人证书已经正常导入到证书里了。也可以惦记个人证书申请项目，会发现申请的条目会自动消失。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-8.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;接下来选择“Signer Certificates”签署人证书项目，这个项目是用来放置CA提供的公钥证书的。&lt;/p&gt;
-
-&lt;p&gt;进入此项目之后，点击“Add”，分别选择我们得到的G4和G5证书，在取名的时候可以写G4和G5.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-9.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;添加G4和G5之后，CA证书还是不够，继续点击右侧的“Populate”按钮，把所有IHS的ikeyman工具内置的CA证书全部导入到KDB文件中。照图操作即可：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-10.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;最后CA证书导入完成，这个证书也就完全做好了。接下来就是修改HTTP Server的配置文件，引入这个KDB文件即可。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/02/04/3-11.png/scale&quot; alt=&quot;symantec&quot; /&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;全文到此结束。如果在过程中有任何问题，也可以直接联系我进行讨论。&lt;/p&gt;
-</content>
- </entry>
- 
- <entry>
    <title>用Shell生成Zabbix监控的数字报表</title>
-   <link href="http://blog.dellyqiao.com/server/2014/03/11/shellzabbix"/>
+   <link href="http://blog.dellyqiao.com/monitoring/2014/03/11/shellzabbix"/>
    <updated>2014-03-11T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/server/2014/03/11/shellzabbix</id>
+   <id>http://blog.dellyqiao.com/monitoring/2014/03/11/shellzabbix</id>
    <content type="html">
 &lt;p&gt;我们都知道Zabbix是一个非常强大的监控工具，我们公司也在用Zabbix监控所有网站的状态。&lt;/p&gt;
 
@@ -1728,9 +2402,9 @@ class Point {
  
  <entry>
    <title>在IIS7.0中配置自签名证书(Enable SSL in IIS 7.0 Server)</title>
-   <link href="http://blog.dellyqiao.com/middleware/2014/03/11/iis70enable-ssl-in-iis-70-server"/>
+   <link href="http://blog.dellyqiao.com/security/2014/03/11/iis70enable-ssl-in-iis-70-server"/>
    <updated>2014-03-11T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/middleware/2014/03/11/iis70enable-ssl-in-iis-70-server</id>
+   <id>http://blog.dellyqiao.com/security/2014/03/11/iis70enable-ssl-in-iis-70-server</id>
    <content type="html">
 &lt;p&gt;在IIS Manager界面，点击左侧的hostname。然后点击 Create Self-Signed Certificate。&lt;/p&gt;
 

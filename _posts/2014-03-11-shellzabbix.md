@@ -2,7 +2,7 @@
 layout: post
 title: "用Shell生成Zabbix监控的数字报表"
 description: ""
-category: "Server"
+category: "Monitoring"
 ---
 {% include JB/setup %}
 
