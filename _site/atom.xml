@@ -4,13 +4,466 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-13T20:07:28+08:00</updated>
+ <updated>2015-03-15T13:47:25+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
    <email>qiaodeli1@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>IHS   SSL证书替换之后无法访问（Error SSL0227E）</title>
+   <link href="http://blog.dellyqiao.com/middleware/security/2015/03/15/ihs---sslerror-ssl0227e"/>
+   <updated>2015-03-15T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/security/2015/03/15/ihs---sslerror-ssl0227e</id>
+   <content type="html">
+&lt;h3 id=&quot;section&quot;&gt;出现的问题&lt;/h3&gt;
+
+&lt;p&gt;今天在为网站替换SSL证书的时候出现了一个问题，服务器是IBM HTTP Server服务器，症状如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;替换之后站点无法访问&lt;/li&gt;
+  &lt;li&gt;用ikeyman打开证书查看，证书没有问题&lt;/li&gt;
+  &lt;li&gt;服务启动后，HTTPS端口（443）已经正常监听了&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;问题分析&lt;/h3&gt;
+
+&lt;p&gt;如果证书没有问题的话多半就是配置文件的问题了。查看error.log，发现如下错误：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[Fri Jan 16 14:28:36 2015] [crit] [client 10.64.48.52] [2195808] [2864] SSL0227E: SSL Handshake Failed, Specified label could not be found in the key file. [10.64.48.52:37368 -&amp;gt; 10.64.48.29:443] [14:28:36.457113] 
+[Fri Jan 16 14:28:36 2015] [crit] [client 221.122.53.200] [2195808] [2864] SSL0227E: SSL Handshake Failed, Specified label could not be found in the key file. [221.122.53.200:31042 -&amp;gt; 10.64.48.29:443] [14:28:36.457113] 
+[Fri Jan 16 14:28:36 2015] [crit] [client 10.64.48.51] [2195808] [2864] SSL0227E: SSL Handshake Failed, Specified label could not be found in the key file. [10.64.48.51:46678 -&amp;gt; 10.64.48.29:443] [14:28:36.457113] 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;pecified label could not be found in the key file.&lt;/code&gt; 错误信息里，这句话是关键，指定的label无法在key文件中找到。就是说httpd.conf中指定了一个别名，但是在key.kdb文件中没有。&lt;/p&gt;
+
+&lt;p&gt;查看httpd.conf，发现如下配置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Keyfile &quot;D:\IBM\HTTPServer\SSL\2015\www.server.com\key.kdb&quot;
+SSLserverCert www.server.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;SSLserverCert&lt;/code&gt; 这个配置是指定证书文件的名字，因为在key.kdb文件中可以导入多个个人证书，在一个kdb文件里有多个个人证书的情况下，就必须要指定你当前的配置是要用哪个证书去加密会话。&lt;/p&gt;
+
+&lt;p&gt;一般在制作CSR的时候，我们习惯用域名来作为Label Name（类似于www.server.com），所以在我们的httpd.conf配置文件中都会用指定&lt;code&gt;SSLserverCert www.server.com&lt;/code&gt;。但是这次的KDB文件是由其他vendor提供的，在制作CSR的时候它们随便用了一个Label Name，所以就导致找不到证书别名的问题。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;解决方法&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;直接把&lt;code&gt;SSLserverCert&lt;/code&gt;这一行删掉。因为我们的kdb文件里只有一个CER证书，删掉是无所谓的。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;把那个别名改变一下，跟导入是的别名设置成一样的。&lt;/p&gt;
+
+    &lt;p&gt;如何查看证书导入时候的别名？如下图了：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/16/ssl alias.png/scale&quot; alt=&quot;SSL Alias&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Migrate JVM settings for same version Websphere Servers</title>
+   <link href="http://blog.dellyqiao.com/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers"/>
+   <updated>2015-03-14T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers</id>
+   <content type="html">
+&lt;h3 id=&quot;important&quot;&gt;Important&lt;/h3&gt;
+
+&lt;p&gt;Only when your senario is exactly same as below, you may try this method to migrate the &lt;strong&gt;Application Server&lt;/strong&gt; configurations, in other word, this method can only copy the &lt;strong&gt;JVM&lt;/strong&gt; configurations.&lt;/p&gt;
+
+&lt;p&gt;This scenario is as below:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Your profile have the capability to create new application server. (For example, the ND cell member Node, the standard application server profile which is managed by AgentAdmin)&lt;/li&gt;
+  &lt;li&gt;You want to copy the configuration to another server with the same version WAS installed. (both server installed WAS 8.0, for example)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;there-are-better-solutions-for-below-scenarios-i-will-write-another-essays-for-these-situations&quot;&gt;There are better solutions for below scenarios, I will write another essays for these situations:&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;to migrate the configures from old version to the new version&lt;/li&gt;
+  &lt;li&gt;To migrate the configures for Standard / Base version WAS with only 1 Node.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;steps&quot;&gt;Steps&lt;/h3&gt;
+
+&lt;p&gt;For example, we’d like to migrate JVMs from server APP11 to APP15:&lt;/p&gt;
+
+&lt;h4 id=&quot;open-wsadmin-with-jython-language-on-the-app11-&quot;&gt;1. Open wsadmin with jython language on the APP11 :&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;cd {Profile Home}\bin
+wsadmin -lang jython -username wasadmin -password &quot;Password**&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Output should be as below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/wsadmin.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Take Note!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Ensure you saw the information like: you have successfully connected to the profile which includes the JVMs you want to export. &lt;strong&gt;Do not&lt;/strong&gt; run the command under AdminAgent/bin, this way will cause exception.&lt;/p&gt;
+
+&lt;h4 id=&quot;export-the-old-jvm-configuration&quot;&gt;2. Export the old JVM configuration:&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;wsadmin&amp;gt;AdminTask.exportServer(&#39;[-nodeName THAIPWAPP11Node02 -serverName ams-server -archive F:/IBM/Archive/amsArchive.car]&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here I exported 4 JVM configuration archives:
+&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/export1.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/export2.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Take Noted!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The archive file path must be with &lt;code&gt;/&lt;/code&gt; even you are running this command in Windows environment.&lt;/p&gt;
+
+&lt;h4 id=&quot;create-the-new-profiles-and-register-the-application-profile-into-dmgr-or-adminagent&quot;&gt;3. Create the new profiles, and register the application profile into DMGR or AdminAgent.&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Create the profiles. Here I will create &lt;code&gt;AppSrv01&lt;/code&gt; and will register it into &lt;code&gt;AdminAgent01&lt;/code&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;![alt JVMlist](http://dellyqiao.qiniudn.com/2015/01/08/profiles.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Change directory to AdminAgent01 bin folder, run registerNode command:&lt;/p&gt;
+
+    &lt;p&gt;cd F:\IBM\WebSphere\AppServer\profiles\AdminAgent01\bin
+   registerNode -profileName AdminAgent01 -host APP15 -profilePath “F:\IBM\WebSphere\AppServer\profiles\AppSrv01” -connType SOAP -port 8877 -username wasadmin -password “Password&lt;strong&gt;” -nodeusername wasadmin -nodepassword “Password&lt;/strong&gt;”&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;Ensure the output information dosn&#39;t contains any error. 
+
+![alt JVMlist](http://dellyqiao.qiniudn.com/2015/01/08/registernode.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Logon AdminAgent IBM Console to verify the result.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;![alt JVMlist](http://dellyqiao.qiniudn.com/2015/01/08/nodeselect.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;import-the-jvm-into-the-new-environment&quot;&gt;4. Import the JVM into the new environment:&lt;/h4&gt;
+
+&lt;p&gt;Now your WAS profile have the capacity to create application servers as below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/createserver.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To import the configuration archive files, WAS will create the application server with the congiurations automatically.&lt;/p&gt;
+
+&lt;p&gt;Copy the .car files into F:\IBM\Archive\ of APP15. Then execute below commands:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd {AppSrv01 Home}\bin
+wsadmin -lang jython -username wasadmin -password &quot;Password**&quot;
+//after logged in wsadmin tool:
+AdminTask.importServer(&#39;[-archive F:\IBM\Archive\healthcareArchive.car -nodeInArchive APP11Node01 -serverInArchive HealthCare-server -nodeName APP15Node02 -serverName HealthCare-server]&#39;)
+AdminConfig.save()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here I imported 4 JVMs, and then saved the configuration with &lt;code&gt;AdminConfig.save()&lt;/code&gt; together:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/importresult.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;verify-the-result-from-ibm-console&quot;&gt;5. Verify the result from IBM Console:&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/JVMlist.png/scale&quot; alt=&quot;alt JVMlist&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You may open Process Defination settings to verify if the configuration is same as the old JVMs.&lt;/p&gt;
+
+&lt;h3 id=&quot;configurations-that-will-not-be-copied&quot;&gt;Configurations that will not be copied&lt;/h3&gt;
+
+&lt;p&gt;Frankly, this is not a full configuration copy, even you imported JVM via this method, some parameters still need to be changed manually. And you will still need to create JAAS/DataSource/JMS manually. Those configurations will not be copied out.&lt;/p&gt;
+
+&lt;p&gt;I’m not exactly know the full list of the parameters that need to be modified manually, and I will keep updating the list here once I noticed any:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;The JVM port. You need to modify them manually.&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/JVMport.png/scale&quot; alt=&quot;alt JVMport&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Application Server Resources&lt;/p&gt;
+
+    &lt;p&gt;You may created some resources (such as JDBC provider, DataSource) under the application server scope. For this case, the related resources should also be copied out with the application servers.&lt;/p&gt;
+
+    &lt;p&gt;But as per my experience, sometimes some of the resources will not be exported into the archive files normally, sometimes the resources of server A will be exported into the archive of server B……&lt;/p&gt;
+
+    &lt;p&gt;It is strange, thus we need to manually check all the resources by ourselves.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;references&quot;&gt;References&lt;/h3&gt;
+
+&lt;p&gt;Here I attache the reference article from IBM and you may get more information from there:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www-01.ibm.com/support/knowledgecenter/SS7JFU_8.0.0/com.ibm.websphere.express.doc/info/exp/ae/rxml_atconfigarchive.html&quot;&gt;http://www-01.ibm.com/support/knowledgecenter/SS7JFU_8.0.0/com.ibm.websphere.express.doc/info/exp/ae/rxml_atconfigarchive.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Below attach the usage of importServer:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    Parameters and return values
+
+    -archive
+        Specifies the fully qualified path of the configuration archive. (String, required)
+    -nodeInArchive
+        Specifies the node name of the server defined in the configuration archive. (String, optional if there is only one node defined in the configuration archive, required if there are multiple nodes defined in the configuration archive)
+    -serverInArchive
+        Specifies the name of the server defined in the configuration archive. (String, optional if there is only one server defined on the specified nodeInConfiguration archive, required if there are multiple servers defined under the specified nodeInConfiguration archive)
+    -nodeName
+        Specifies the node name where the server is imported. (String, optional if there is only one node)
+    -serverName
+        Specifies the server name where the server is imported. If the server name that you specify matches an existing server name under the node, an exception is created. (String, optional, default: serverInArchive)
+    -coreGroup
+        Specifies the core group name to which the server should belong. (String, optional) 
+
+    AdminTask.importServer(&#39;[-archive c:/myServer.car -nodeInArchive node1 -serverInArchive server1]&#39;)
+
+    AdminTask.importServer(&#39;[-archive F:\IBM\Archive\iPOSArchive.car -nodeInArchive THAIPWAPP11Node01 -serverInArchive iPOSAppSrv -nodeName THAIPWAPP15Node01 -serverName iPOSAppSrv]&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>用Markdown编写Evernote文章(With Sublime Text)</title>
+   <link href="http://blog.dellyqiao.com/tools/2015/03/14/markdownevernotewith-sublime-text"/>
+   <updated>2015-03-14T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/tools/2015/03/14/markdownevernotewith-sublime-text</id>
+   <content type="html">
+&lt;h3 id=&quot;section&quot;&gt;前言&lt;/h3&gt;
+
+&lt;p&gt;先说说本文的来历。 之前用postach.io的服务构建了一个自己的个人博客，我也在陆续往这个博客上post文章。简单的来说，通过这个服务，你可以再Evernote的某一个笔记本里发布一篇文章，只要添加上特定的标签，这篇文章就可以自动发布到你的博客站点中。个人觉得这种方式有很多优点：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;发博文方便，你不需要像传统的方式那样在本地编号再登录到博客网站重新发布排版&lt;/li&gt;
+  &lt;li&gt;便于归档，你不用把文章存好几份，不用担心线上线下的文章数量是否一致&lt;/li&gt;
+  &lt;li&gt;有足够的定制空间。Postach.io可以从模板库里选择模板，也可以从github上fork一个现成的模板，修改一下应用到自己的博客上–这也是我现在正在使用的方式，我为自己的博客添加了评论系统，分享按钮，流量统计功能，等等……&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;但是缺点也是有的：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;只能用Evernote的编辑器去编写文章，说实话evernote的编辑器功能并不好，排版非常麻烦&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;要说这个排版，最方便最”正确”的方式莫过于Markdown了，正好最近发现有一个Sublime Text 3的插件正好是用来发布Evernote的，如果能用Sublime编写Markdown形式的内容，然后简简单单直接post到Evernote上同时同步到postach.io上的话那可就真的完美了。经过一番探究，这种方法确实是可行的，于是在这里记录一下自己的经验做抛砖引玉之用。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;配置篇&lt;/h3&gt;
+
+&lt;h4 id=&quot;sublime-text-3evernote&quot;&gt;第一步：为Sublime Text 3安装Evernote插件&lt;/h4&gt;
+
+&lt;p&gt;安装Evernote插件的方法有三种，&lt;em&gt;Package Control&lt;/em&gt;，&lt;em&gt;手动&lt;/em&gt;，&lt;em&gt;Github&lt;/em&gt;。这里根据我的经验，用&lt;em&gt;Github&lt;/em&gt;和&lt;em&gt;手动&lt;/em&gt;的方式真心容易出问题（我碰到了菜单不全的问题，貌似Github上的那个库是很久以前的版本，已经很久没更新了，只有发布新文章的功能），用&lt;em&gt;Package Control&lt;/em&gt;的方法是最给力的。&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Package Control&lt;/em&gt;是Sublime Text的一个插件，这个插件可以很方便的让Sublime去搜索安装其他插件，类似于一个包管理器，有了这个东西，以后安装更多的插件就非常容易了。所以首先我们得位Sublime Text装上Package Control：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;安装方法来源：&lt;a href=&quot;http://blog.csdn.net/nivana999/article/details/7823805&quot;&gt;一些必不可少的Sublime Text 2插件&lt;/a&gt;&lt;/p&gt;
+
+  &lt;ol&gt;
+    &lt;li&gt;按Ctrl+`调出console&lt;/li&gt;
+    &lt;li&gt;粘贴以下代码到底部命令行并回车： import urllib2,os;pf=’Package Control.sublime-package’;ipp=sublime.installed_packages_path();os.makedirs(ipp) if not os.path.exists(ipp) else None;open(os.path.join(ipp,pf),’wb’).write(urllib2.urlopen(‘http://sublime.wbond.net/’+pf.replace(‘ ‘,’%20’)).read())&lt;/li&gt;
+    &lt;li&gt;重启Sublime Text 2。&lt;/li&gt;
+    &lt;li&gt;如果在Perferences-&amp;gt;package settings中看到package control这一项，则安装成功。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;根据我的经验，照做就好，不会出问题的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/14/1.png/scale&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;更新：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Mac版ST3按照上面ST2的方法安装成功，然而Windows版ST3无法成功。如果有问题请参照官方说明，ST3跟ST2的Package Control的安装方法应该是不同的。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://packagecontrol.io/installation#st3&quot;&gt;https://packagecontrol.io/installation#st3&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;安装好之后，就可以去搜索安装Evernote插件了。（&lt;strong&gt;注意：根据官方的说法，Evernote这个插件只兼容Sublime Text 3，目前3是Beta版，如果你的电脑里不是3，请去官网下载。&lt;/strong&gt;）&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;打开Sublime编辑器，调出命令面板。快捷键&lt;code&gt;CMD+Shift+P&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;输入&lt;code&gt;Package Control Install&lt;/code&gt;并回车。稍微等待一会儿，Sublime将会去搜索所有被Package Control管理的插件并且列出在编辑器列表中。&lt;/li&gt;
+  &lt;li&gt;等列表出现之后，继续输入&lt;code&gt;evernote&lt;/code&gt;，找到这个插件包之后，按下回车键开始安装。等到安装日志出现后就说明插件装好了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;![](http://dellyqiao.qiniudn.com/2015/03/14/2.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;验证：CMD+Shift+P调出命令面板，输入evernote，看看有没有出现evernote相关的菜单，如果出现那就没问题了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;sublime-text-3evernote-1&quot;&gt;第二步：为你的Sublime Text 3添加Evernote的授权&lt;/h4&gt;
+
+&lt;p&gt;通过Evernote developer的授权，你就可以通过认证码进行文章的增删改查，做法如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;CMD+Shift+P调出命令面板（最喜欢这个强大的功能了ʅ(‾◡◝)），输入&lt;code&gt;evernote reconfigure auth&lt;/code&gt;(**Sublime编辑器支持模糊匹配，所以不一定非得输入完整的命令，只要差不多就行），看到重新授权的菜单后回车。  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;![](http://dellyqiao.qiniudn.com/2015/03/14/3.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;这时候会自动弹出一个evernote的网页，网页的下部有一个创建token的连接，点击之，就会生成token了。  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/14/4.png/scale&quot; alt=&quot;&quot; /&gt;  &lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;打开Sublime Text的界面，会看到在软件的下部出现了一个输入token的条，把token复制粘贴进去，回车；然后复制“NoteStore URL”，粘贴到软件中，回车。  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/03/14/5.png/scale&quot; alt=&quot;&quot; /&gt; &lt;/p&gt;
+
+&lt;p&gt;不出意外的话，Sublime编辑器的evernote插件就完全配置好了。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;使用篇&lt;/h3&gt;
+
+&lt;p&gt;到使用的部分了，自然就是写文章+发布文章了。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;写文章&lt;/h4&gt;
+
+&lt;p&gt;用&lt;code&gt;CMD+N&lt;/code&gt;在Sublime中创建新文档并且通过&lt;code&gt;CMD+Shift+P&lt;/code&gt;节日&lt;code&gt;ssmarkdown&lt;/code&gt;设置Markdown语法匹配环境。&lt;/p&gt;
+
+&lt;p&gt;文章的标题和标签可以通过两种方式设定：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;通过Liquid格式的meta data设置evernote文章的笔记本，标签和标题： &lt;/p&gt;
+
+ 	— 
+ 	title: 用Markdown编写Evernote文章(Sublime Text Editor) 	
+ 	tags: [“published”, “technology”] 
+ 	notebook: dellyqiao.com &amp;gt;
+ 	—&lt;br /&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如果meta data的数据格式不对的话，在发布的时候会报错。下图是我写本文时候的样子。  &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;![](http://dellyqiao.qiniudn.com/2015/03/14/6.png/scale)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;不设定Meta data，直接写文章，在发布的时候插件会提示你去设置标题，标签和所属的笔记本。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;发布文章&lt;/h4&gt;
+
+&lt;p&gt;发布文章的命令是&lt;code&gt;send to Evernote as new note&lt;/code&gt;，只需要几秒钟，你的文章就能按照想象的排版方式输出到evernote中并且同步到自己的博客里了。&lt;/p&gt;
+
+&lt;p&gt;当然，也完全可以打开现有的文章（&lt;code&gt;Open Evernote Note&lt;/code&gt;）然后编辑保存，evernote的文章会按照原先的格式转换成Markdown格式输出到本地的Sublime Text中，修改完成后调用&lt;code&gt;Update Evernote Note&lt;/code&gt;就OK了。&lt;/p&gt;
+
+&lt;p&gt;得益于Sublime Text强大的模糊搜索功能和各种各样的文档编辑功能，我觉得以后也许我会全靠Sublime Text来管理我的Evernote笔记了。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;遗憾&lt;/h3&gt;
+
+&lt;p&gt;任何事情达成的过程都是一个取舍的过程，这种方案也不例外，那就是图片的问题。&lt;/p&gt;
+
+&lt;p&gt;用Sublime打开带图片的Evernote文章的时候，图片不会被正确的转换成Markdown格式&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果图片是直接复制粘贴到Evernote笔记里的，转换成Markdown的时候图片会转换成一堆无法识别的html代码。如果不加任何修改再把那堆代码同步到evernote中，evernote也无法识别。&lt;/li&gt;
+  &lt;li&gt;如果图片是在用Markdown编写文章的时候通过&lt;code&gt;![alt &quot;text&quot;]()&lt;/code&gt;标签插入的，发布到evernote再转出来的话会转换成几个特殊字符，也不是正常的图片。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;个人觉得靠谱的解决方案如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;用第三方的网盘存储图片，然后生成公开连接，在写文章时通过标签引用。如下： &lt;code&gt;![](http://dellyqiao.qiniudn.com/2015/03/14/2.png/scale)&lt;/code&gt; （同时也裂墙推荐七牛云存储，免费好用）&lt;/p&gt;
+
+    &lt;p&gt;如此一来也能有效地节省Evernote吝啬的60M上传流量吧。如果这篇文章以后有可能会有大量改动的话，而且确实非Markdown编辑器不用的话，把Markdown文件在本地保存一份，方便随时修改而不用再去头疼图片的问题。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;（&lt;em&gt;从来不用Evernote客户端一直用网页端的请无视，网页端的复杂度堪比图片外链。。。&lt;/em&gt;）用Sublime写文章时只写文字，等文字发布之后，再转到Evernote客户端中把需要的图片粘到文章里做二次修改。 这种情况适合以后改动较少和图片较多的情况（按我的理解，在evernote客户端里粘贴图片是一种更为简单方便的操作）。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;文章写到这儿也算完成了，我觉得介绍的还算详细，有了这工具，修改整理自己的笔记真心也方便了不少，很容易就能做出良好排版的笔记。如果我需要的话，可以把笔记转换到本地，然后用Markdown语法稍加修改，然后生成格式良好的打印版文档。&lt;/p&gt;
+
+&lt;p&gt;抛砖引玉，Evernote的客户端编辑器确实做的不咋地，用Markdown+Sublime Text 3，相信你更会感受到创造内容的快乐的。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>How to delete a Websphere profile</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/14/how-to-delete-a-websphere-profile"/>
+   <updated>2015-03-14T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/14/how-to-delete-a-websphere-profile</id>
+   <content type="html">
+&lt;p&gt;How to delete a Websphere profile&lt;/p&gt;
+
+&lt;h4 id=&quot;if-you-are-removing-a-profile-that-is-federated-to-a-cell-including-nd-cell-and-adminagent&quot;&gt;1. if you are removing a profile that is federated to a cell (Including ND Cell and AdminAgent)&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;cd {AdminAgent Home}/bin
+deregisterNode -connType SOAP -port 8877 -profilePath &quot;F:\IBM\Websphere\AppServer\profiles\AppSrv01&quot; -username xxxx -password &quot;Password&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Attention:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Use removeNode command if it is a ND Cell. &lt;/li&gt;
+  &lt;li&gt;Use deregisterNode command if it is a AdminAgent managed node. Here I use this secario as the example.&lt;/li&gt;
+  &lt;li&gt;Please ensure &lt;strong&gt;The AdminAgent must be running&lt;/strong&gt;.&lt;/li&gt;
+  &lt;li&gt;If you don’t remember the SOAP port of the AdminAgent, can check the serverindex.xml under {AdminAgent Home}\config\cells\THAIPWAPP15AACell01\nodes\THAIPWAPP15AANode01&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The result should be like below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/deregister.png/scale&quot; alt=&quot;alt Deregister&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;stop-all-the-jvm-services-in-the-profile-you-will-be-deleted-try-to-ensure-no-java-process-is-running-from-os-level&quot;&gt;2. Stop all the JVM services in the profile you will be deleted. Try to ensure no java process is running from OS level.&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;Windows: check from task manager.
+Linux: ps -ef | grep java
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;change-directory-to-was-homebin-then-run-the-delete-profile-command&quot;&gt;3. Change directory to {WAS Home}/bin, then run the delete profile command:&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;manageprofiles -delete -profileName AppSrv01
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The output should be as below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/08/delete profile.png/scale&quot; alt=&quot;alt delete profile&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;clean-the-profile-registry-using-the-following-command&quot;&gt;4. Clean the profile registry using the following command:&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;manageprofile -validateAndUpdateRegistry
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;remove-the-profile-folders&quot;&gt;5. Remove the profile folders.&lt;/h4&gt;
+
+&lt;p&gt;Till now, most of the subfolders of the profile &lt;em&gt;AppSrv01&lt;/em&gt; should have been removed, only &lt;em&gt;AppSrv01/log&lt;/em&gt; folder still there. The last step is to delete the profile folder under {WAS Home}/profiles/.&lt;/p&gt;
+
+</content>
+ </entry>
  
  <entry>
    <title>Zabbix   Update from 1.8.3 to 1.8.12</title>
@@ -518,9 +971,9 @@ ps –ef | grep zabbix
  
  <entry>
    <title>Java面试题练习   计算兄弟数字的分析和实现</title>
-   <link href="http://blog.dellyqiao.com/programing/2015/03/13/java---"/>
+   <link href="http://blog.dellyqiao.com/coding/2015/03/13/java---"/>
    <updated>2015-03-13T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/programing/2015/03/13/java---</id>
+   <id>http://blog.dellyqiao.com/coding/2015/03/13/java---</id>
    <content type="html">
 &lt;p&gt;&lt;strong&gt;陈利人面试题之：&lt;/strong&gt; 给定一个数X，他的兄弟数Y定义为：是由X中的数字组合而成，并且Y是大于X的数中最小的。例如，38276的兄弟数字为38627。给定X，求Y。&lt;/p&gt;
 
@@ -1330,6 +1783,410 @@ This stage includes determining risks, constraints, and whether the service will
  </entry>
  
  <entry>
+   <title>Training Daily</title>
+   <link href="http://blog.dellyqiao.com/personal/2015/01/15/training-daily"/>
+   <updated>2015-01-15T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/personal/2015/01/15/training-daily</id>
+   <content type="html">
+&lt;p&gt;得到了《囚徒健身》，开始力量训练。特在此记录每天的锻炼进度。&lt;/p&gt;
+
+&lt;p&gt;不练不知道一练吓一跳，原来自己在力量方面这么弱。囚徒健身里有六艺，每艺有十个级别，也叫“十式”,今晚本打算做俯卧撑，深蹲，抬腿和引体向上的第一式，结果发现能做完俯卧撑和抬腿的第一式就不错了，深蹲的第一式完全做不到，引体向上也没精力尝试了。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;之前的跑步锻炼记录在这里：&lt;/p&gt;
+
+&lt;p&gt;十二月记录：&lt;a href=&quot;http://dellyqiao.com/sporting-201412&quot;&gt;http://dellyqiao.com/sporting-240 * 21412&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;十一月跑步记录：&lt;a href=&quot;http://dellyqiao.com/sporting-201411&quot;&gt;http://dellyqiao.com/sporting-201411&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;十月跑步记录：&lt;a href=&quot;http://dellyqiao.com/pao-bu-liu-shui-zhang&quot;&gt;http://dellyqiao.com/pao-bu-liu-shui-zhang&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;按照作者给初学者的计划，每周做两次，每次做两艺的第一式，每次做两到三组，这种计划还是比较合理的。。。&lt;/p&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;下面开始记录：&lt;/h3&gt;
+
+&lt;p&gt;本周做俯卧撑，深蹲和引体向上的第一式，以及深蹲的第二式（第一式太难了！！！）&lt;/p&gt;
+
+&lt;p&gt;做法在这儿：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/06/Daily/IMG_20150106_221654.jpg/scale2&quot; alt=&quot;alt 墙壁俯卧撑&quot; /&gt;
+&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/11/zhedaoshendun.jpg/scale2&quot; alt=&quot;alt 折刀深蹲&quot; /&gt;
+&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/06/Daily/IMG_20150106_221544.jpg/scale2&quot; alt=&quot;alt 坐姿屈膝&quot; /&gt;
+&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/06/Daily/IMG_20150106_221611.jpg/scale2&quot; alt=&quot;alt 垂直引体向上&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;表中记录所做的力量训练，有氧运动（跑步），和晚饭状况（晚饭要少吃啊）：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;星期&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;日期&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;墙壁俯卧撑&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;折刀深蹲&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;坐姿屈膝&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;垂直引体向上&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;跑步&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;em&gt;晚饭&lt;/em&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;二&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.06&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;10 * 1&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;15 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0 * 0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;淀粉肠+红豆薏米粥+酸奶+瓜子&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;三&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.07&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;20 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;火腿肠&lt;em&gt;2 +酸奶&lt;/em&gt;2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;四&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.08&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 + 20&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;10 + 15&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 + 20&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;零食+牛奶燕麦&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;五&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.09&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 + 40&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;10 + 15&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;零食+小米粥&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;六&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.10&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;15 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;油泼面&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;日&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.11&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;泡面&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;一&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.12&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;30min&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;小米粥&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;二&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.13&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;15 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;None&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;三&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.14&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;麦片粥&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;四&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.15&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;零食&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;五&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.16&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;50 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;15 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;40 * 2&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;麻辣烫&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;六&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.17&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;日&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.18&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;一&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.19&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;二&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.20&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;三&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.21&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;30min&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;四&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.22&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;五&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;01.23&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;Forgot&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
    <title>解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</title>
    <link href="http://blog.dellyqiao.com/middleware/2014/12/09/Resolve-Error-500"/>
    <updated>2014-12-09T00:00:00+08:00</updated>
@@ -1443,6 +2300,100 @@ This stage includes determining risks, constraints, and whether the service will
 &lt;p&gt;在plugin_cfg.xml配置文件中，有一行关于kdb文件的配置信息，里面写明了所使用的plugin.kdb文件放置的路径。删掉这行配置，或者删掉对应的kdb文件就好了。&lt;/p&gt;
 
 &lt;p&gt;KDB文件是IBM的用来存放安全证书的文件，安全证书用来给session加密。下一次当IHS找不到安全证书的时候自然就会退而求其次使用没有安全加密的端口9081了。&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Theme for Postach.io - 适用于中国大陆postach.io用户的博客主题</title>
+   <link href="http://blog.dellyqiao.com/tools/2014/03/15/theme-for-postachio"/>
+   <updated>2014-03-15T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/tools/2014/03/15/theme-for-postachio</id>
+   <content type="html">
+&lt;h3 id=&quot;section&quot;&gt;要干嘛&lt;/h3&gt;
+&lt;p&gt;如果你在使用postach.io用evernote发博客，就一定有想法定制一下初始的主题，如果你发现不管怎么定制怎么换博客的速度依然很慢，那请试试我发布的这个主题吧。&lt;/p&gt;
+
+&lt;p&gt;这几天把自己的博客主题大翻修了一下，访问速度可以算是大幅提升了，因此就想把这个主题共享出来供大家使用，对所有的大陆用户来说，这绝对是能减少你工作量和头疼度的最好选择。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;地址&lt;/h3&gt;
+&lt;p&gt;地址在这儿：&lt;a href=&quot;https://github.com/qiaodeli111/theme-for-postach.io.git&quot;&gt;https://github.com/qiaodeli111/theme-for-postach.io.git&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;主题的替换方法&lt;/h3&gt;
+&lt;p&gt;Step 1）从Github中把我的主题fork到你自己的repository中。&lt;/p&gt;
+
+&lt;p&gt;Step 2）
+登录postach.io » 编辑站点 » Edit Theme » 绑定Github » 从下拉列表中选择 theme-for-postach.io » 应用&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;截图&lt;/h3&gt;
+
+&lt;p&gt;自适应桌面设备和移动设备：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/02/screenshot-s.png&quot; alt=&quot;alt Large&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/01/02/screenshot-l.png&quot; alt=&quot;alt Small&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;关于本主题&lt;/h3&gt;
+
+&lt;p&gt;本主题基于postach.io出品的默认主题&lt;a href=&quot;https://github.com/postachio/theme-original.git&quot;&gt;theme-original&lt;/a&gt;制作而来，采用BootStrap3.3.0搭建（原主题使用2.3.1，实在是已经过时了），利用BootStrap的响应式布局使得本主题自适应桌面设备和移动设备。请放心使用。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-5&quot;&gt;应用到自己的博客&lt;/h3&gt;
+
+&lt;p&gt;Fork 这个项目到自己的项目列表中，然后在postach.io的站点管理功能里选择此主题就可以应用这个主题啦。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;关于主题的使用&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;主题已添加百度分享按钮和有言评论系统，如有需要，请在theme.html中找到相关的部分，替换相关代码即可。&lt;/li&gt;
+  &lt;li&gt;关于归档。postach.io实际上不提供归档功能，但是提供标签功能。通过标签为文章归档，点击标签也可以获得所有在该标签分类下的文章列表。&lt;/li&gt;
+  &lt;li&gt;静态资源的分离是博客站点提速的关键。对于静态资源库，比如图片资源，CSS资源和JS资源，我个人是把它们都放到了七牛CDN上，你有以下选择：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;公共资源（JQuery，BootStrap等）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;直接使用我的七牛CDN公共连接。我不保证所有的公共连接永久生效。&lt;/li&gt;
+  &lt;li&gt;自己找国内的CDN托管库，比如又拍云CDN，百度CDN等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;个人静态资源（比如个人定制的style.css和个人头像的图片）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;申请一个CDN平台，然后修改好放到自己的CDN平台上，通过静态外链URL引用（&lt;strong&gt;推荐&lt;/strong&gt;）&lt;/li&gt;
+  &lt;li&gt;放到postach.io的平台上，通过主题标签引用（引用方法会在theme.html中提供——theme.html 18行和252行）（默认）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;关于修改调试&lt;/h3&gt;
+
+&lt;p&gt;Postach.io相较于github的一个好处就是发布的页面不必等30分钟以后才生效，主题资源即时同步到Github，效果即时同步。所以虽说不能搭建本地调试环境，但是终归调试起来还算方便。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-8&quot;&gt;为什么要发布本主题&lt;/h3&gt;
+
+&lt;p&gt;对于国外的postach.io用户，本主题基本没有意义（除非有人赞同我的审美取向：））。对于在长城墙的国内用户来说，主要可以解决两个问题：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;速度慢&lt;/li&gt;
+  &lt;li&gt;不够大&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-9&quot;&gt;1）速度问题的由来&lt;/h4&gt;
+&lt;p&gt;theme-original主题留给用户的可定制空间比较少，他的初衷是为了解耦，公共部分如果需要修改，只需修改一次所有用户都能受益，而且只把跟用户相关的部分暴露出来，也减少用户的学习成本，减少出问题的几率。&lt;/p&gt;
+
+&lt;p&gt;但是问题是本主题的公共静态资源库（比如CSS，JS）全都托管在国外的服务平台上，比如Google，Amazon云（postach.io本身好像就是托管在Amazon云平台上的），而且你还没得选。这样一来在访问自己站点的时候速度慢得不是一点点了。&lt;/p&gt;
+
+&lt;p&gt;比如：JQuery的引用，原主题给出的可供修改的主题页面只有theme.html，在其中使用了标签，主题读取这个标签后，可以得到JQuery的引用和一些有特殊作用的脚本，而作者所引用的JQuery库是托管在GoogleAPI上的。如果用这样的主题，国外用户没什么感受，国内的用户会看到页面载入的小圈会一直转一直转，因为国内压根就连不上googleapi。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-10&quot;&gt;2）不够大&lt;/h4&gt;
+&lt;p&gt;这个问题纯属个人喜好，个人希望自己的博客网站整体上简洁一点，字体稍微大一点，每一页显示的字数稍微多一点，页面利用率稍微高一点，当然了，功能也不能缺失。原主题只满足简洁的特点，其他特点都需要自己改动。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-11&quot;&gt;联系作者&lt;/h3&gt;
+&lt;p&gt;任何问题请联系我：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://blog.dellyqiao.com&quot;&gt;博客网站&lt;/a&gt;上留言&lt;/li&gt;
+  &lt;li&gt;Github项目留言&lt;/li&gt;
+  &lt;li&gt;通过邮箱联系到我：qiaodeli111@126.com&lt;/li&gt;
+&lt;/ul&gt;
 </content>
  </entry>
  
@@ -2429,9 +3380,9 @@ class Point {
  
  <entry>
    <title>IHS从旧版本到新版本的迁移</title>
-   <link href="http://blog.dellyqiao.com/middleware/2014/03/11/ihs"/>
+   <link href="http://blog.dellyqiao.com/middleware/migration/2014/03/11/ihs"/>
    <updated>2014-03-11T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/middleware/2014/03/11/ihs</id>
+   <id>http://blog.dellyqiao.com/middleware/migration/2014/03/11/ihs</id>
    <content type="html">
 &lt;h3 id=&quot;ihs6ihs8&quot;&gt;如何把IHS6迁移到IHS8？&lt;/h3&gt;
 

@@ -89,6 +89,10 @@
       
     
   
+    
+      
+    
+  
 
 
 
@@ -130,6 +134,134 @@
 </div>
 
 <ul class="posts">
+	
+	    <h2><a href="/middleware/security/2015/03/15/ihs---sslerror-ssl0227e">IHS   SSL证书替换之后无法访问（Error SSL0227E）</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">15 Mar 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<h3 id="section">出现的问题</h3>
+
+<p>今天在为网站替换SSL证书的时候出现了一个问题，服务器是IBM HTTP Server服务器，症状如下：</p>
+
+<ul>
+  <li>替换之后站点无法访问</li>
+  <li>用ikeyman打开证书查看，证书没有问题</li>
+  <li>服务启动后，HTTPS端口（443）已经正常监听了</li>
+</ul>
+
+
+		      	<a class="btn btn-primary" href="/middleware/security/2015/03/15/ihs---sslerror-ssl0227e">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers">Migrate JVM settings for same version Websphere Servers</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">14 Mar 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<h3 id="important">Important</h3>
+
+<p>Only when your senario is exactly same as below, you may try this method to migrate the <strong>Application Server</strong> configurations, in other word, this method can only copy the <strong>JVM</strong> configurations.</p>
+
+<p>This scenario is as below:</p>
+
+<ul>
+  <li>Your profile have the capability to create new application server. (For example, the ND cell member Node, the standard application server profile which is managed by AgentAdmin)</li>
+  <li>You want to copy the configuration to another server with the same version WAS installed. (both server installed WAS 8.0, for example)</li>
+</ul>
+
+
+		      	<a class="btn btn-primary" href="/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/tools/2015/03/14/markdownevernotewith-sublime-text">用Markdown编写Evernote文章(With Sublime Text)</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">14 Mar 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<h3 id="section">前言</h3>
+
+<p>先说说本文的来历。 之前用postach.io的服务构建了一个自己的个人博客，我也在陆续往这个博客上post文章。简单的来说，通过这个服务，你可以再Evernote的某一个笔记本里发布一篇文章，只要添加上特定的标签，这篇文章就可以自动发布到你的博客站点中。个人觉得这种方式有很多优点：</p>
+
+<ul>
+  <li>发博文方便，你不需要像传统的方式那样在本地编号再登录到博客网站重新发布排版</li>
+  <li>便于归档，你不用把文章存好几份，不用担心线上线下的文章数量是否一致</li>
+  <li>有足够的定制空间。Postach.io可以从模板库里选择模板，也可以从github上fork一个现成的模板，修改一下应用到自己的博客上–这也是我现在正在使用的方式，我为自己的博客添加了评论系统，分享按钮，流量统计功能，等等……</li>
+</ul>
+
+
+		      	<a class="btn btn-primary" href="/tools/2015/03/14/markdownevernotewith-sublime-text">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/middleware/2015/03/14/how-to-delete-a-websphere-profile">How to delete a Websphere profile</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">14 Mar 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p>How to delete a Websphere profile</p>
+
+<h4 id="if-you-are-removing-a-profile-that-is-federated-to-a-cell-including-nd-cell-and-adminagent">1. if you are removing a profile that is federated to a cell (Including ND Cell and AdminAgent)</h4>
+
+<pre><code>cd {AdminAgent Home}/bin
+deregisterNode -connType SOAP -port 8877 -profilePath "F:\IBM\Websphere\AppServer\profiles\AppSrv01" -username xxxx -password "Password"
+</code></pre>
+
+<p><strong>Attention:</strong></p>
+
+<ul>
+  <li>Use removeNode command if it is a ND Cell. </li>
+  <li>Use deregisterNode command if it is a AdminAgent managed node. Here I use this secario as the example.</li>
+  <li>Please ensure <strong>The AdminAgent must be running</strong>.</li>
+  <li>If you don’t remember the SOAP port of the AdminAgent, can check the serverindex.xml under {AdminAgent Home}\config\cells\THAIPWAPP15AACell01\nodes\THAIPWAPP15AANode01</li>
+</ul>
+
+
+		      	<a class="btn btn-primary" href="/middleware/2015/03/14/how-to-delete-a-websphere-profile">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
 	
 	    <h2><a href="/monitoring/2015/03/13/zabbix---update-from-183-to-1812">Zabbix   Update from 1.8.3 to 1.8.12</a></h2>
 
@@ -190,7 +322,7 @@
 	    <hr>
 	    <br>
 	
-	    <h2><a href="/programing/2015/03/13/java---">Java面试题练习   计算兄弟数字的分析和实现</a></h2>
+	    <h2><a href="/coding/2015/03/13/java---">Java面试题练习   计算兄弟数字的分析和实现</a></h2>
 
 		<div class="tabbable"> <!-- Only required for left/right tabs -->
 		  <ul class="nav nav-tabs">
@@ -207,7 +339,7 @@
 <p><strong>个人分析：</strong> 个人认为，求得Y其实有两种情况： 1. X里面的最后一位数比倒数第二位数要大： 这个时候，直接交换那两位就可以得到Y了。比如：1234567，它的兄弟数字就是1234576.（由原数字组成，并且是比原数字大的数字里面的最小的一个。） - X里面的最后一位数比倒数第二位要小： 这个时候，就可以参照链接里的分析：</p>
 
 
-		      	<a class="btn btn-primary" href="/programing/2015/03/13/java---">Read More...</a>
+		      	<a class="btn btn-primary" href="/coding/2015/03/13/java---">Read More...</a>
 		      </p>
 		    </div>
 		  </div>
@@ -310,98 +442,6 @@ System.Web.HttpRuntime.HostingInit(HostingEnvironmentFlags hostingFlags) +152  <
 	    <hr>
 	    <br>
 	
-	    <h2><a href="/middleware/2015/03/09/WebSphere-Learning-Notes">WebSphere应用服务器学习笔记</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">09 Mar 2015</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	<p>WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。</p>
-
-
-		      	<a class="btn btn-primary" href="/middleware/2015/03/09/WebSphere-Learning-Notes">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/server/2015/03/09/Linux-Learning-Notes">Linux学习笔记</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">09 Mar 2015</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	<pre><code>echo $SHELL
-##永久改变shell
-chsh -s /bin/bash [username]
-
-##临时改变shell
-/bin/bash
-</code></pre>
-
-
-		      	<a class="btn btn-primary" href="/server/2015/03/09/Linux-Learning-Notes">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/management/2015/03/09/ITIL-Learning-Note">ITIL Learning Note</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">09 Mar 2015</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	<p>IT Infrastructure Library or ITIL is a framework that provides structure and best practice guidelines for implementing and maintaining IT Service Management.</p>
-
-
-		      	<a class="btn btn-primary" href="/management/2015/03/09/ITIL-Learning-Note">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/middleware/2014/12/09/Resolve-Error-500">解决IHS/Plugin/WAS环境中请求转发失败的问题（500错误）</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">09 Dec 2014</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	<p>这几天遇到了一个IHS到WAS请求转发失败的问题，所以就打算把常见的几种错误和排错的经验写出来了。</p>
-
-<p>文章内容仅适用于IHS和WAS分别安装在不同服务器上的情况，文章里提到的一些错误在其他情况下也许根本就不会发生。</p>
-
-
-		      	<a class="btn btn-primary" href="/middleware/2014/12/09/Resolve-Error-500">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
 </ul>
 
 
@@ -431,6 +471,12 @@ chsh -s /bin/bash [username]
 		<li>
 	    
 	      <a href="/page3">3</a>
+	    
+	    </li>
+	
+		<li>
+	    
+	      <a href="/page4">4</a>
 	    
 	    </li>
 	
