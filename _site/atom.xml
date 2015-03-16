@@ -4,7 +4,7 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-15T14:01:23+08:00</updated>
+ <updated>2015-03-16T09:57:41+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
@@ -1084,10 +1084,10 @@ public class BrotherNumber {
  </entry>
  
  <entry>
-   <title>Iishttpexception 0x80004005 The Current Identity Does Not Have Write Access To Iistemporary Aspnet Files</title>
-   <link href="http://blog.dellyqiao.com/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files"/>
+   <title>解决IIS问题：HttpException (0x80004005): The current identity does not have write access to IIS Temporary ASP.NET Files.]</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files"/>
    <updated>2015-03-13T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files</id>
+   <id>http://blog.dellyqiao.com/middleware/2015/03/13/iishttpexception-0x80004005-the-current-identity-does-not-have-write-access-to-iistemporary-aspnet-files</id>
    <content type="html">
 &lt;p&gt;IIS Log中出现这个错误：&lt;/p&gt;
 
