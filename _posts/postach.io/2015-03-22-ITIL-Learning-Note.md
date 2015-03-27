@@ -61,3 +61,39 @@ Each volume of the ITIL Core Library provides guidance on each of the five ITIL 
 
 ### Service Strategy ###
 
+Organizations can use the Service Strategy volume to develop strategic objective and assess costs and risks. This volume is a guide on how to develop Service Management as a strategic asset.
+
+Guidance is provided across a wide range of expertise, including marketing management, finance, information systems, system dynamics, and industrial engineering.
+
+### Service Design 
+
+The Service Design volume is a guide to assist the development and design of a service and the Service Management process. This volume describes design principles that convert strategic objectives into a workable service or a portfolio of services.
+
+This volume can be used to create a new service or improve an existing service.
+
+### Service Transition
+
+Using the Service Transition volume, you can create a framework that ensures a smooth transition between Service Design and Service Operation. This volume includes guidelines for assessing and controlling risks and managing changes to reduce the chance of unexpected results, failures, or setbacks.
+
+### Service Operation
+
+You can use the Service Operation volume for guidance on managing service delivery and operations to meet strategic objectives.
+
+The volume provides best practices, methods, and tools to control operations proactively and reactively. It also contains guidelines for maintaining stability while allowing for necessary improvement and change to design, scale, or service levels. This volume provides service owners and providers with ideas and direction on fixing problems and handling demand.
+
+### Continual Service Improvement
+
+As an overall guide, the *Continual Service Improvement* volume provides guidance for continual maintenance. It also provides guidelines for improving quality of service, creating value for customers, and achieving operational efficiency.
+
+This volume is applicable across the ITIL Service Life Cycle and provides guidance for improvement in service strategy, design, transition, and operations.
+
+
+****
+
+To archive organization goals and objectives through ITIL Service Life Cycle stages, you need to understand these core concepts.
+
+- Processes
+- Functions
+- Feedback
+- Specialization and coordination
+
