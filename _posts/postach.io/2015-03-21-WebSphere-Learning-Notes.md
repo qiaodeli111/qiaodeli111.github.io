@@ -2,7 +2,6 @@
 layout: post
 title: WebSphere应用服务器学习笔记
 category: Middleware
-date: 2015-03-09
 ---
 
 WebSphere是应用程序服务器，是电子商务基础结构的核心。WebSphere服务器支持J2EE规范。

@@ -2,7 +2,6 @@
 layout: post
 title: ITIL Learning Note
 category: Management
-date: 2015-03-09
 ---
 
 
