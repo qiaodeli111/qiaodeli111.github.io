@@ -4,7 +4,7 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-03-16T09:57:41+08:00</updated>
+ <updated>2015-03-29T11:16:45+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
@@ -1614,11 +1614,109 @@ System.Web.HttpRuntime.HostingInit(HostingEnvironmentFlags hostingFlags) +152  &
 
 &lt;p&gt;在为Websphere不熟选择合适的拓扑结构或配置是，有七个重要因素需要考虑：&lt;/p&gt;
 
-&lt;h3 id=&quot;section-3&quot;&gt;可用性&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;可用性&lt;/strong&gt;&lt;/p&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;拓扑结构需要有合适的进程冗余，以避免单个故障点，从而最大化系统可用性。&lt;/p&gt;
-&lt;/blockquote&gt;
+    &lt;p&gt;拓扑结构需要有合适的进程冗余，以避免单个故障点，从而最大化系统可用性。水平缩放、垂直缩放和IP喷射器都可以提高可用性。通过在多台机器上共享关键功能，WAS ND可以管理可用性。&lt;/p&gt;
+
+    &lt;p&gt;结合这五中方法可以创建高度可用的系统：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;硬件和进程冗余度&lt;/p&gt;
+
+        &lt;p&gt;通过硬件和进程冗余度可以消除单故障点。采用水平缩放可在多台物理机器上分布应用程序服务器。针对数据库、IP喷射器和Web服务器可以采用备份服务器。你可以在多个单元中部署应用程序。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;进程隔离&lt;/p&gt;
+
+        &lt;p&gt;进程隔离保证了发生故障的服务器不影响配置中正常工作的服务器。多种配置都可以构成进程隔离元素。从应用程序服务器向其他一台不同机器部署Web服务器，可以保证应用程序服务器的问题不影响Web服务器。&lt;/p&gt;
+
+        &lt;p&gt;采用水平缩放可以把应用程序服务器进程隔离到不同机器上。在多个单元中发布应用程序可以保证任何问题都被局限在受影响的一个或多个单元中。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;负载平衡&lt;/p&gt;
+
+        &lt;p&gt;采用负载平衡技术保证了客户端请求不淹没每台服务器。可以采用的技术包括使用IP喷射器把请求散步道配置中的Web服务器上，把高交通量URL的请求转发到更强大的服务器上。ND中的Edge组件都具有这些功能。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;故障转移支持&lt;/p&gt;
+
+        &lt;p&gt;应用程序在服务器被停止或重新启动时继续处理客户端请求。你可以通过水平缩放和工作量管理支持故障转移，或采用HTTP传输共享客户端堆应用程序服务器的请求。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;基于硬件的高度可用性&lt;/p&gt;
+
+        &lt;p&gt;配置WebSphere与机遇硬件的高可用性产品（例如Sun Cluster或HACMP）一起工作没有多少优点。基于硬件的HA解决方案有益的唯一情形是当WebSphere作为分布式事务处理的协调者。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;易维护性&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;易维护性是指更新系统硬件和软件的内在考虑因素。易维护性可能与其他拓扑结构考虑因素发生冲突，导致通过量、性能和可用性方面的缺点。在决定拓扑结构采用垂直或水平缩放级之前需要考虑硬件升级。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;性能&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;性能是指为事务处理服务取得尽可能快的响应时间。提高性能一般采用两种技术：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;垂直缩放，是指提供软件/应用程序服务器在多台JVM进程上的故障转移和负载平衡，这样管理员就可以查看当前的应用程序服务器是否出现性能障碍了。&lt;/li&gt;
+      &lt;li&gt;水平缩放，是指在多台物理机器上创建另外的应用服务器进程，控制每台机器的附加处理能力，支持硬件故障转移，管理员可以吧实现成本分配到多台物理机器上。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;安全性&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;所建议的安全配置是采用两个防火墙创建安全区（demilitarized zone，DMZ）。DMZ中的信息皆有Internet和DMZ之间的过滤协议而受到某种程度的保护。Web服务器可以拦截请求并引导其通过下一个防火墙。&lt;/p&gt;
+
+    &lt;p&gt;易受攻击的应用程序和事务数据元素存在于第二个防火墙之后的空间中，通过IP地址或域来过滤。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;会话管理&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;HTTP客户端请求之间的会话状态维护是在选择拓扑结构时的主要考虑因素。在ND中，在应用程序服务器进程之间共享会话有两种不同的功能：数据持久性和内存到内存复制。&lt;/p&gt;
+
+    &lt;p&gt;数据库持久性是指会话数据被保存到所有应用程序服务器都可以访问的数据库中。&lt;/p&gt;
+
+    &lt;p&gt;内存到内存复制是指在单个应用程序服务器JVM的内存之间复制会话数据。WebSphere内部消息传递是JMS发布/订阅机制，保证了在JVM进程之间复制会话。他是通过平衡WAS所提供的内部JMS提供者实现的，所以数据库产品并不是保证持久性所必需的。&lt;/p&gt;
+
+    &lt;p&gt;犹豫WAS实现了高性能消息传递，所以内存到内存复制更为迅速。它只在ND环境中可用。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;缩放能力&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;你可以配置多台机器来提高处理能力，增强安全性，最大化可用性，并平衡工作量。&lt;/p&gt;
+
+    &lt;p&gt;通过三个组件实现配置缩放能力：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;WAS集群支持&lt;/p&gt;
+
+        &lt;p&gt;通过集群可以开发服务器的逻辑群，他承载并运行相同的一个或多个应用程序。你可以在相同的机器（垂直缩放）或在多台机器（水平缩放）上安放集群。部署应用程序服务器集群可以提高服务器的性能，并能够对工作量进行管理。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;WAS工作量管理（WLM）&lt;/p&gt;
+
+        &lt;p&gt;通过WebSphere工作量管理（Workload management，WLM），来自客户端的流入处理请求被透明地分配到集群应用程序服务器中。采用WLM可以实现负载平衡和故障转移，提高WAS应用程序的整体可靠性和缩放能力。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;IP喷射器&lt;/p&gt;
+
+        &lt;p&gt;IP喷射器透明地把从Web客户端流入的HTTP请求重定向到Web服务器群。IP喷射器拦截所有请求，并把它们分散到服务器群中所有Web服务器上。Cisco Local Director等IP喷射器实现了Web服务器的缩放能力、负载平衡和故障转移。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;通过量&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;通过量与性能有关，包括开发服务于相同请求的一系列应用服务器实例。ND中的集群可能要求多台应用服务器，通过垂直或水平缩放添加。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
 </content>
  </entry>
  
@@ -1778,6 +1876,43 @@ This stage includes determining risks, constraints, and whether the service will
 &lt;p&gt;Each volume of the ITIL Core Library provides guidance on each of the five ITIL Service Life Cycle stages.&lt;/p&gt;
 
 &lt;h3 id=&quot;service-strategy&quot;&gt;Service Strategy&lt;/h3&gt;
+
+&lt;p&gt;Organizations can use the Service Strategy volume to develop strategic objective and assess costs and risks. This volume is a guide on how to develop Service Management as a strategic asset.&lt;/p&gt;
+
+&lt;p&gt;Guidance is provided across a wide range of expertise, including marketing management, finance, information systems, system dynamics, and industrial engineering.&lt;/p&gt;
+
+&lt;h3 id=&quot;service-design&quot;&gt;Service Design&lt;/h3&gt;
+
+&lt;p&gt;The Service Design volume is a guide to assist the development and design of a service and the Service Management process. This volume describes design principles that convert strategic objectives into a workable service or a portfolio of services.&lt;/p&gt;
+
+&lt;p&gt;This volume can be used to create a new service or improve an existing service.&lt;/p&gt;
+
+&lt;h3 id=&quot;service-transition&quot;&gt;Service Transition&lt;/h3&gt;
+
+&lt;p&gt;Using the Service Transition volume, you can create a framework that ensures a smooth transition between Service Design and Service Operation. This volume includes guidelines for assessing and controlling risks and managing changes to reduce the chance of unexpected results, failures, or setbacks.&lt;/p&gt;
+
+&lt;h3 id=&quot;service-operation&quot;&gt;Service Operation&lt;/h3&gt;
+
+&lt;p&gt;You can use the Service Operation volume for guidance on managing service delivery and operations to meet strategic objectives.&lt;/p&gt;
+
+&lt;p&gt;The volume provides best practices, methods, and tools to control operations proactively and reactively. It also contains guidelines for maintaining stability while allowing for necessary improvement and change to design, scale, or service levels. This volume provides service owners and providers with ideas and direction on fixing problems and handling demand.&lt;/p&gt;
+
+&lt;h3 id=&quot;continual-service-improvement&quot;&gt;Continual Service Improvement&lt;/h3&gt;
+
+&lt;p&gt;As an overall guide, the &lt;em&gt;Continual Service Improvement&lt;/em&gt; volume provides guidance for continual maintenance. It also provides guidelines for improving quality of service, creating value for customers, and achieving operational efficiency.&lt;/p&gt;
+
+&lt;p&gt;This volume is applicable across the ITIL Service Life Cycle and provides guidance for improvement in service strategy, design, transition, and operations.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;To archive organization goals and objectives through ITIL Service Life Cycle stages, you need to understand these core concepts.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Processes&lt;/li&gt;
+  &lt;li&gt;Functions&lt;/li&gt;
+  &lt;li&gt;Feedback&lt;/li&gt;
+  &lt;li&gt;Specialization and coordination&lt;/li&gt;
+&lt;/ul&gt;
 
 </content>
  </entry>
