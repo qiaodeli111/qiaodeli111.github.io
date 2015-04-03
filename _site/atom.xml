@@ -4,7 +4,7 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-04-03T15:04:45+08:00</updated>
+ <updated>2015-04-03T18:31:59+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
@@ -22,7 +22,7 @@
 
 &lt;p&gt;Swift语言相当灵活，这里做了一下总结，每个特性下面直接用代码做解释。&lt;/p&gt;
 
-&lt;!--more--&gt;
+&lt;!-- more --&gt;
 
 &lt;p&gt;Variables&lt;/p&gt;
 
