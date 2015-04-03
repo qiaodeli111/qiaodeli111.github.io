@@ -136,6 +136,56 @@
 
 <ul class="posts">
 	
+	    <h2><a href="/middleware/2014/03/11/was">WAS日常维护中的重启时机——总结</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p>本笔记会不断更新，用来记录一下在WAS日常维护中的重启时机问题。 </p>
+
+<p>在做WAS的维护过程中，生产环境要求最大可能的不要有中断，所以重启的时机其实是一个非常值得记住的东西，有的时候因为没有重启或者重启的java进程不正确而导致大量的时间浪费也是非常正常的。谨以此文记录一下我个人的经验总结：</p>
+
+
+		      	<a class="btn btn-primary" href="/middleware/2014/03/11/was">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/server/2014/03/11/testing-multiple-websites-response-time">批量检测网站访问速度</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p>需求如下：</p>
+
+<p>我有一大堆需要维护的网站，每天早上都需要检查所有的网站是否存在异常然后给management发一份报告。简单来说需要查看每个网站的响应速度是否超过了设定的阈值（比如&lt;10秒）。</p>
+
+<p>如何达成？以前用zabbix监控所有的网站，但是那东西太大型了，我需要一个能在本机运行而且耗费资源很少的工具，所以这里就要用到ab和abs。</p>
+
+
+		      	<a class="btn btn-primary" href="/server/2014/03/11/testing-multiple-websites-response-time">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
 	    <h2><a href="/monitoring/2014/03/11/shellzabbix">用Shell生成Zabbix监控的数字报表</a></h2>
 
 		<div class="tabbable"> <!-- Only required for left/right tabs -->
@@ -346,54 +396,6 @@
 
 
 		      	<a class="btn btn-primary" href="/middleware/2014/03/11/iisipiisihsapache">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/security/2014/03/11/iis70enable-ssl-in-iis-70-server">在IIS7.0中配置自签名证书(Enable SSL in IIS 7.0 Server)</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	
-<p>在IIS Manager界面，点击左侧的hostname。然后点击 Create Self-Signed Certificate。</p>
-
-<p><img src="http://dellyqiao.qiniudn.com/2015/03/111.png/scale" alt="" /></p>
-
-
-		      	<a class="btn btn-primary" href="/security/2014/03/11/iis70enable-ssl-in-iis-70-server">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/middleware/migration/2014/03/11/ihs">IHS从旧版本到新版本的迁移</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	
-<h3 id="ihs6ihs8">如何把IHS6迁移到IHS8？</h3>
-
-<p>IHS的迁移比较简单，正好前几天做了一个IHS6到IHS8的迁移，全新的服务器，全新的IHS8安装，这里就以IHS6到IHS8为例介绍一下简要的迁移步骤和需要注意的地方。</p>
-
-
-		      	<a class="btn btn-primary" href="/middleware/migration/2014/03/11/ihs">Read More...</a>
 		      </p>
 		    </div>
 		  </div>
