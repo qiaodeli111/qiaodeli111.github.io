@@ -6,6 +6,7 @@ category: ["middleware", "translation"]
 ---
 {% include JB/setup %}
 
+
 ### 声明
 
 本文系IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过啦。有兴趣的可以继续阅读，没兴趣的可略过。谢谢。
@@ -118,4 +119,179 @@ J2EE应用支持会话的概念。会话是一种维护某个用户所有请求�
 ***注：实际上`CloneID`参数只会在集群环境中生成，在Standard版本的WAS中生成plugin配置文件的时候是不会产生`CloneID`参数的，因为后段的应用服务器只有一台，WAS也没必要去做这个额外的配置。但是可以通过在Web Container进行一些配置强制生成`CloneID`。***
 
 ### 解决问题
+
+诊断问题从收集数据开始，这里有一个你需要收集的文件列表，以及介绍如何收集他们。如果你被限制不能重现问题，你就需要把所有文档一次集齐。
+
+接下来，你需要过一下一系列问题，这些问题描述了一些问题的特征，根据特征去寻找问题的根源，每一步都能让你更接近问题的根源。
+
+最后，我们提供了解决问题的指导文档，这些文档可能是一个网站，可能是去联系IBM，或者配置某些东溪，或者其他建议。
+
+#### 收集数据
+
+跟问题相关的日志和trace包括：
+
+- Web服务器日志
+- Web服务器plugin日志
+- Plugin trace （可以从plugin日志里找到）
+- WAS SystemOut和SystemErr日志
+- WAS console的信息
+- 网络协议分析（有时候是指iptrace）
+
+##### *Web服务器日志文件*
+
+大部分Web服务器会输出两个日志文件：包含了所有访问Web服务器的详情的access文件，和记录了错误的error文件。默认位置为：
+
+- IHS，Apache，SunOne
+
+	- Windows
+
+			Access日志：<Web_server_home>\logs\access.log
+		
+			Error日志：<Web_server_home>\logs\error.log
+		
+	- Unix
+
+			Access日志: <Web_server_home>/logs/access_log
+					Error日志: <Web_server_home>/logs/error_log
+		
+- 微软IIS
+
+	- Windows
+
+			Access日志: C:\WINNT\SYSTEM32\LogFiles\W3SVC1\<date>.log 
+		
+			Error日志: Windows事件日志（eventvwr）
+		
+- Domino Web server
+
+	Domino Web服务器日志放在数据库里，请自行查阅Domino文档了解更多。
+	
+##### *Web服务器plugin日志*
+
+plugin也会输出自己的日志，日志文件会输出到plugin安装目录下的某个目录。可以从plugin配置文件中找到日志的路径，如Example 4.
+
+> Example 4 Location of plug-in log file	<Log LogLevel="Error"	Name="c:\ibm\was6\plugins\logs\webserver1\http_plugin.log" />默认的LogLevel是`Error`，你可以设置为`Trace`来收集更详细的跟踪信息。
+
+##### *Plugin trace*
+
+要获取有效的跟踪信息，你需要尽可能多地得到日志。比如，你可以为IHS设置配置文件中的LogLevel为`debug`来获得更详细的日志输出：
+	
+	LogLevel debug
+
+对于这个更改，你必须重启IHS服务才能生效。
+
+同时可以在plugin里启用trace日志，修改plugin-cfg.xml文件即可：
+
+	<Log LogLevel="Trace"	Name="c:\ibm\was6\plugins\logs\webserver1\http_plugin.log" />
+	
+对于这个更改，不需要重启IHS即可生效。
+
+> plugin trace将会显著增加数据量，所以启用后尽量测试具体的问题一减少日志的行数。
+
+##### *WAS日志*
+
+从应用服务器上获取，日志文件的路径为：
+
+	<WAS_install_root>/profiles/<profile>/logs/<server>/SystemOut.log 
+	<WAS_install_root>/profiles/<profile>/logs/<server>/SystemErr.log
+
+##### *网络跟踪信息*
+
+少量情况下，你需要使用网络分析工具获取iptrace，这可以帮助检测出问题的位置。WAS不支持这种工具，你可以使用第三方工具完成这项工作。如 http://www.ethereal.com/
+
+
+#### 查看问题特征
+
+我们通过查看下面列表中提到的问题特征描述来找到应对的方案：
+
+- 无法从Web服务器获得响应
+
+	检查Web服务器是否已启动，可以检查进程或者访问顶级URL。例如：
+	
+		http://localhost/
+	
+	如果无法得到Web服务器的欢迎也，检查一下Web服务器的进程是否已经启动，如果没有，尝试手动启动。
+	
+	如果Web服务器无法启动，查看 [“Problem: Web server will not start”](#problem1)
+	
+- Web服务器已经启动，但是无法通过它访问应用。
+
+	比如说用这个URL `http://Web_server/snoop`去访问snoop servlet无法正常工作。
+	
+	这时要先检查一下应用是否可以通过Web Container直接访问，使用这种URL去检测：`http://Application_server:WC_port/snoop`
+	
+		要通过Web Container直接访问应用：
+		1. 找到对应的Web Container的端口：
+			a. 在WAS console中，选择 Servers -> Application Servers.
+			b. 点击服务器名
+			c. 在“Communications”区，展开“Ports”
+			d. 记住“WC_defaulthost”所对应的端口号
+		2. 用浏览器使用端口号去访问对应的资源。
+			例如：如果端口号是9080，那么URL就是：http://localhost:9080/snoop
+			
+	如果可以通过Web Container访问到应用但是通过Web服务器就不行，那么查看 [“Problem: Failure between the Web server and plug-in”](#problem2)
+
+- 应用依赖于会话，但是会话信息很明显丢失了。
+
+	例如，如果你每次访问应用时都要求登录，或者购物车数据丢失，那就说明有可能发生了会话丢失的现象。这种情况查看 [“Problem: Sessions are being lost”](#problem3)
+
+- 集群环境下，应用时好时坏
+
+	例如，2/3的请求是工作的，另外的1/3会超时。这种情况查看 [“Problem: The application works intermittently”](#problem4)
+	
+- 应用负载没有均匀地分布到集群中的成员上
+
+	例如，某台集群成员CPU负载在80%，另一台负载总是很小。这种情况请查看 [“Problem: Application load is not being evenly distributed”](#problem5)
+	
+如果上面的列表里没有你遇到的问题，查看这里 [“The next step”](#problem6)
+
+#### 分析问题
+
+根据收集到的信息，你应该已经被指引到了下面的某一个问题类别里。如果没有的话，查看 [“The next step”](#problem6)
+
+<h4 id="problem1">Problem: Web server will not start</h4>
+
+如果你已经安装了plugin，或者生成了plugin配置文件，然后Web服务器无法启用，那么问题应该在plugin上。
+
+##### 需要收集的数据
+
+需要收集下列日志以确定为何无法启动Web服务器，请把日志拷贝出来以防在debug的过程中日志被覆盖。
+
+- OS操作系统信息
+- Web服务器日志
+- plugin日志
+
+在某些情况下，错误信息不会输出到任何日志中，这时你需要用命令行启动应用然后观察在控制台输出的错误信息。
+
+##### 应该看哪些东西
+
+查看标识出为什么服务无法启动的日志。如果看到最后都没有失败的信息，那么尝试启动服务器然后直接查看输出的信息。
+
+Example 5展示了如果plugin-cfg.xml文件缺失，日志会是什么样：
+
+> Example 5 Starting the HTTP Server from the command line	
+	C:\IBM\HTTP\bin>apache	ws_common: websphereUpdateConfig: Failed to stat plugin config file for
+	C:\IBM\WAS6\Plugins\config\webserver1\plugin-cfg.xml
+
+在Unix环境中，当你启动Web服务器的时候，一般可以在命令行中看到相关的信息。比如plugin模块被损坏了，输出如下：
+
+> Example 6 Messages indicating a corrupt plug-in module on UNIX	Syntax error on line 844 of /opt/IBMIHS/conf/httpd.conf:	Cannot load /opt/IBM/WAS6/Plugins/bin/mod_was_ap20_http.so into server:	/opt/IBM/WAS6/Plugins/bin/mod_was_ap20_http.so: undefined symbol: ap_palloc
+
+在Windows环境中，用Windows services面板启动Web服务器的时候很少会看到有用的信息，你需要查看日志文件。累死Example 6的信息将会出现在http_plugin.log文件中。
+
+如果是plugin是Web服务器无法启动，那么错误信息一般会很精确很具体。等你解决了那些问题的时候就可以启动Web服务器了。
+
+如果错误信息指向某些文件，那么请确认文件确实存在并且没被损坏。确认过程中请使用启动Web服务器的那个账户，以确保不存在任何权限问题。
+
+如果错误信息指出跟plugin-cfg.xml相关，可以尝试重新生成这个文件。
+
+Plugin只在特定版本的Web服务器上工作，如果你的plugin版本过劳，或者Web服务器或者GSKit版本过来，那么你需要升级一下对应的组件。下面的链接可以查看软件版本的适配信息：[http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.base.doc/info/welcome_base.html](http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.base.doc/info/welcome_base.html)
+
+> Tip: 运行GSKit版本命令以获取版本信息，此命令在<gskit_install>/bin目录下。
+> 示例：C:\Program Files\IBM\gsk7\bin\gsk7ver
+
+如果上面的信息都跟你的情况不服，那么问题就不是有plugin引起的。这种情况下，你需要回顾一下问题的特征，确定是否应该属于别的情况。
+
+
+<h4 id="problem2">Problem: Failure between the Web server and plug-in</h4>
 
