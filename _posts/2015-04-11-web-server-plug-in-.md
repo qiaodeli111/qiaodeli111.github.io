@@ -263,7 +263,7 @@ plugin也会输出自己的日志，日志文件会输出到plugin安装目录�
 
 在某些情况下，错误信息不会输出到任何日志中，这时你需要用命令行启动应用然后观察在控制台输出的错误信息。
 
-##### 应该看哪些东西
+##### 如何检查
 
 查看标识出为什么服务无法启动的日志。如果看到最后都没有失败的信息，那么尝试启动服务器然后直接查看输出的信息。
 
@@ -290,8 +290,247 @@ Plugin只在特定版本的Web服务器上工作，如果你的plugin版本过�
 > Tip: 运行GSKit版本命令以获取版本信息，此命令在<gskit_install>/bin目录下。
 > 示例：C:\Program Files\IBM\gsk7\bin\gsk7ver
 
-如果上面的信息都跟你的情况不服，那么问题就不是有plugin引起的。这种情况下，你需要回顾一下问题的特征，确定是否应该属于别的情况。
+如果上面的信息都跟你的情况不符，那么问题就不是有plugin引起的。这种情况下，你需要回顾一下问题的特征，确定是否应该属于别的情况。
 
 
 <h4 id="problem2">Problem: Failure between the Web server and plug-in</h4>
 
+如果你猜想plugin有一些问题导致了Web服务器不能把HTTP请求发送到WAS服务器，那么这个部分会帮助你确定原因。
+
+最明显的特征是可以直接访问Web Container，但是不能通过Web服务器去访问。
+
+Error日志同时也会出现一个无法找到文件的记录，如下：
+
+	[Tue Jun 28 15:54:43 2005] [error] [client 127.0.0.1] File does not exist:	C:/IBM/HTTP/htdocs/en_US/snoop
+
+##### 需要收集的数据
+
+收集这些日志文件可以帮助你查明问题的根源：
+
+- Web服务器日志
+- Plugin日志
+- Plugin trace （debug模式的plugin日志）
+- 网络trace （辅助plugin trace分析）
+- plugin配置文件
+
+##### 如何检查
+
+首先确定Web服务器确实引用了plugin-cfg.xml文件，检查httpd.conf配置：
+
+	WebSpherePluginConfig /opt/WAS6/Plugins/config/web1/plugin-cfg.xml打开这个xml文件，检查无法正常工作的应用程序的URI是否包含在其中，像Example 2那样。
+
+***验证你是否使用了正确的配置文件***
+
+如果应用程序的URI配置丢失，那么确认一下Web服务器上的这个配置文件是否是你生成的那个。当你生成plugin配置文件时，不论是用WAS Console还是`GenPluginCfg.sh/bat`命令，输出的信息都会告诉你生成的文件的具体位置。Figure 3显示plugin文件的位置：
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/figure3.png)
+
+当以下条件满足时，plugin配置文件还可以自动传输到本地或远程服务器的指定位置：
+
+- 远程Web服务器是IHS
+- Plugin配置服务已经在运行
+- 以下条件满足任意一条：
+
+	- WebSphere的node agent运行在Web服务器所在的主机上
+	- IHS运行在Web服务器所在的主机上，并且管理密码已经设定好了
+
+- 自动传输插件的配置已经启用。如Figure 4：
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/figure4.png)
+
+更多自动传输插件的信息请查阅这里： [http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.base.doc/info/aes/ae/uwsv_plugin_props.html](http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.base.doc/info/aes/ae/uwsv_plugin_props.html)
+
+***验证是否正确地生成了plugin配置文件***
+
+如果尝试生成plugin配置文件，但是应用的context root没有出现在其中，那么可能配置文件没有正确地生成。配置文件中的内容取决于你生成配置文件的方法。
+
+如果你使用`GenPluginCfg.sh/bat`命令，没有使用任何参数，那么拓扑结构中所有的应用和应用服务器都会生成到配置文件中。然而，你可以通过参数缩小要包含进来的拓扑结构的部分。例如，如果使用命令行并且指定Web服务器名去生成plugin，或者使用WAS Console生成plugin，那么只有映射到那个Web服务器上的应用程序才会被包含到plugin文件中。
+
+问题的原因可能只是因为你没有把应用程序映射到对应的Web服务器。这是用WAS Console做一下mapping就好。
+
+***检查此错误：Virtual Host and WebGroup not found error***
+
+如果配置文件没问题，但是“Virtual Host and WebGroup not found error”这样的错误信息返回到了浏览器中，那么这个错误是跟WAS相关的，查看此链接：[http://www.redbooks.ibm.com/redpapers/pdfs/redp4058.pdf](http://www.redbooks.ibm.com/redpapers/pdfs/redp4058.pdf)
+
+***进一步分析：Trace和请求***
+
+到现在为止，你确定一切配置都正常，看起来Web服务器可以接受请求，plugin可以把请求发到WAS，但是不能从应用方面得到响应。
+
+下一个步骤，启用plugin trace，再次发送一个HTTP请求，然后检查每个日志，跟踪此HTTP请求以确定到底它是在哪个环节失败的。Figure 5展示了HTTP请求索要经过的路径：
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/figure5.png)
+
+根据图示的路径追踪指定的请求可以告诉你问题出在哪儿。Example 9展示了一个成功的请求，这些日志记录展示了请求在各个组件之间成功地过渡。
+
+写入到http_plugin.log文件里的第一行日志说明plugin绑定了转换URL的工具，如果一切正常，可以看到它将会绑定你的URL。Example 7摘要了几条snoop应用相关的trace日志：
+
+> Example 7 Plug-in trace initial entries	
+	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriCreate: Creating uri	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetName: Setting the name /snoop/* with score 7	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetAffinityURL: Setting the affinity cookie jsessionid	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetAffinityCookie: Setting the affinity cookie JSESSIONID	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri_group: uriGroupAddUri: Adding uri /snoop/* to front of list
+	
+在plugin完成转换工作之后，它会把版本信息写入到日志里，如下Example 8：
+
+> Example 8 Plug-in initialization messages	
+	--------------------System Information-----------------------	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Bld version: 6.0.0	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Bld date: Oct 31 2004, 11:15:26	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Webserver: IBM_HTTP_Server/6.0 Apache/2.0.47 (Win32)	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Hostname = KLL6571	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: OS version 5.0, build2195, 'Service Pack 4'	[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN:	--------------------------------------------------------------Example 9所示的日志说明plugin已经成功地转换了URL，然后设置传输方式，把请求转到了集群中的一台服务器去处理。之后，一个带有200返回码的响应成功地返回到了plugin。时间标说明应用服务器花了7秒钟去处理这个请求。
+
+> Example 9 Web server plug-in request trace entries for snoop
+	[Thu Jun 23 14:35:56 2005] 000007bc 000007d4 - TRACE: ws_common: websphereShouldHandleRequest: trying to match a route for: vhost='localhost'; uri='/snoop'	...	[Thu Jun 23 14:35:56 2005] 000007bc 000007d4 - TRACE: ws_common: websphereUriMatch: Found a match '/snoop' to '/snoop' in UriGroup: default_host_cluster1_URIs with score 6	...	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server	...	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htrequest: htrequestWrite: Writing the request:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼18 WebSphere Application Server V6: Web Server Plug-in Problem Determination	GET /snoop HTTP/1.1	User-Agent: Wget/1.9	Host: localhost	Accept: */*
+	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:	WS-ESI="ESI/1.0+"	Connection: Keep-Alive	$WSIS: false	$WSSC: http	$WSPR: HTTP/1.0	$WSRA: 127.0.0.1	$WSRH: 127.0.0.1	$WSSN: localhost	$WSSP: 80	Surrogate-Capability:	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htrequest: htrequestWrite: Writing the request content	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: ws_common: websphereExecute: Wrote the request; reading the response	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htresponse: htresponseRead: Reading the response: 5397bc	...	[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htresponse: htresponseRead: Reading the response: 5397bc	[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:	text/html;charset=ISO-8859-1	[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:	en-US	HTTP/1.1 200 OK	Content-Type:	Content-Language:	Content-Length: 16166	[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:	[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE: lib_htresponse:	htresponseSetContentLength: Setting the content length |16166|
+	
+
+在这之后，很快地Web服务器把得到的响应返回给浏览器，同时更新access日志，显示整个事务成功完成。如Example 10：
+
+> Example 10 Web server access log entry for snoop	127.0.0.1 - - [23/Jun/2005:14:35:56 -0400] "GET /snoop HTTP/1.0" 200 16166
+	
+Web服务器在整个处理最后的过程才会写入Access日志。
+
+根据上面的介绍，你可以根据提到的日志文件去确定问题出在哪个环节。
+
+下面的Example 11展示了plugin标记应用服务器为宕机状态的日志。这个日志即使不是trace级别也会出现，这个信息包含操作系统返回的错误：`err=10061`，这条信息表示connection refused。想要知道这些错误信息的含义，你需要检查一下操作系统的文档。
+
+> Example 11 Plug-in messages when a server goes down	
+	[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereGetStream: Failed to connect to app server on host 'kll6571', OS err=10061	[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereExecute: Failed to create the stream	[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_server: serverSetFailoverStatus: Marking kll6571Node01_server01 down 
+	[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to 'kll6571Node01_server01'on host 'kll6571'; will try another one
+
+如果plugin trace显示它绑定了请求并且把请求发送到了应用服务器，但是没有显示收到的回复，那么问题可能是Web服务器和APP服务器之间的网络出现问题。Example 12中的日志显示plugin把请求写入了请求然后等待响应。在这个例子中，plugin设置了连接超时为10秒，所以10秒过后还没有响应，plugin就会把这台应用服务器标记为宕机。
+
+> Example 12 Marking a server down after time out	[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: lib_htrequest: htrequestWrite: Writing the request content	[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: ws_common: websphereExecute: Wrote the request; reading the response	[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: lib_htresponse: htresponseRead: Reading the response: 4cf1504	[Thu Jul 07 15:09:58 2005] 00000ed4 00000ffc - TRACE: lib_htresponse: htresponseSetError: Setting the error |1|	[Thu Jul 07 15:09:58 2005] 00000ed4 00000ffc - ERROR: ws_common: websphereExecute: Failed to read from a new stream; App Server may have gone down during read
+
+某些情况下，成功建立连接并且写入请求之后，应用服务器宕机了，但是plugin无法检测出来。这种奇怪的现象一般是因为其中一台服务器是Windows另一台是Unix。
+
+Example 13展示了一个正常收到响应的例子。plugin写入请求然后等待响应，7秒钟后收到响应。
+
+> Example 13 A request that responds	[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: lib_htrequest:	htrequestWrite: Writing the request content	[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: ws_common:	websphereExecute: Wrote the request; reading the response	[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: 	lib_htresponse: htresponseRead: Reading the response: 5397cc	[Thu Jul 07 14:27:07 2005] 00000a20 00000f80 - TRACE: HTTP/1.1 200 OK
+
+Example 14展示了这种情况：plugin写入请求然后等待响应，但是5分钟后下一个请求已经到达了，上个请求的响应还没有收到。
+
+> Example 14 A request that never responds	[Thu Jul 07 14:22:20 2005] 00000a20 00000f88 - TRACE: ws_common: websphereExecute: Wrote the request; reading the response	[Thu Jul 07 14:22:20 2005] 00000a20 00000f88 - TRACE: lib_htresponse: htresponseRead: Reading the response: 4cf1504	[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: lib_util: parseHostHeader: Host: 'localhost', port 80
+
+这种时候，你可以使用网络协议分析器去检测数据包在离开Web服务器后发生了什么事情。也可以叫`iptrace`。网络协议分析器是一种专业性强的工具，一般来说即时网络比较空闲也会产生大量的数据。如果你没有足够的经验，也可以请网络工程师来帮忙抓取。
+
+大多数表面上跟plugin相关的问题实际上都是配置问题和网络问题。除了均衡负载这个特性之外，plugin实际上是一个用来抓取请求，转换URL然后找到匹配，然后把匹配好的请求转发到应用服务器的简单组件。
+
+
+<h4 id="problem3">Problem: Sessions are being lost</h4>
+
+如果在集群环境中出现了会话数据丢失的情况，那么plugin有可能是问题的根源。
+
+##### 需要收集的数据
+
+- Plugin trace
+- Web服务器上的Plugin日志
+
+##### 如何检查
+
+Plugin trace可以给我们展示处理会话亲缘性的详细过程。WAS自带的示例应用程序就可以测试会话亲缘性。下面的URL可以展示WAS正在运行而且设置了一个会话。
+
+	http://servername/HelloHTML.jsp
+
+Example 15中的日志片段展示了会话的创建过程。plugin试图找到跟session相关的cookie，但是没有找到，所以它使用round-robin负载均衡算法找到了一台服务器去创建。
+
+> Example 15 Creating a session
+
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereWriteRequestReadResponse: Enter
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+        htrequestGetCookieValue: Looking for cookie: 'SSLJSESSION'
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+        htrequestGetCookieValue: No cookie found for: 'SSLJSESSION'
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common:
+        websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+        htrequestGetCookieValue: Looking for cookie: 'JSESSIONID'
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+        htrequestGetCookieValue: No cookie found for: 'JSESSIONID'
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the url rewrite affinity: jsessionid [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseSessionID: Parsing session id from '/HelloHTML.jsp'
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseSessionID: Failed to parse session id
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Bypassing check for partitionID cookie affinity. No stored partition table.
+        [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupNextRoundRobinServer: Round Robin load balancing
+        ...
+        [Mon Jun 27 14:51:36 2005] 00000798 00000e18 - TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server kll6571Node01_server2 picked, pendingConnectionCount 1 totalConnectionsCount 5.
+下面的Example 16展示了第二个请求处理的过程。因为已经有一个session ID了，所以这一次请求被发送到了Example 15中创建session的那台机器上，也就是`kll6571Node01_server2 `。
+
+> Example 16 Processing session affinity
+	
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+	htrequestGetCookieValue: Looking for cookie: 'SSLJSESSION'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+	htrequestGetCookieValue: No cookie found for: 'SSLJSESSION'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID [Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: 'JSESSIONID'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest: htrequestGetCookieValue: name='JSESSIONID', value='00004RRFkLCkLGWVw-37Cd-mEN7:10ig7jfqi'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Parsing clone ids from '00004RRFkLCkLGWVw-37Cd-mEN7:10ig7jfqi'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Adding clone id '10ig7jfqi'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Returning list of clone ids
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Looking for clone
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupGetFirstPrimaryServer: getting the first primary server
+	￼￼￼￼￼￼￼￼￼￼WebSphere Application Server V6: Web Server Plug-in Problem Determination 23
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group:
+	serverGroupFindClone: Comparing curCloneID '10ig7jfqi' to server clone id
+	'10ig7jdvd'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group:
+	serverGroupGetNextPrimaryServer: getting the next primary server
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Comparing curCloneID '10ig7jfqi' to server clone id '10ig7jfqi'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Match for clone 'kll6571Node01_server2'
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server: serverHasReachedMaxConnections: currentConnectionsCount 0, maxConnectionsCount -1.
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - STATS: ws_server_group: serverGroupCheckServerStatus: Checking status of kll6571Node01_server2, ignoreWeights 1, markedDown 0, retryNow 0, wlbAllows -1 reachedMaxConnectionsLimit 0
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server: serverHasReachedMaxConnections: currentConnectionsCount 0, maxConnectionsCount -1.
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server kll6571Node01_server2 picked, pendingConnectionCount 1 totalConnectionsCount 7.
+	[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Setting server to kll6571Node01_server2
+
+查看plugin trace日志就可以知道会话亲缘性是否正常工作，plugin有没有把会话转发到正确的服务器。
+
+如果会话亲缘性很明显没有正常工作，请检查WAS的配置，以确定会话管理的配置参数是否正确设定。同时，检查plugin-cfg.xml文件以确定`CloneID`参数是否存在。
+
+Figure 6展示了会话管理参数的配置页面，按照此路径到达这个配置页：Application servers → servername → Web container settings → Session management
+
+有三种会话机制可以配置。
+
+- 启用SSL ID跟踪，只有为应用程序使用SSL加密的时候才可以使用。
+- 启用cookies，这是最通用的方法
+- 启用URL重写，这种方法很少使用，因为它需要对每个URL都进行重写，对性能会有较大影响
+
+要启用会话支持，可以选择一个或多个机制。其他参数是用来设置会话能持续多久，和其他目的会话配置。
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/figure6.png)
+
+与会话相关的错误信息只会出现在plugin trace里。
+
+Example 17与Example 16类似，不同的是创建会话的那台主机已经宕机。这时plugin会选择另一台集群中的服务器，但是宕掉的机器产生的会话数据将会丢失。
+
+> Example 17 Session lost after application server goes down
+	
+	[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_server_group: serverGroupFindClone: Match for clone 'm23vnx60Craig01_server02'
+	...
+	[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_server_group: lockedServerGroupUseServer: Server m23vnx60Craig01_server02 picked, weight 0. [Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Finding the transport
+	[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Setting the transport(case 2): m23vnx60 on port 19082 [Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server
+	[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereGetStream: Getting the stream to the app server
+	[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereGetStream: Failed to connect to app server on host 'm23vnx60', OS err=10061
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereGetStream: socket 6628 closed - failed to connect
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereExecute: Failed to create the stream
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_server: serverSetFailoverStatus: Marking m23vnx60Craig01_server02 down
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - STATS: ws_server: serverSetFailoverStatus: Server m23vnx60Craig01_server02 : pendingConnections 0 failedConnections 1 affinityConnections 1 totalConnections 0.
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to 'm23vnx60Craig01_server02'on host 'm23vnx60'; will try another one
+	...
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_server_group: lockedServerGroupUseServer: Server kll6571Node01_server01 picked, weight 0. [Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Finding the transport
+	[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Setting the transport(case 2): kll6571 on port 9082
+
+如果从plugin的角度来看，很明显会话亲缘性工作正常，那问题很可能出现在应用上。这时请跟开发团队去确定应用程序有正确地处理会话。
+
+Example 18展示了这样的情况：应用程序需要会话，并且采用了cookie机制，但是客户端浏览器不支持cookie。由于无法保存session ID，导致plugin无法维护会话亲缘性。
+
+> Example 18 Session failure as cookies are not allowed
+	
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: 'SSLJSESSION'
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: No cookie found for: 'SSLJSESSION'
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: 'JSESSIONID'
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: No cookie found for: 'JSESSIONID'
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the url rewrite affinity: jsessionid [Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereParseSessionID: Parsing session id from '/HelloHTML.jsp'
+	[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereParseSessionID: Failed to parse session id
+
+查阅下面的连接获取更多有关WAS集群中会话管理的信息：[http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.nd.doc/info/ae/ae/crun_srvgrp.html](http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.nd.doc/info/ae/ae/crun_srvgrp.html)
+
+
+<h4 id="problem4">Problem: The application works intermittently</h4>
