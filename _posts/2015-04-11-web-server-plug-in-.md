@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Web Server Plug-in问题诊断——文档翻译"
+title: "IBM Web Server Plug-in问题诊断——文档翻译"
 description: ""
 category: ["middleware", "translation"]
 ---
