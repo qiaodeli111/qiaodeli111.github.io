@@ -9,7 +9,7 @@ category: ["middleware", "translation"]
 
 ### 声明
 
-本文系IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过啦。有兴趣的可以继续阅读，没兴趣的可略过。谢谢。
+本文为IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过。有兴趣的可以继续阅读，没兴趣的请路过。欢迎留言吐槽，谢谢。
 
 本文为翻译plugin问题诊断文档：redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf，次文档可以从这里下载：[文档下载](http://dellyqiao.qiniudn.com/2015/04/11/redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf)
 
@@ -534,3 +534,132 @@ Example 18展示了这样的情况：应用程序需要会话，并且采用了c
 
 
 <h4 id="problem4">Problem: The application works intermittently</h4>
+
+如果在集群环境下，系统发生定期的的反常的现象，可能是plugin有问题。
+
+##### 需要收集的数据
+
+- Web服务器日志
+- plugin日志
+- WAS日志
+
+如果依然不能定位问题，你需要做一个plugin trace。
+
+##### 如何检查
+
+时好时坏的现象可能是因为plugin没有检测到集群中的某台WAS服务器已经宕机，依然把请求转发到那些主机上。
+
+如果应用服务器是宕机的（服务器进程处于停止状态），plugin没办法与它创建TCP/IP连接，也不会把请求发过去。因此在这种情况下，plugin会把这台服务器标记为宕机。
+
+但是，如果应用服务器挂起（hung），那么这台服务器依然可以接收请求，只是不能做出响应。这种情况下，plugin不会把这台服务器标记为宕机，除非从操作系统层面认为连接超时。具体超时的时间依操作系统而定，可能长达十分钟。当plugin标记这台服务器宕机之后，他还会在某些时间点再次检测这台服务器是否依然宕机，这时服务器还是可以接收请求，因此plugin会再次标记它为已启动，直到连接从操作系统层面再次超时。
+
+如果应用服务器没有挂起而是处理速度慢，当应用服务器上可用的的TCP/IP连接被用完时，plugin就无法建立新的连接了，就会标记它为宕机。
+
+如果是应用本身有问题，因为应用服务器能接收请求并且做出响应（即使是失败的响应），因此plugin不会认为应用所在的服务器宕机。
+
+> Note: 上面提到的所有情况下，当你直接访问应用服务器的时候都是无法获得响应的，例如：
+> http://servername:9080/snoop
+> 在集群环境中，你需要单独访问每台服务器以确定哪台有问题。更多WAS排错的方法和信息请查阅此处：http://www.redbooks.ibm.com/redpapers/pdfs/redp4073.pdf
+
+这个部分所提到的问题都是跟应用服务器相关的，所以你需要解决应用服务器的问题。然而，我们可以通过修改plugin的参数去控制plugin如何响应time-out的情况，从而最大限度地减少问题造成的影响。下面介绍一下相关的参数：
+
+- RetryInterval
+
+	这个参数确定在plugin标记某台服务器为宕机状态之后多久再一次检查服务器的状态。
+
+- ServerIOTimeout
+
+	`Server`元素中的这个ServerIOTimeout参数允许我们设定plugin发送请求到接收响应这段时间的超时时间的值，单位是秒。如果没有设定这个参数，plugin会使用阻塞I/O方式把请求写入到应用服务器，然后从应用服务器读取响应，直到这个TCP连接超时。
+	
+		<Server Name="server1" ServerIOTimeout=300>
+
+	在这个配置中，在TCP连接超时之前，plugin会等待300秒（也就是5分钟）。设置一个合理的值可以使plugin尽可能快速地把请求切换到可用的服务器上。同时也注意，应用程序处理请求的时候可能需要几分钟，如果超时时间设置得太短可能会导致plugin给客户端发送错误的响应。
+	
+	> Note: 运行在Solaris操作系统上的plugin会忽略ServerIOTimeout参数。
+
+- ExtendedHandshake
+
+	如果在Web服务器plugin和应用服务器之间有代理防火墙，你应该配置这个参数。这个参数强制plugin去做更广泛的检查以确定应用服务器是否宕机。
+
+- MaxConnections
+
+	这个参数限定并行发送到应用服务器的连接数，从而避免plugin发送过量的请求拖慢速度。
+
+- ConnectTimeout
+
+	`Server`元素中的这个ConnectTimeout参数使plugin可以跟应用服务器发起一个非阻塞连接。当plugin无法连接到目标服务器因而无法确定端口是否可用的时候，非阻塞连接非常有用。
+	
+	如果不设定这个参数或者设置值为0，plugin会从所在的服务器发起一个阻塞连接，这个连接的超时时间取决于操作系统，一旦超时plugin会标记那台服务器宕机。如果设置的数字大于0，plugin会等待对应的秒数。如果在这个超时时间之后，链接始终没有建立成功，plugin会标记宕机，尝试集群中的其他成员。
+	
+	***译者注：这个参数与ServerIOTimeout的区别是，这个超时时间是指建立连接的超时时间，关注点在创建连接本身的这个过程；而ServerIOTimeout是配置整个处理过程的超时时间，也就是从plugin发送请求开始算起，不管连接有没有建立起来，它只关注是否在特定的时间内收到了响应***
+
+如果可能的话，尽量使用WAS Console去配置这些参数，因为一旦重新生成插件，手工修改的参数就不存在了。我们可以用Console设置`RetryInterval`这个参数，跳转的路径为：Web servers → webserver → Plug-in properties → Request routing，如Figure 7。
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/figure7.png)
+
+其他所有的参数都得修改plugin-cfg.xml手工配置。所以每次重新生成plugin之后，记得手工修改一下。更多plugin属性的配置请参阅此链接：[http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/rwsv_plugincfg.html](http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/rwsv_plugincfg.html)
+
+<h4 id="problem5">Problem: Application load is not being evenly distributed</h4>
+
+负载分部不均匀可能也是由plugin引起的。
+
+##### 需要收集的数据
+
+- Plugin trace
+- Plugin日志
+
+手机plugin日志即可得到trace，因为trace是写入到plugin日志中的。你需要分析trace以确定每台服务器得到多少请求。
+
+##### 如何检查
+
+每当plugin选择一台服务器发送请求时都会在日志里写入一条类似下面这样的跟踪信息：
+
+TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server servername picked, pendingConnectionCount count totalConnectionsCount count.
+
+你可以手动数一下plugin为集群里的没台应用服务器发送了多少个请求，也可以写一个脚本把日志数据转换一下，然后得到这个数量。（***译者注：如果是Linux系统的话，直接用`grep xxxx plugin.log | wc -l`就可以了***）。如果发现负载分发的时候不均匀，我们需要检查一下所定义的每个集群成员的权重，查看`LoadBalanceWeight`参数即可：
+
+	<Server CloneID=cloneid ConnectTimeout=0 ExtendedHandshake=false
+	LoadBalanceWeight=3 MaxConnections=-1 Name=servername
+	ServerIOTimeout=0 WaitForContinue=false>
+
+每当plugin把请求发送到某一台应用服务器，那台服务器所对应的计数器的数值会减一。计数器的初始值就是权重的数值。当一台服务器计数器的数值变为0的时候，plugin就不会再往那里转发请求了。当所有服务器的数值都变为0的时候，plugin会充值计数器的数值为权重值。权重的默认值是2。
+
+举个例子，集群里有两台服务器，server1和server2。Server1的权重是2，server2是4。Table 1展示了请求会如何发送到两台服务器上。
+
+![](http://dellyqiao.qiniudn.com/2015/04/11/table1.png)
+
+其他参数的配置也会影响到负载均衡。举例来说，如果某台服务器上的应用运行速度比较慢，那台服务器就很容易到达`MaxConnection`的上限，这时plugin就会停止给它发送请求。如果发生这种情况，我们可以在plugin trace里看到。
+
+会话亲缘性也可能影响到请求被分发到哪台服务器上。如果某台服务器创建了一个会话，那后续的请求当然都会发送到那台服务器上。
+
+如果每台服务器收到的请求数的比值跟权重设置的数字的比值相同，就说明plugin的负载均衡机制工作正常。这时异常的CPU占用率肯定就是由其他原因引发的了，比如服务器上的其他的异常进程，或者应用程序有问题。
+
+如果比值不同，就说明其他因素影响了负载均衡的工作。比如，某台服务器的请求数到达了`MaxConnections`的上限，或者某台服务器被plugin标记为宕机了。
+
+如果你需要更智能的负载均衡方案，比如根据应用服务器的负载或响应时间，你可以使用其他的负载均衡产品，比如WAS Edge组件。
+
+<h4 id="problem6">The next step</h4>
+
+本文中提到的那些问题特征基本上涵盖了可能遇到的大部分情况，然而也有其他可能性导致问题的出现。如果看完了本文的诊断过程还是没有得到真相，强烈建议你看一下这篇WAS问题诊断的文章：http://www.redbooks.ibm.com/redpapers/pdfs/redp4073.pdf。请查看这一章：Classify the problem and determine the root cause，以确定是否问题出在其他组件上。
+
+如果你觉得肯定是plugin的问题，那就重新查看一下你收集到的所有诊断文件，查找跟问题相关但是本文有没有提到的日志记录，查阅支持网站。
+
+如果还是不能定位问题，你需要收集下面列表中提到的“MustGather”文档，然后发送这些文档给IBM进行下一步诊断。
+
+- MustGather for general problems with the Web server plug-in: 
+
+	http://www-1.ibm.com/support/docview.wss?rs=180&uid=swg21174894
+- MustGather for problems generating the plug-in configuration file:
+	
+	http://www-1.ibm.com/support/docview.wss?rs=180&uid=swg21199421􏰀
+- MustGather for problems installing the Web server plug-in: 
+
+	http://www-1.ibm.com/support/docview.wss?rs=180&uid=swg21199343
+
+
+请把你已经做过的诊断过程告诉IBM的支持工程师以减少诊断问题的时间。
+
+
+----
+
+全文完，接下来会继续翻译 redp4309-WebSphere Application Server V6.1Web container problem determination.pdf
