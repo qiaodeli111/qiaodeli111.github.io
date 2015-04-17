@@ -33,6 +33,8 @@
 
     <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
 
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
   </head>
 
   <body>
@@ -85,6 +87,18 @@
   
     
       
+      	
+      	<li><a href="/sporting.html">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
     
   
     
@@ -120,6 +134,7 @@
 	    	<br>
 
 	    	<p>
+			    <a href="https://www.linkedin.com/in/dellyqiao" title="linkedin" target="_blank"><i class="fa fa-linkedin"></i></a>
 			    <a class="weibo" href="http://weibo.com/qiaodeli" title="新浪微博" target="_blank"><i class="fa fa-weibo"></i></a>
 			    <a class="facebook" href="https://www.facebook.com/deli.qiao.3" title="facebook" target="_blank"><i class="fa fa-facebook-square"></i></a>
 			    <a class="github" href="https://github.com/qiaodeli111" title="GitHub" target="_blank"><i class="fa fa-github"></i></a>
@@ -135,6 +150,78 @@
 </div>
 
 <ul class="posts">
+	
+	    <h2><a href="/coding/2014/03/11/linux-shell-script-training">Linux Shell Script training</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p><strong>1、写脚本实现，可以用shell、perl等。在目录/tmp下找到100个以abc开头的文件，然后把这些文件的第一行保存到文件new中。</strong>    </p>
+
+
+		      	<a class="btn btn-primary" href="/coding/2014/03/11/linux-shell-script-training">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/coding/2014/03/11/java---">Java面试题练习   计算格点</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p><strong>题目：</strong></p>
+
+<p>面试题#给定平面上的两个格点P1(x1,y1)，P2(x2,y2)，在线段P1P2上，除P1、P2外，一共有多少个格点？格点定义为x和y都是整数的点。关注微信公众账号“待字闺中”，了解和讨论参考分析。</p>
+
+<p><strong>分析：</strong> 常规思路：从一个点开始，X坐标逐渐往另一个点以1的距离靠近，然后计算一下对应的每个Y坐标是不是整数。</p>
+
+<p>好思路：<em>暂时没想到。。。。。。。</em>  </p>
+
+
+		      	<a class="btn btn-primary" href="/coding/2014/03/11/java---">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
+	    <h2><a href="/middleware/2014/03/11/iisipiisihsapache">设置IIS服务器监听特定IP的特定端口（IIS与IHS或Apache共存的解决方案）</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p>在某些场景中，需要IIS与Apache类的中间件产品共存的情况。如果你的服务器换过网卡，也许会出现跟本文类似的IIS无法启动的情况。如果碰到了同样的问题，可以参考本文去修复。</p>
+
+
+		      	<a class="btn btn-primary" href="/middleware/2014/03/11/iisipiisihsapache">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
 	
 	    <h2><a href="/security/2014/03/11/iis70enable-ssl-in-iis-70-server">在IIS7.0中配置自签名证书(Enable SSL in IIS 7.0 Server)</a></h2>
 
@@ -317,30 +404,6 @@
 	    <hr>
 	    <br>
 	
-	    <h2><a href="/middleware/2014/03/11/apacheurl">利用Apache服务器实现URL跳转</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">11 Mar 2014</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	
-<p>此文记录一下如何利用Apache服务器进行URL跳转。开发人员可能会说用JavaScript或者后台代码可以很容易实现，但是不管是什么样的代码，都需要首先载入页面，之后才能实现跳转功能，体验并不是很好，如果在Apache服务器上设置好的话，由于服务器的配置已经预先读取到内存里了，所以当请求到达Apache的时候直接就可以进行相应地跳转，迅速可靠。</p>
-
-<p>Apache的URL重定向是利用rewrite_module实现的，这个模块功能十分强大，作为一个实用主义者我只取需要用到的功能。</p>
-
-
-		      	<a class="btn btn-primary" href="/middleware/2014/03/11/apacheurl">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
 </ul>
 
 
@@ -379,12 +442,18 @@
 	    
 	    </li>
 	
+		<li>
+	    
+	      <a href="/page5">5</a>
+	    
+	    </li>
+	
 <li>
 
 	
-    	<li class="next disabled">
-	
-	    <a href="">下一页 &raquo;</a>
+		<li class="next">
+    
+	    <a href="/page5">下一页 &raquo;</a>
 	</li>
 </ul>
 </div>

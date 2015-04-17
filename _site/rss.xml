@@ -5,10 +5,1297 @@
         <description>Delly's Publisher - Delly Qiao</description>
         <link>http://blog.dellyqiao.com</link>
         <link>http://blog.dellyqiao.com</link>
-        <lastBuildDate>2015-04-03T18:31:59+08:00</lastBuildDate>
-        <pubDate>2015-04-03T18:31:59+08:00</pubDate>
+        <lastBuildDate>2015-04-17T17:56:41+08:00</lastBuildDate>
+        <pubDate>2015-04-17T17:56:41+08:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>IBM WAS 6.1 Web container problem determination——文档翻译（更新中）</title>
+                <description>
+&lt;h3 id=&quot;section&quot;&gt;声明&lt;/h3&gt;
+
+&lt;p&gt;本文为IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过。有兴趣的可以继续阅读，没兴趣的请路过。欢迎留言吐槽，谢谢。&lt;/p&gt;
+
+&lt;p&gt;本文为翻译plugin问题诊断文档：redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf，次文档可以从这里下载：&lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/04/14/redp4309-WebSphere Application Server V6.1Web container problem determination.pdf&quot;&gt;文档下载&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;下面进入正题：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h2 id=&quot;websphere-application-server-v61-web-container-problem-determination&quot;&gt;WebSphere Application Server V6.1: Web container problem determination&lt;/h2&gt;
+
+&lt;p&gt;Web组件的运行时环境叫做Web容器（Web Container）。当用户无法正常访问系统时，可能就是Web Container的问题。&lt;/p&gt;
+
+&lt;p&gt;对于Web container来说，可能出现的问题有：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用户无法访问Web组件&lt;/li&gt;
+  &lt;li&gt;运行Web组件的时候反应不正常&lt;/li&gt;
+  &lt;li&gt;启动Web组件时报错&lt;/li&gt;
+  &lt;li&gt;JSP进行编译的时候有错&lt;/li&gt;
+  &lt;li&gt;运行Web组件时抛出错误或异常&lt;/li&gt;
+  &lt;li&gt;收到以SRVE（Web container）、JSPG（JSP）、JSFG（JSF页面）开头的信息&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;本文教你如何在分布式系统和IBM i5/OS系统上诊断IBM WAS V6.1的Web container的问题。&lt;/p&gt;
+
+&lt;h3 id=&quot;web&quot;&gt;Web容器介绍&lt;/h3&gt;
+
+&lt;p&gt;Web容器是运行Web应用的运行时环境，它处理servlet，JSP文件，和其他种类的服务器端组件。每个应用程序服务器运行时都有有一个单独的逻辑Web容器，你可以修改它，但是不能创建或删除。&lt;/p&gt;
+
+&lt;h3 id=&quot;web-1&quot;&gt;Web容器概述&lt;/h3&gt;
+
+&lt;p&gt;Figure 1图解了Web容器，以及它在应用服务器中的位置。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Web容器提供：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web容器传输链（transport chains）&lt;/p&gt;
+
+    &lt;p&gt;Web容器inbound传输链用来处理请求。它由下列组件组成：用来提供容器和网络之间的链接的TCP inbound channel，用来为HTTP 1.0和1.1提供服务的HTTP inbound channel，还有用来把servlet和JSP请求发送到Web容器的Web container channel。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Servlet处理进程&lt;/p&gt;
+
+    &lt;p&gt;当Web容器处理servlet请求时，Web容器会创建请求对象和响应对象，然后调用servlet的service方法。当时机合适，Web容器也会调用servlet的destroy方法，之后JVM会执行垃圾回收（GC）。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;HTML和其他静态内容的处理进程&lt;/p&gt;
+
+    &lt;p&gt;当Web容器接受到HTML或其他静态内容请求时，Web容器inbound传输链会提供服务。然而，在生产环境下，使用外部Web服务器并且使用plugin作为接口在大多数情况下是更为合适的选择。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;会话管理&lt;/p&gt;
+
+    &lt;p&gt;Web容器支持API中定义的javax.servlet.http.HttpSession接口规范。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;web-2&quot;&gt;Web应用程序&lt;/h3&gt;
+
+&lt;p&gt;Servlet和JSP文件就是所说的Web组件。静态内容文件（比如HTML页面，图片，XML文件）在进行应用封装创建Web模块的时候会跟Web组件捆绑在一起。Web模块是一种遵循指定的格式规范去组织和打包的，可以被单独拿出来部署和使用的一个单元，它会被打包成Web archive（WAR）文件。J2EE Web模块符合Java servlet规范。&lt;/p&gt;
+
+&lt;p&gt;Web模块最顶层的目录是应用程序的&lt;code&gt;document root&lt;/code&gt;，也就是放置JSP页面和静态Web资源的位置。document root有个名为&lt;code&gt;/WEB-INF/&lt;/code&gt;的子目录，其中放置Web应用部署描述符（web.xml）和Web模块需要用到的服务器端的类文件。如Figure 2：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;web-3&quot;&gt;确认Web容器的问题类型&lt;/h3&gt;
+
+&lt;p&gt;Web容器出问题的时候会给用户返回很多种类的标识符，比如HTTP 404错误，500错误，或者页面上显示不正确的信息，例如由HTTP错误引发的一个错误页面，或者页面上显示的内容不正确，或者页面显示不完整。&lt;/p&gt;
+
+&lt;p&gt;当发生HTTP错误的时候，Web浏览器会显示一个包含错误码的错误页面。如果在Web模块中自定义了错误页面，那你需要检查Web服务器日志以确定真实的HTTP错误码是什么，因为那些错误码很可能并不会显示在你自定的页面上。&lt;/p&gt;
+
+&lt;h4 id=&quot;web-4&quot;&gt;收集分析Web服务器日志&lt;/h4&gt;
+
+&lt;p&gt;从Web服务器上手机access日志，然后搜索日志中的404或500错误。下面是一些IHS（IBM HTTP Server）的例子：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;access.log日志：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  127.0.0.1 - - [28/Mar/2007:19:52:31 -0400] &quot;GET url HTTP/1.1&quot; 404 304 
+  127.0.0.1 - - [28/Mar/2007:20:03:48 -0400] &quot;GET url HTTP/1.1&quot;500 5348
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;重点注意一下跟出问题的URL相关的错误码。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果正常情况下从Web服务器应该可以访问某个URL（这个请求需要到达应用服务器进行处理），然后出现了类似这样的信息：从xxx地方无法找到指定的文件。这时需要查看error日志，找一下文件无法访问的日志：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  - [Wed Mar 28 19:52:31 2007] [error] [client 127.0.0.1] File does not exist: file_location
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;http-404&quot;&gt;HTTP 404错误&lt;/h3&gt;
+
+&lt;p&gt;HTTP 404错误有多重成因，下面是一些例子：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;外部因素，比如Web服务器有问题&lt;/li&gt;
+  &lt;li&gt;配置问题，比如plugin或者virtual host配置不正确&lt;/li&gt;
+  &lt;li&gt;运行时环境的问题，比如应用或应用服务器没有启动&lt;/li&gt;
+  &lt;li&gt;用户或应用问题，比如输错了URL&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-1&quot;&gt;验证系统的完整性&lt;/h4&gt;
+
+&lt;p&gt;如果用户得到404错误并且你比较了解出问题的应用程序，那么首先应该检查一下系统的完整性，需要检查的组件包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web服务器&lt;/li&gt;
+  &lt;li&gt;应用服务器&lt;/li&gt;
+  &lt;li&gt;应用程序&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果这些组件都工作正常，或者你不是很清楚哪台应用服务或哪个应用受到了影响，请继续往下看。&lt;/p&gt;
+
+&lt;h5 id=&quot;web-5&quot;&gt;&lt;strong&gt;&lt;em&gt;确认Web服务器是否正常响应&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;如何检查？取决于Web服务器的种类和它的配置。&lt;/p&gt;
+
+&lt;p&gt;如果是IHS，简捷的方法是从浏览器访问对应的URL：http://server_name。如果可以看到欢迎页面，说明Web服务器可以工作。如果无法显示，出现了“page cannot be displayed”这类的信息，说明问题可能处在Web服务器。&lt;/p&gt;
+
+&lt;h5 id=&quot;web-6&quot;&gt;&lt;strong&gt;&lt;em&gt;解决Web服务器问题&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;参阅另一篇文章：&lt;a href=&quot;http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-/&quot;&gt;http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-/&lt;/a&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;section-2&quot;&gt;&lt;strong&gt;&lt;em&gt;确认应用服务器是否启动&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;确认应用程序是否部署在了服务器或集群上&lt;/li&gt;
+  &lt;li&gt;确认应用服务器的状态&lt;/li&gt;
+  &lt;li&gt;如果没启动，尝试启动一下&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如果你不知道这些步骤怎么做，查看这里：[]()&lt;/p&gt;
+
+&lt;h5 id=&quot;section-3&quot;&gt;&lt;strong&gt;&lt;em&gt;确认应用程序是否启动&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;从管理控制台查看，Applications → Enterprise Applications。&lt;/p&gt;
+
+&lt;p&gt;如果应用状态是启动，说明应用在运行，但是它无法检测应用在启动过程中是否有任何错误。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;收集诊断相关的数据&lt;/h4&gt;
+
+&lt;p&gt;如果你无法看到错误的类型或者无法得知出问题的URL信息，你需要手机以下数据：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用户浏览器显示的错误以及失败的URL&lt;/li&gt;
+  &lt;li&gt;应用服务器的日志（如果应用部署在集群上，需要手机每台集群成员的日志）&lt;/li&gt;
+  &lt;li&gt;Web服务器access和error日志&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;TRCTCPAPP trace（i5/OS）&lt;/p&gt;
+
+    &lt;p&gt;i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：[]()&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-5&quot;&gt;分析数据&lt;/h4&gt;
+
+&lt;p&gt;从诊断数据里能得到的信息主要是这两种：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;出问题的URL&lt;/li&gt;
+  &lt;li&gt;问题出在哪儿（Web服务器，plugin，应用服务器）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;可以以下面的顺序做问题诊断：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web浏览器显示的错误信息&lt;/p&gt;
+
+    &lt;p&gt;这些信息可以帮助你得知问题的类型和出问题的URL。这些信息有可能已经足够解决你的问题。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;SystemOut日志&lt;/p&gt;
+
+    &lt;p&gt;如果是Web容器出问题，SystemOut日志是最能提供有用信息的文件。日志中的信息也有可能会显示到浏览器中，取决于应用程序如何处理错误。如果这个JVM日志中没有任何错误信息，多数可能是因为请求没有到达应用服务器。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;TRCTCPAPP trace（只针对i5/OS系统）&lt;/p&gt;
+
+    &lt;p&gt;这个trace可以帮你i安测问题是否出在plugin上。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web服务器日志&lt;/p&gt;
+
+    &lt;p&gt;如果没有发现其他的错误迹象，查看一下Web服务器日志，卡伊找到错误的类型（404、500）和错问题的URL。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;section-6&quot;&gt;分析浏览器输出的错误信息&lt;/h4&gt;
+
+&lt;p&gt;一般来说，404错误会伴随有一些描述性的问题说明信息一起出现，如果用户报告的问题属于下面列表中的任何一条，我们就可以直接定位问题原因：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The page cannot be displayed&lt;/li&gt;
+  &lt;li&gt;JSP error or JSF error&lt;/li&gt;
+  &lt;li&gt;Failed to find resource&lt;/li&gt;
+  &lt;li&gt;File not found&lt;/li&gt;
+  &lt;li&gt;WebGroup/virtual host not defined&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+                <link>http://blog.dellyqiao.com/middleware/translation/2015/04/14/ibm-was-61-web-container-problem-determination</link>
+                <guid>http://blog.dellyqiao.com/middleware/translation/2015/04/14/ibm-was-61-web-container-problem-determination</guid>
+                <pubDate>2015-04-14T00:00:00+08:00</pubDate>
+        </item>
+
+        <item>
+                <title>IBM Web Server Plug-in问题诊断——文档翻译</title>
+                <description>
+&lt;h3 id=&quot;section&quot;&gt;声明&lt;/h3&gt;
+
+&lt;p&gt;本文为IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过。有兴趣的可以继续阅读，没兴趣的请路过。欢迎留言吐槽，谢谢。&lt;/p&gt;
+
+&lt;p&gt;本文为翻译plugin问题诊断文档：redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf，次文档可以从这里下载：&lt;a href=&quot;http://dellyqiao.qiniudn.com/2015/04/11/redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf&quot;&gt;文档下载&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;下面进入正题：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h2 id=&quot;websphere-application-server-v6-web-server-plug-in-problem-determination&quot;&gt;WebSphere Application Server V6: Web Server Plug-in Problem Determination&lt;/h2&gt;
+
+&lt;p&gt;本文讨论一下跟WebSphere Application Server V6（后文简称WAS）相关的Web服务器的plugin-in的问题诊断技术，包括由配置错误引起的问题。Web服务器plugins用来处理Web服务器跟Web container（Web container是应用服务器上的组件）之间的连接交互。跟plugin相关的问题有以下标志：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用户无法通过Web服务器访问到应用&lt;/li&gt;
+  &lt;li&gt;负载均衡和故障转移（failover）无法正常工作&lt;/li&gt;
+  &lt;li&gt;会话数据丢失&lt;/li&gt;
+  &lt;li&gt;应用响应速度缓慢或时快时慢&lt;/li&gt;
+  &lt;li&gt;在安装或配置plugin之后，Web服务无法启动&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Plugin可以与六中不同的Web服务器协同工作，但是本文只关注IBM HTTP Server（后文简称IHS）和它的plugin。本文不会去讨论Web服务器本身的问题或者跟Web Container相关的问题。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Tip：强烈建议您从应用服务器开始排错的过程，请阅读：Approach to Problem Determination in WebSphere Application Server V6 at http://www.redbooks.ibm.com/redpapers/pdfs/redp4073.pdf（以后将继续翻译）&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;介绍&lt;/h3&gt;
+
+&lt;p&gt;图1展示了plugin如何在Web服务器和应用服务器上的Web Container之间进行交互。注意，Web服务器和应用服务器不需要都放到同一台物理服务器上。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;根据图示，本文讲到的问题诊断技术的关注点在Web服务器plugin和它的配置文件上。由于安装plugin的时候也需要修改Web服务器配置，创建plugin的时候需要使用WebSphere管理工具，因此本文还会讨论到这些部分。&lt;/p&gt;
+
+&lt;p&gt;我们需要关注下列用户可以看到的问题的标志：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;用户无法访问到应用（页面无法找到，和页面无法显示）&lt;/li&gt;
+  &lt;li&gt;会话数据丢失（比如每次都需要登录，购物车数据丢失）&lt;/li&gt;
+  &lt;li&gt;响应速度慢，时好时坏&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我们还需要关注下列系统管理员可以看到的问题的标志：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web服务器无法启动&lt;/li&gt;
+  &lt;li&gt;在集群环境中应用无法正确地分布到集群成员服务器上&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;所有可以使用plugin的Web服务器都可以在运行时加载外部模块；plugin也正是其中的一个模块。比如，IHS使用两行命令加载plugin模块，引用plugin配置文件。如下面的Example 1。&lt;/p&gt;
+
+&lt;p&gt;Plugin配置文件是一个XML文档，它告诉Web服务器如何处理那些需要发送到WAS服务器的请求。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 1 IBM HTTP Server plug-in directives&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;LoadModule was_ap20_module &quot;C:\IBM\WAS6\Plugins\bin\mod_was_ap20_http.dll&quot;
+WebSpherePluginConfig &quot;C:\IBM\WAS6\Plugins\config\webserver1\plugin-cfg.xml&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Plugin的工作原理是这样的：它拦截所有Web服务器收到的请求，然后用URL里的Host name和端口去跟Plugin配置文件中定义的&lt;code&gt;VirtualHostGroup&lt;/code&gt;和&lt;code&gt;UriGroup&lt;/code&gt;里定义的URI相比较。如果找到了对应的&lt;code&gt;VirtualHostGroup&lt;/code&gt;和&lt;code&gt;UriGroup&lt;/code&gt;，那么plugin会继续寻找哪个&lt;code&gt;Route&lt;/code&gt;会使用所找到的&lt;code&gt;VirtualHostGroup&lt;/code&gt;和&lt;code&gt;UriGroup&lt;/code&gt;。在找到&lt;code&gt;Route&lt;/code&gt;之后，plugin会把请求发送到&lt;code&gt;Route&lt;/code&gt;中定义&lt;code&gt;ServerCluster&lt;/code&gt;上。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;在根据以上的工作原理，在Example 2中，URL请求&lt;code&gt;http://server/snoop&lt;/code&gt;将会被转到WAS，其他的所有请求将会被传到Web服务器继续处理。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 2 Excerpt from the plug-in config file&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;VirtualHostGroup Name=&quot;default_host&quot;&amp;gt;
+	&amp;lt;VirtualHost Name=&quot;*:80&quot;/&amp;gt;
+&amp;lt;/VirtualHostGroup&amp;gt;
+&amp;lt;UriGroup Name=&quot;default_host_cluster1_URIs&quot;&amp;gt;
+	&amp;lt;Uri AffinityCookie=&quot;JSESSIONID&quot; AffinityURLIdentifier=&quot;jsessionid&quot; Name=&quot;/snoop/*&quot;/&amp;gt;
+&amp;lt;/UriGroup&amp;gt;
+&amp;lt;Route ServerCluster=&quot;cluster1&quot; 
+UriGroup=&quot;default_host_cluster1_URIs&quot; 
+VirtualHostGroup=&quot;default_host&quot;/&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Plugin配置文件由WebSphere administrative console管理，只要你有任何影响到plugin的更改，就需要重新生成plugin。这种更改包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;修改Virtual host定义&lt;/li&gt;
+  &lt;li&gt;更改HTTP传输类型或端口&lt;/li&gt;
+  &lt;li&gt;创建或删除服务器&lt;/li&gt;
+  &lt;li&gt;安装或卸载应用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Tip: 你可以设置自动生成和传输plugin配置文件。方法请自行查阅。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;section-2&quot;&gt;负载均衡&lt;/h4&gt;
+
+&lt;p&gt;Plugin可以为多台集群成员实施负载均衡。&lt;/p&gt;
+
+&lt;p&gt;Figure 2 展示了一种负载均衡的例子，Plugin安装到了Web服务器所在的主机，通过round-robin或random方式把请求转到后面的两台应用服务器上。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://publib-b.boulder.ibm.com/abstracts/sg246392.html&quot;&gt;点击这里&lt;/a&gt;查看更多关于可扩展性和性能方面的内容功能。&lt;/p&gt;
+
+&lt;p&gt;plugin-cfg.xml文件除了描述哪些URL应该被route到plugin之外，它还描述了服务器集群。Example 2展示了snoop URL相关的那些配置，这些配置告诉plugin，snoop应用程序应该由叫做&lt;code&gt;default_host_cluster1_URIs&lt;/code&gt;的&lt;code&gt;UriGroup&lt;/code&gt;去处理。&lt;/p&gt;
+
+&lt;p&gt;Example 3展示了&lt;code&gt;route&lt;/code&gt;配置，这些配置标明&lt;code&gt;default_host_cluster1_URIs&lt;/code&gt;里提到的所有应用将会被叫做&lt;code&gt;cluster1&lt;/code&gt;的这个集群去处理。&lt;code&gt;cluster1&lt;/code&gt;这个集群拥有两台服务器，第一台要通过HTTP端口9080和HTTPS端口9443去访问，第二胎要通过HTTP端口9081和HTTPS端口9444去访问。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 3 Clustering excerpts from the plug-in configuration file&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;￼￼￼￼￼&amp;lt;Route ServerCluster=&quot;cluster1&quot; UriGroup=&quot;default_host_cluster1_URIs&quot; VirtualHostGroup=&quot;default_host&quot;/&amp;gt;
+...
+&amp;lt;ServerCluster CloneSeparatorChange=&quot;false&quot; LoadBalance=&quot;Round Robin&quot; Name=&quot;cluster1&quot; 
+PostSizeLimit=&quot;-1&quot; RemoveSpecialHeaders=&quot;true&quot; RetryInterval=&quot;60&quot;&amp;gt;
+&amp;lt;Server CloneID=&quot;10ig7jdvd&quot; ConnectTimeout=&quot;0&quot; ExtendedHandshake=&quot;false&quot; 
+LoadBalanceWeight=&quot;2&quot; MaxConnections=&quot;-1&quot; Name=&quot;kll6571Node01_server1&quot; ServerIOTimeout=&quot;0&quot;
+WaitForContinue=&quot;false&quot;&amp;gt;
+     &amp;lt;Transport Hostname=&quot;kll6571&quot; Port=&quot;9080&quot; Protocol=&quot;http&quot;/&amp;gt;
+     &amp;lt;Transport Hostname=&quot;kll6571&quot; Port=&quot;9443&quot; Protocol=&quot;https&quot;&amp;gt;
+        &amp;lt;Property Name=&quot;keyring&quot; Value=&quot;C:\ibm\was6\plugins\etc\plugin-key.kdb&quot;/&amp;gt;
+        &amp;lt;Property Name=&quot;stashfile&quot; Value=&quot;C:\ibm\was6\plugins\etc\plugin-key.sth&quot;/&amp;gt;
+     &amp;lt;/Transport&amp;gt;
+&amp;lt;/Server&amp;gt;
+&amp;lt;Server CloneID=&quot;10ig7jfqi&quot; ConnectTimeout=&quot;0&quot; ExtendedHandshake=&quot;false&quot; 
+LoadBalanceWeight=&quot;2&quot; MaxConnections=&quot;-1&quot; Name=&quot;kll6571Node01_server2&quot; ServerIOTimeout=&quot;0&quot; 
+WaitForContinue=&quot;false&quot;&amp;gt;
+     &amp;lt;Transport Hostname=&quot;kll6571&quot; Port=&quot;9081&quot; Protocol=&quot;http&quot;/&amp;gt;
+     &amp;lt;Transport Hostname=&quot;kll6571&quot; Port=&quot;9444&quot; Protocol=&quot;https&quot;&amp;gt;
+        &amp;lt;Property Name=&quot;keyring&quot; Value=&quot;c:\ibm\was6\plugins\etc\plugin-key.kdb&quot;/&amp;gt;
+        &amp;lt;Property Name=&quot;stashfile&quot; Value=&quot;c:\ibm\was6\plugins\etc\plugin-key.sth&quot;/&amp;gt;
+     &amp;lt;/Transport&amp;gt;
+&amp;lt;/Server&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这些配置可以使snoop的请求被转到某台应用服务器上，可能是监听9080的那台也可能是另一台。&lt;/p&gt;
+
+&lt;p&gt;Plugin还会监控它发给应用服务器的请求，如果任何一台服务器无法连接，那么那台服务器将会被标记为宕机，同时会把它移出集群，直到它恢复正常。&lt;/p&gt;
+
+&lt;p&gt;负载均衡相关的配置，一部分通过WebSphere Console配置，一部分通过直接修改plugin-cfg.xml文件来配置。&lt;a href=&quot;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.
+websphere.nd.doc/info/ae/ae/crun_srvgrp.html&quot;&gt;点击这里&lt;/a&gt;查看更多相关内容。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;会话亲缘性&lt;/h4&gt;
+
+&lt;p&gt;J2EE应用支持会话的概念。会话是一种维护某个用户所有请求的方法。举例来说，我们用会话可以维护用户的购物车清单。&lt;/p&gt;
+
+&lt;p&gt;会话是在Web Container管理的。然而plugin具有维护会话亲缘性的功能。当用户连接到使用会话的应用时，比如购物车，Web Container将会启动会话，并且把用户的session ID回传到浏览器端，一般会放到cookie中。&lt;/p&gt;
+
+&lt;p&gt;集群环境中维护会话的方式很多（比如，把每个请求的会话数据写入到一个共享的数据库）。如果使用了会话亲缘性，plugin将会把某个用户所有的请求都转到创建会话的那台应用服务器。Plugin是通过在内部维护服务器和session ID的列表来实现这个功能的。使用会话亲缘性为应用程序提供了最好的性能表现，因为你不必再为每个请求读取或写入数据库，而是把会话数据都放到了应用服务器的内存里。&lt;/p&gt;
+
+&lt;p&gt;想要使用会话亲缘性无须堆plugin进行任何配置。只要在应用服务器中启用了会话支持，并且plugin配置文件中有&lt;code&gt;CloneID&lt;/code&gt;参数就可以了：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;Server CloneID=&quot;10ig7jdvd&quot; ...&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;默认情况下会生成&lt;code&gt;CloneID&lt;/code&gt;，这是plugin识别没太应用服务器要用到的东西。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;注：实际上&lt;code&gt;CloneID&lt;/code&gt;参数只会在集群环境中生成，在Standard版本的WAS中生成plugin配置文件的时候是不会产生&lt;code&gt;CloneID&lt;/code&gt;参数的，因为后段的应用服务器只有一台，WAS也没必要去做这个额外的配置。但是可以通过在Web Container进行一些配置强制生成&lt;code&gt;CloneID&lt;/code&gt;。&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-4&quot;&gt;解决问题&lt;/h3&gt;
+
+&lt;p&gt;诊断问题从收集数据开始，这里有一个你需要收集的文件列表，以及介绍如何收集他们。如果你被限制不能重现问题，你就需要把所有文档一次集齐。&lt;/p&gt;
+
+&lt;p&gt;接下来，你需要过一下一系列问题，这些问题描述了一些问题的特征，根据特征去寻找问题的根源，每一步都能让你更接近问题的根源。&lt;/p&gt;
+
+&lt;p&gt;最后，我们提供了解决问题的指导文档，这些文档可能是一个网站，可能是去联系IBM，或者配置某些东溪，或者其他建议。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-5&quot;&gt;收集数据&lt;/h4&gt;
+
+&lt;p&gt;跟问题相关的日志和trace包括：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web服务器日志&lt;/li&gt;
+  &lt;li&gt;Web服务器plugin日志&lt;/li&gt;
+  &lt;li&gt;Plugin trace （可以从plugin日志里找到）&lt;/li&gt;
+  &lt;li&gt;WAS SystemOut和SystemErr日志&lt;/li&gt;
+  &lt;li&gt;WAS console的信息&lt;/li&gt;
+  &lt;li&gt;网络协议分析（有时候是指iptrace）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;web&quot;&gt;&lt;em&gt;Web服务器日志文件&lt;/em&gt;&lt;/h5&gt;
+
+&lt;p&gt;大部分Web服务器会输出两个日志文件：包含了所有访问Web服务器的详情的access文件，和记录了错误的error文件。默认位置为：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;IHS，Apache，SunOne&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;Windows&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code&gt;  Access日志：&amp;lt;Web_server_home&amp;gt;\logs\access.log
+	
+  Error日志：&amp;lt;Web_server_home&amp;gt;\logs\error.log
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;Unix&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code&gt;  Access日志: &amp;lt;Web_server_home&amp;gt;/logs/access_log
+	
+  Error日志: &amp;lt;Web_server_home&amp;gt;/logs/error_log
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;微软IIS&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;Windows&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code&gt;  Access日志: C:\WINNT\SYSTEM32\LogFiles\W3SVC1\&amp;lt;date&amp;gt;.log 
+	
+  Error日志: Windows事件日志（eventvwr）
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Domino Web server&lt;/p&gt;
+
+    &lt;p&gt;Domino Web服务器日志放在数据库里，请自行查阅Domino文档了解更多。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;webplugin&quot;&gt;&lt;em&gt;Web服务器plugin日志&lt;/em&gt;&lt;/h5&gt;
+
+&lt;p&gt;plugin也会输出自己的日志，日志文件会输出到plugin安装目录下的某个目录。可以从plugin配置文件中找到日志的路径，如Example 4.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 4 Location of plug-in log file&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;Log LogLevel=&quot;Error&quot;
+Name=&quot;c:\ibm\was6\plugins\logs\webserver1\http_plugin.log&quot; /&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;默认的LogLevel是&lt;code&gt;Error&lt;/code&gt;，你可以设置为&lt;code&gt;Trace&lt;/code&gt;来收集更详细的跟踪信息。&lt;/p&gt;
+
+&lt;h5 id=&quot;plugin-trace&quot;&gt;&lt;em&gt;Plugin trace&lt;/em&gt;&lt;/h5&gt;
+
+&lt;p&gt;要获取有效的跟踪信息，你需要尽可能多地得到日志。比如，你可以为IHS设置配置文件中的LogLevel为&lt;code&gt;debug&lt;/code&gt;来获得更详细的日志输出：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;LogLevel debug
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于这个更改，你必须重启IHS服务才能生效。&lt;/p&gt;
+
+&lt;p&gt;同时可以在plugin里启用trace日志，修改plugin-cfg.xml文件即可：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;Log LogLevel=&quot;Trace&quot;
+Name=&quot;c:\ibm\was6\plugins\logs\webserver1\http_plugin.log&quot; /&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于这个更改，不需要重启IHS即可生效。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;plugin trace将会显著增加数据量，所以启用后尽量测试具体的问题一减少日志的行数。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h5 id=&quot;was&quot;&gt;&lt;em&gt;WAS日志&lt;/em&gt;&lt;/h5&gt;
+
+&lt;p&gt;从应用服务器上获取，日志文件的路径为：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;WAS_install_root&amp;gt;/profiles/&amp;lt;profile&amp;gt;/logs/&amp;lt;server&amp;gt;/SystemOut.log 
+&amp;lt;WAS_install_root&amp;gt;/profiles/&amp;lt;profile&amp;gt;/logs/&amp;lt;server&amp;gt;/SystemErr.log
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&quot;section-6&quot;&gt;&lt;em&gt;网络跟踪信息&lt;/em&gt;&lt;/h5&gt;
+
+&lt;p&gt;少量情况下，你需要使用网络分析工具获取iptrace，这可以帮助检测出问题的位置。WAS不支持这种工具，你可以使用第三方工具完成这项工作。如 http://www.ethereal.com/&lt;/p&gt;
+
+&lt;h4 id=&quot;section-7&quot;&gt;查看问题特征&lt;/h4&gt;
+
+&lt;p&gt;我们通过查看下面列表中提到的问题特征描述来找到应对的方案：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;无法从Web服务器获得响应&lt;/p&gt;
+
+    &lt;p&gt;检查Web服务器是否已启动，可以检查进程或者访问顶级URL。例如：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  http://localhost/
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;如果无法得到Web服务器的欢迎也，检查一下Web服务器的进程是否已经启动，如果没有，尝试手动启动。&lt;/p&gt;
+
+    &lt;p&gt;如果Web服务器无法启动，查看 &lt;a href=&quot;#problem1&quot;&gt;“Problem: Web server will not start”&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web服务器已经启动，但是无法通过它访问应用。&lt;/p&gt;
+
+    &lt;p&gt;比如说用这个URL &lt;code&gt;http://Web_server/snoop&lt;/code&gt;去访问snoop servlet无法正常工作。&lt;/p&gt;
+
+    &lt;p&gt;这时要先检查一下应用是否可以通过Web Container直接访问，使用这种URL去检测：&lt;code&gt;http://Application_server:WC_port/snoop&lt;/code&gt;&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  要通过Web Container直接访问应用：
+  1. 找到对应的Web Container的端口：
+      a. 在WAS console中，选择 Servers -&amp;gt; Application Servers.
+      b. 点击服务器名
+      c. 在“Communications”区，展开“Ports”
+      d. 记住“WC_defaulthost”所对应的端口号
+  2. 用浏览器使用端口号去访问对应的资源。
+      例如：如果端口号是9080，那么URL就是：http://localhost:9080/snoop
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;如果可以通过Web Container访问到应用但是通过Web服务器就不行，那么查看 &lt;a href=&quot;#problem2&quot;&gt;“Problem: Failure between the Web server and plug-in”&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;应用依赖于会话，但是会话信息很明显丢失了。&lt;/p&gt;
+
+    &lt;p&gt;例如，如果你每次访问应用时都要求登录，或者购物车数据丢失，那就说明有可能发生了会话丢失的现象。这种情况查看 &lt;a href=&quot;#problem3&quot;&gt;“Problem: Sessions are being lost”&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;集群环境下，应用时好时坏&lt;/p&gt;
+
+    &lt;p&gt;例如，2/3的请求是工作的，另外的1/3会超时。这种情况查看 &lt;a href=&quot;#problem4&quot;&gt;“Problem: The application works intermittently”&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;应用负载没有均匀地分布到集群中的成员上&lt;/p&gt;
+
+    &lt;p&gt;例如，某台集群成员CPU负载在80%，另一台负载总是很小。这种情况请查看 &lt;a href=&quot;#problem5&quot;&gt;“Problem: Application load is not being evenly distributed”&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果上面的列表里没有你遇到的问题，查看这里 &lt;a href=&quot;#problem6&quot;&gt;“The next step”&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;section-8&quot;&gt;分析问题&lt;/h4&gt;
+
+&lt;p&gt;根据收集到的信息，你应该已经被指引到了下面的某一个问题类别里。如果没有的话，查看 &lt;a href=&quot;#problem6&quot;&gt;“The next step”&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;problem1&quot;&gt;Problem: Web server will not start&lt;/h4&gt;
+
+&lt;p&gt;如果你已经安装了plugin，或者生成了plugin配置文件，然后Web服务器无法启用，那么问题应该在plugin上。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-9&quot;&gt;需要收集的数据&lt;/h5&gt;
+
+&lt;p&gt;需要收集下列日志以确定为何无法启动Web服务器，请把日志拷贝出来以防在debug的过程中日志被覆盖。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;OS操作系统信息&lt;/li&gt;
+  &lt;li&gt;Web服务器日志&lt;/li&gt;
+  &lt;li&gt;plugin日志&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在某些情况下，错误信息不会输出到任何日志中，这时你需要用命令行启动应用然后观察在控制台输出的错误信息。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-10&quot;&gt;如何检查&lt;/h5&gt;
+
+&lt;p&gt;查看标识出为什么服务无法启动的日志。如果看到最后都没有失败的信息，那么尝试启动服务器然后直接查看输出的信息。&lt;/p&gt;
+
+&lt;p&gt;Example 5展示了如果plugin-cfg.xml文件缺失，日志会是什么样：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 5 Starting the HTTP Server from the command line&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;C:\IBM\HTTP\bin&amp;gt;apache
+ws_common: websphereUpdateConfig: Failed to stat plugin config file for
+C:\IBM\WAS6\Plugins\config\webserver1\plugin-cfg.xml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在Unix环境中，当你启动Web服务器的时候，一般可以在命令行中看到相关的信息。比如plugin模块被损坏了，输出如下：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 6 Messages indicating a corrupt plug-in module on UNIX&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;Syntax error on line 844 of /opt/IBMIHS/conf/httpd.conf:
+Cannot load /opt/IBM/WAS6/Plugins/bin/mod_was_ap20_http.so into server:
+/opt/IBM/WAS6/Plugins/bin/mod_was_ap20_http.so: undefined symbol: ap_palloc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在Windows环境中，用Windows services面板启动Web服务器的时候很少会看到有用的信息，你需要查看日志文件。累死Example 6的信息将会出现在http_plugin.log文件中。&lt;/p&gt;
+
+&lt;p&gt;如果是plugin是Web服务器无法启动，那么错误信息一般会很精确很具体。等你解决了那些问题的时候就可以启动Web服务器了。&lt;/p&gt;
+
+&lt;p&gt;如果错误信息指向某些文件，那么请确认文件确实存在并且没被损坏。确认过程中请使用启动Web服务器的那个账户，以确保不存在任何权限问题。&lt;/p&gt;
+
+&lt;p&gt;如果错误信息指出跟plugin-cfg.xml相关，可以尝试重新生成这个文件。&lt;/p&gt;
+
+&lt;p&gt;Plugin只在特定版本的Web服务器上工作，如果你的plugin版本过劳，或者Web服务器或者GSKit版本过来，那么你需要升级一下对应的组件。下面的链接可以查看软件版本的适配信息：&lt;a href=&quot;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.
+websphere.base.doc/info/welcome_base.html&quot;&gt;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.
+websphere.base.doc/info/welcome_base.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Tip: 运行GSKit版本命令以获取版本信息，此命令在&lt;gskit_install&gt;/bin目录下。
+示例：C:\Program Files\IBM\gsk7\bin\gsk7ver&lt;/gskit_install&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;如果上面的信息都跟你的情况不符，那么问题就不是有plugin引起的。这种情况下，你需要回顾一下问题的特征，确定是否应该属于别的情况。&lt;/p&gt;
+
+&lt;h4 id=&quot;problem2&quot;&gt;Problem: Failure between the Web server and plug-in&lt;/h4&gt;
+
+&lt;p&gt;如果你猜想plugin有一些问题导致了Web服务器不能把HTTP请求发送到WAS服务器，那么这个部分会帮助你确定原因。&lt;/p&gt;
+
+&lt;p&gt;最明显的特征是可以直接访问Web Container，但是不能通过Web服务器去访问。&lt;/p&gt;
+
+&lt;p&gt;Error日志同时也会出现一个无法找到文件的记录，如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[Tue Jun 28 15:54:43 2005] [error] [client 127.0.0.1] File does not exist:
+C:/IBM/HTTP/htdocs/en_US/snoop
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&quot;section-11&quot;&gt;需要收集的数据&lt;/h5&gt;
+
+&lt;p&gt;收集这些日志文件可以帮助你查明问题的根源：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web服务器日志&lt;/li&gt;
+  &lt;li&gt;Plugin日志&lt;/li&gt;
+  &lt;li&gt;Plugin trace （debug模式的plugin日志）&lt;/li&gt;
+  &lt;li&gt;网络trace （辅助plugin trace分析）&lt;/li&gt;
+  &lt;li&gt;plugin配置文件&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;section-12&quot;&gt;如何检查&lt;/h5&gt;
+
+&lt;p&gt;首先确定Web服务器确实引用了plugin-cfg.xml文件，检查httpd.conf配置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;WebSpherePluginConfig /opt/WAS6/Plugins/config/web1/plugin-cfg.xml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;打开这个xml文件，检查无法正常工作的应用程序的URI是否包含在其中，像Example 2那样。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;验证你是否使用了正确的配置文件&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果应用程序的URI配置丢失，那么确认一下Web服务器上的这个配置文件是否是你生成的那个。当你生成plugin配置文件时，不论是用WAS Console还是&lt;code&gt;GenPluginCfg.sh/bat&lt;/code&gt;命令，输出的信息都会告诉你生成的文件的具体位置。Figure 3显示plugin文件的位置：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;当以下条件满足时，plugin配置文件还可以自动传输到本地或远程服务器的指定位置：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;远程Web服务器是IHS&lt;/li&gt;
+  &lt;li&gt;Plugin配置服务已经在运行&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;以下条件满足任意一条：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;WebSphere的node agent运行在Web服务器所在的主机上&lt;/li&gt;
+      &lt;li&gt;IHS运行在Web服务器所在的主机上，并且管理密码已经设定好了&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;自动传输插件的配置已经启用。如Figure 4：&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;更多自动传输插件的信息请查阅这里： &lt;a href=&quot;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.
+websphere.base.doc/info/aes/ae/uwsv_plugin_props.html&quot;&gt;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.
+websphere.base.doc/info/aes/ae/uwsv_plugin_props.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;验证是否正确地生成了plugin配置文件&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果尝试生成plugin配置文件，但是应用的context root没有出现在其中，那么可能配置文件没有正确地生成。配置文件中的内容取决于你生成配置文件的方法。&lt;/p&gt;
+
+&lt;p&gt;如果你使用&lt;code&gt;GenPluginCfg.sh/bat&lt;/code&gt;命令，没有使用任何参数，那么拓扑结构中所有的应用和应用服务器都会生成到配置文件中。然而，你可以通过参数缩小要包含进来的拓扑结构的部分。例如，如果使用命令行并且指定Web服务器名去生成plugin，或者使用WAS Console生成plugin，那么只有映射到那个Web服务器上的应用程序才会被包含到plugin文件中。&lt;/p&gt;
+
+&lt;p&gt;问题的原因可能只是因为你没有把应用程序映射到对应的Web服务器。这是用WAS Console做一下mapping就好。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;检查此错误：Virtual Host and WebGroup not found error&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;如果配置文件没问题，但是“Virtual Host and WebGroup not found error”这样的错误信息返回到了浏览器中，那么这个错误是跟WAS相关的，查看此链接：&lt;a href=&quot;http://www.redbooks.ibm.com/redpapers/pdfs/redp4058.pdf&quot;&gt;http://www.redbooks.ibm.com/redpapers/pdfs/redp4058.pdf&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;进一步分析：Trace和请求&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;到现在为止，你确定一切配置都正常，看起来Web服务器可以接受请求，plugin可以把请求发到WAS，但是不能从应用方面得到响应。&lt;/p&gt;
+
+&lt;p&gt;下一个步骤，启用plugin trace，再次发送一个HTTP请求，然后检查每个日志，跟踪此HTTP请求以确定到底它是在哪个环节失败的。Figure 5展示了HTTP请求索要经过的路径：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;根据图示的路径追踪指定的请求可以告诉你问题出在哪儿。Example 9展示了一个成功的请求，这些日志记录展示了请求在各个组件之间成功地过渡。&lt;/p&gt;
+
+&lt;p&gt;写入到http_plugin.log文件里的第一行日志说明plugin绑定了转换URL的工具，如果一切正常，可以看到它将会绑定你的URL。Example 7摘要了几条snoop应用相关的trace日志：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 7 Plug-in trace initial entries&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriCreate: Creating uri
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetName: Setting the name /snoop/* with score 7
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetAffinityURL: Setting the affinity cookie jsessionid
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri: uriSetAffinityCookie: Setting the affinity cookie JSESSIONID
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - TRACE: ws_uri_group: uriGroupAddUri: Adding uri /snoop/* to front of list
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在plugin完成转换工作之后，它会把版本信息写入到日志里，如下Example 8：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 8 Plug-in initialization messages&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;--------------------System Information-----------------------
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Bld version: 6.0.0
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Bld date: Oct 31 2004, 11:15:26
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Webserver: IBM_HTTP_Server/6.0 Apache/2.0.47 (Win32)
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: Hostname = KLL6571
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN: OS version 5.0, build2195, &#39;Service Pack 4&#39;
+[Thu Jun 23 14:35:46 2005] 0000097c 00000ae4 - PLUGIN:
+--------------------------------------------------------------
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 9所示的日志说明plugin已经成功地转换了URL，然后设置传输方式，把请求转到了集群中的一台服务器去处理。之后，一个带有200返回码的响应成功地返回到了plugin。时间标说明应用服务器花了7秒钟去处理这个请求。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 9 Web server plug-in request trace entries for snoop&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jun 23 14:35:56 2005] 000007bc 000007d4 - TRACE: ws_common: websphereShouldHandleRequest: trying to match a route for: vhost=&#39;localhost&#39;; uri=&#39;/snoop&#39;
+...
+[Thu Jun 23 14:35:56 2005] 000007bc 000007d4 - TRACE: ws_common: websphereUriMatch: Found a match &#39;/snoop&#39; to &#39;/snoop&#39; in UriGroup: default_host_cluster1_URIs with score 6
+...
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server
+...
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htrequest: htrequestWrite: Writing the request:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼18 WebSphere Application Server V6: Web Server Plug-in Problem Determination
+GET /snoop HTTP/1.1
+User-Agent: Wget/1.9
+Host: localhost
+Accept: */*
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE:
+WS-ESI=&quot;ESI/1.0+&quot;
+Connection: Keep-Alive
+$WSIS: false
+$WSSC: http
+$WSPR: HTTP/1.0
+$WSRA: 127.0.0.1
+$WSRH: 127.0.0.1
+$WSSN: localhost
+$WSSP: 80
+Surrogate-Capability:
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htrequest: htrequestWrite: Writing the request content
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: ws_common: websphereExecute: Wrote the request; reading the response
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htresponse: htresponseRead: Reading the response: 5397bc
+...
+[Thu Jun 23 14:35:57 2005] 000007bc 000007d4 - TRACE: lib_htresponse: htresponseRead: Reading the response: 5397bc
+[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:
+text/html;charset=ISO-8859-1
+[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:
+en-US
+HTTP/1.1 200 OK
+Content-Type:
+Content-Language:
+Content-Length: 16166
+[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE:
+[Thu Jun 23 14:36:04 2005] 000007bc 000007d4 - TRACE: lib_htresponse:
+htresponseSetContentLength: Setting the content length |16166|
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在这之后，很快地Web服务器把得到的响应返回给浏览器，同时更新access日志，显示整个事务成功完成。如Example 10：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 10 Web server access log entry for snoop&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;127.0.0.1 - - [23/Jun/2005:14:35:56 -0400] &quot;GET /snoop HTTP/1.0&quot; 200 16166
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Web服务器在整个处理最后的过程才会写入Access日志。&lt;/p&gt;
+
+&lt;p&gt;根据上面的介绍，你可以根据提到的日志文件去确定问题出在哪个环节。&lt;/p&gt;
+
+&lt;p&gt;下面的Example 11展示了plugin标记应用服务器为宕机状态的日志。这个日志即使不是trace级别也会出现，这个信息包含操作系统返回的错误：&lt;code&gt;err=10061&lt;/code&gt;，这条信息表示connection refused。想要知道这些错误信息的含义，你需要检查一下操作系统的文档。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 11 Plug-in messages when a server goes down&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereGetStream: Failed to connect to app server on host &#39;kll6571&#39;, OS err=10061
+[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereExecute: Failed to create the stream
+[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_server: serverSetFailoverStatus: Marking kll6571Node01_server01 down 
+[Thu Jul 07 13:53:20 2005] 00000d6c 000010b8 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to &#39;kll6571Node01_server01&#39;on host &#39;kll6571&#39;; will try another one
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果plugin trace显示它绑定了请求并且把请求发送到了应用服务器，但是没有显示收到的回复，那么问题可能是Web服务器和APP服务器之间的网络出现问题。Example 12中的日志显示plugin把请求写入了请求然后等待响应。在这个例子中，plugin设置了连接超时为10秒，所以10秒过后还没有响应，plugin就会把这台应用服务器标记为宕机。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 12 Marking a server down after time out&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: lib_htrequest: htrequestWrite: Writing the request content
+[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: ws_common: websphereExecute: Wrote the request; reading the response
+[Thu Jul 07 15:09:48 2005] 00000ed4 00000ffc - TRACE: lib_htresponse: htresponseRead: Reading the response: 4cf1504
+[Thu Jul 07 15:09:58 2005] 00000ed4 00000ffc - TRACE: lib_htresponse: htresponseSetError: Setting the error |1|
+[Thu Jul 07 15:09:58 2005] 00000ed4 00000ffc - ERROR: ws_common: websphereExecute: Failed to read from a new stream; App Server may have gone down during read
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;某些情况下，成功建立连接并且写入请求之后，应用服务器宕机了，但是plugin无法检测出来。这种奇怪的现象一般是因为其中一台服务器是Windows另一台是Unix。&lt;/p&gt;
+
+&lt;p&gt;Example 13展示了一个正常收到响应的例子。plugin写入请求然后等待响应，7秒钟后收到响应。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 13 A request that responds&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: lib_htrequest:
+htrequestWrite: Writing the request content
+[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: ws_common:
+websphereExecute: Wrote the request; reading the response
+[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: 	lib_htresponse: htresponseRead: Reading the response: 5397cc
+[Thu Jul 07 14:27:07 2005] 00000a20 00000f80 - TRACE: HTTP/1.1 200 OK
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 14展示了这种情况：plugin写入请求然后等待响应，但是5分钟后下一个请求已经到达了，上个请求的响应还没有收到。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 14 A request that never responds&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 14:22:20 2005] 00000a20 00000f88 - TRACE: ws_common: websphereExecute: Wrote the request; reading the response
+[Thu Jul 07 14:22:20 2005] 00000a20 00000f88 - TRACE: lib_htresponse: htresponseRead: Reading the response: 4cf1504
+[Thu Jul 07 14:27:00 2005] 00000a20 00000f80 - TRACE: lib_util: parseHostHeader: Host: &#39;localhost&#39;, port 80
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这种时候，你可以使用网络协议分析器去检测数据包在离开Web服务器后发生了什么事情。也可以叫&lt;code&gt;iptrace&lt;/code&gt;。网络协议分析器是一种专业性强的工具，一般来说即时网络比较空闲也会产生大量的数据。如果你没有足够的经验，也可以请网络工程师来帮忙抓取。&lt;/p&gt;
+
+&lt;p&gt;大多数表面上跟plugin相关的问题实际上都是配置问题和网络问题。除了均衡负载这个特性之外，plugin实际上是一个用来抓取请求，转换URL然后找到匹配，然后把匹配好的请求转发到应用服务器的简单组件。&lt;/p&gt;
+
+&lt;h4 id=&quot;problem3&quot;&gt;Problem: Sessions are being lost&lt;/h4&gt;
+
+&lt;p&gt;如果在集群环境中出现了会话数据丢失的情况，那么plugin有可能是问题的根源。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-13&quot;&gt;需要收集的数据&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Plugin trace&lt;/li&gt;
+  &lt;li&gt;Web服务器上的Plugin日志&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;section-14&quot;&gt;如何检查&lt;/h5&gt;
+
+&lt;p&gt;Plugin trace可以给我们展示处理会话亲缘性的详细过程。WAS自带的示例应用程序就可以测试会话亲缘性。下面的URL可以展示WAS正在运行而且设置了一个会话。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;http://servername/HelloHTML.jsp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 15中的日志片段展示了会话的创建过程。plugin试图找到跟session相关的cookie，但是没有找到，所以它使用round-robin负载均衡算法找到了一台服务器去创建。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 15 Creating a session&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereWriteRequestReadResponse: Enter
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+    htrequestGetCookieValue: Looking for cookie: &#39;SSLJSESSION&#39;
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+    htrequestGetCookieValue: No cookie found for: &#39;SSLJSESSION&#39;
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common:
+    websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+    htrequestGetCookieValue: Looking for cookie: &#39;JSESSIONID&#39;
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+    htrequestGetCookieValue: No cookie found for: &#39;JSESSIONID&#39;
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the url rewrite affinity: jsessionid [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseSessionID: Parsing session id from &#39;/HelloHTML.jsp&#39;
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseSessionID: Failed to parse session id
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Bypassing check for partitionID cookie affinity. No stored partition table.
+    [Mon Jun 27 14:48:33 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupNextRoundRobinServer: Round Robin load balancing
+    ...
+    [Mon Jun 27 14:51:36 2005] 00000798 00000e18 - TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server kll6571Node01_server2 picked, pendingConnectionCount 1 totalConnectionsCount 5.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;下面的Example 16展示了第二个请求处理的过程。因为已经有一个session ID了，所以这一次请求被发送到了Example 15中创建session的那台机器上，也就是&lt;code&gt;kll6571Node01_server2 &lt;/code&gt;。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 16 Processing session affinity&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+htrequestGetCookieValue: Looking for cookie: &#39;SSLJSESSION&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest:
+htrequestGetCookieValue: No cookie found for: &#39;SSLJSESSION&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID [Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: &#39;JSESSIONID&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: lib_htrequest: htrequestGetCookieValue: name=&#39;JSESSIONID&#39;, value=&#39;00004RRFkLCkLGWVw-37Cd-mEN7:10ig7jfqi&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Parsing clone ids from &#39;00004RRFkLCkLGWVw-37Cd-mEN7:10ig7jfqi&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Adding clone id &#39;10ig7jfqi&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereParseCloneID: Returning list of clone ids
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Looking for clone
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupGetFirstPrimaryServer: getting the first primary server
+￼￼￼￼￼￼￼￼￼￼WebSphere Application Server V6: Web Server Plug-in Problem Determination 23
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group:
+serverGroupFindClone: Comparing curCloneID &#39;10ig7jfqi&#39; to server clone id
+&#39;10ig7jdvd&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group:
+serverGroupGetNextPrimaryServer: getting the next primary server
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Comparing curCloneID &#39;10ig7jfqi&#39; to server clone id &#39;10ig7jfqi&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupFindClone: Match for clone &#39;kll6571Node01_server2&#39;
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server: serverHasReachedMaxConnections: currentConnectionsCount 0, maxConnectionsCount -1.
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - STATS: ws_server_group: serverGroupCheckServerStatus: Checking status of kll6571Node01_server2, ignoreWeights 1, markedDown 0, retryNow 0, wlbAllows -1 reachedMaxConnectionsLimit 0
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server: serverHasReachedMaxConnections: currentConnectionsCount 0, maxConnectionsCount -1.
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server kll6571Node01_server2 picked, pendingConnectionCount 1 totalConnectionsCount 7.
+[Mon Jun 27 14:51:51 2005] 00000798 00000e00 - TRACE: ws_common: websphereHandleSessionAffinity: Setting server to kll6571Node01_server2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;查看plugin trace日志就可以知道会话亲缘性是否正常工作，plugin有没有把会话转发到正确的服务器。&lt;/p&gt;
+
+&lt;p&gt;如果会话亲缘性很明显没有正常工作，请检查WAS的配置，以确定会话管理的配置参数是否正确设定。同时，检查plugin-cfg.xml文件以确定&lt;code&gt;CloneID&lt;/code&gt;参数是否存在。&lt;/p&gt;
+
+&lt;p&gt;Figure 6展示了会话管理参数的配置页面，按照此路径到达这个配置页：Application servers → servername → Web container settings → Session management&lt;/p&gt;
+
+&lt;p&gt;有三种会话机制可以配置。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;启用SSL ID跟踪，只有为应用程序使用SSL加密的时候才可以使用。&lt;/li&gt;
+  &lt;li&gt;启用cookies，这是最通用的方法&lt;/li&gt;
+  &lt;li&gt;启用URL重写，这种方法很少使用，因为它需要对每个URL都进行重写，对性能会有较大影响&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;要启用会话支持，可以选择一个或多个机制。其他参数是用来设置会话能持续多久，和其他目的会话配置。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;与会话相关的错误信息只会出现在plugin trace里。&lt;/p&gt;
+
+&lt;p&gt;Example 17与Example 16类似，不同的是创建会话的那台主机已经宕机。这时plugin会选择另一台集群中的服务器，但是宕掉的机器产生的会话数据将会丢失。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 17 Session lost after application server goes down&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_server_group: serverGroupFindClone: Match for clone &#39;m23vnx60Craig01_server02&#39;
+...
+[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_server_group: lockedServerGroupUseServer: Server m23vnx60Craig01_server02 picked, weight 0. [Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Finding the transport
+[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Setting the transport(case 2): m23vnx60 on port 19082 [Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereExecute: Executing the transaction with the app server
+[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereGetStream: Getting the stream to the app server
+[Thu Jul 07 15:55:59 2005] 00000bcc 000010c0 - TRACE: ws_transport: transportStreamDequeue: Checking for existing stream from the queue
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereGetStream: Failed to connect to app server on host &#39;m23vnx60&#39;, OS err=10061
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereGetStream: socket 6628 closed - failed to connect
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereExecute: Failed to create the stream
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_server: serverSetFailoverStatus: Marking m23vnx60Craig01_server02 down
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - STATS: ws_server: serverSetFailoverStatus: Server m23vnx60Craig01_server02 : pendingConnections 0 failedConnections 1 affinityConnections 1 totalConnections 0.
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - ERROR: ws_common: websphereHandleRequest: Failed to execute the transaction to &#39;m23vnx60Craig01_server02&#39;on host &#39;m23vnx60&#39;; will try another one
+...
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_server_group: lockedServerGroupUseServer: Server kll6571Node01_server01 picked, weight 0. [Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Finding the transport
+[Thu Jul 07 15:56:00 2005] 00000bcc 000010c0 - TRACE: ws_common: websphereFindTransport: Setting the transport(case 2): kll6571 on port 9082
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果从plugin的角度来看，很明显会话亲缘性工作正常，那问题很可能出现在应用上。这时请跟开发团队去确定应用程序有正确地处理会话。&lt;/p&gt;
+
+&lt;p&gt;Example 18展示了这样的情况：应用程序需要会话，并且采用了cookie机制，但是客户端浏览器不支持cookie。由于无法保存session ID，导致plugin无法维护会话亲缘性。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 18 Session failure as cookies are not allowed&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking for session affinity [Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the SSL session id
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: &#39;SSLJSESSION&#39;
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: No cookie found for: &#39;SSLJSESSION&#39;
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the cookie affinity: JSESSIONID
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: Looking for cookie: &#39;JSESSIONID&#39;
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: lib_htrequest: htrequestGetCookieValue: No cookie found for: &#39;JSESSIONID&#39;
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereHandleSessionAffinity: Checking the url rewrite affinity: jsessionid [Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereParseSessionID: Parsing session id from &#39;/HelloHTML.jsp&#39;
+[Thu Jul 07 15:59:04 2005] 00000978 00000ff4 - TRACE: ws_common: websphereParseSessionID: Failed to parse session id
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;查阅下面的连接获取更多有关WAS集群中会话管理的信息：&lt;a href=&quot;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.nd.doc/info/ae/ae/crun_srvgrp.html&quot;&gt;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.nd.doc/info/ae/ae/crun_srvgrp.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;problem4&quot;&gt;Problem: The application works intermittently&lt;/h4&gt;
+
+&lt;p&gt;如果在集群环境下，系统发生定期的的反常的现象，可能是plugin有问题。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-15&quot;&gt;需要收集的数据&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web服务器日志&lt;/li&gt;
+  &lt;li&gt;plugin日志&lt;/li&gt;
+  &lt;li&gt;WAS日志&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果依然不能定位问题，你需要做一个plugin trace。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-16&quot;&gt;如何检查&lt;/h5&gt;
+
+&lt;p&gt;时好时坏的现象可能是因为plugin没有检测到集群中的某台WAS服务器已经宕机，依然把请求转发到那些主机上。&lt;/p&gt;
+
+&lt;p&gt;如果应用服务器是宕机的（服务器进程处于停止状态），plugin没办法与它创建TCP/IP连接，也不会把请求发过去。因此在这种情况下，plugin会把这台服务器标记为宕机。&lt;/p&gt;
+
+&lt;p&gt;但是，如果应用服务器挂起（hung），那么这台服务器依然可以接收请求，只是不能做出响应。这种情况下，plugin不会把这台服务器标记为宕机，除非从操作系统层面认为连接超时。具体超时的时间依操作系统而定，可能长达十分钟。当plugin标记这台服务器宕机之后，他还会在某些时间点再次检测这台服务器是否依然宕机，这时服务器还是可以接收请求，因此plugin会再次标记它为已启动，直到连接从操作系统层面再次超时。&lt;/p&gt;
+
+&lt;p&gt;如果应用服务器没有挂起而是处理速度慢，当应用服务器上可用的的TCP/IP连接被用完时，plugin就无法建立新的连接了，就会标记它为宕机。&lt;/p&gt;
+
+&lt;p&gt;如果是应用本身有问题，因为应用服务器能接收请求并且做出响应（即使是失败的响应），因此plugin不会认为应用所在的服务器宕机。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note: 上面提到的所有情况下，当你直接访问应用服务器的时候都是无法获得响应的，例如：
+http://servername:9080/snoop
+在集群环境中，你需要单独访问每台服务器以确定哪台有问题。更多WAS排错的方法和信息请查阅此处：http://www.redbooks.ibm.com/redpapers/pdfs/redp4073.pdf&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个部分所提到的问题都是跟应用服务器相关的，所以你需要解决应用服务器的问题。然而，我们可以通过修改plugin的参数去控制plugin如何响应time-out的情况，从而最大限度地减少问题造成的影响。下面介绍一下相关的参数：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;RetryInterval&lt;/p&gt;
+
+    &lt;p&gt;这个参数确定在plugin标记某台服务器为宕机状态之后多久再一次检查服务器的状态。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;ServerIOTimeout&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;Server&lt;/code&gt;元素中的这个ServerIOTimeout参数允许我们设定plugin发送请求到接收响应这段时间的超时时间的值，单位是秒。如果没有设定这个参数，plugin会使用阻塞I/O方式把请求写入到应用服务器，然后从应用服务器读取响应，直到这个TCP连接超时。&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  &amp;lt;Server Name=&quot;server1&quot; ServerIOTimeout=300&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+    &lt;p&gt;在这个配置中，在TCP连接超时之前，plugin会等待300秒（也就是5分钟）。设置一个合理的值可以使plugin尽可能快速地把请求切换到可用的服务器上。同时也注意，应用程序处理请求的时候可能需要几分钟，如果超时时间设置得太短可能会导致plugin给客户端发送错误的响应。&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;Note: 运行在Solaris操作系统上的plugin会忽略ServerIOTimeout参数。&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;ExtendedHandshake&lt;/p&gt;
+
+    &lt;p&gt;如果在Web服务器plugin和应用服务器之间有代理防火墙，你应该配置这个参数。这个参数强制plugin去做更广泛的检查以确定应用服务器是否宕机。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;MaxConnections&lt;/p&gt;
+
+    &lt;p&gt;这个参数限定并行发送到应用服务器的连接数，从而避免plugin发送过量的请求拖慢速度。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;ConnectTimeout&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;Server&lt;/code&gt;元素中的这个ConnectTimeout参数使plugin可以跟应用服务器发起一个非阻塞连接。当plugin无法连接到目标服务器因而无法确定端口是否可用的时候，非阻塞连接非常有用。&lt;/p&gt;
+
+    &lt;p&gt;如果不设定这个参数或者设置值为0，plugin会从所在的服务器发起一个阻塞连接，这个连接的超时时间取决于操作系统，一旦超时plugin会标记那台服务器宕机。如果设置的数字大于0，plugin会等待对应的秒数。如果在这个超时时间之后，链接始终没有建立成功，plugin会标记宕机，尝试集群中的其他成员。&lt;/p&gt;
+
+    &lt;p&gt;&lt;strong&gt;&lt;em&gt;译者注：这个参数与ServerIOTimeout的区别是，这个超时时间是指建立连接的超时时间，关注点在创建连接本身的这个过程；而ServerIOTimeout是配置整个处理过程的超时时间，也就是从plugin发送请求开始算起，不管连接有没有建立起来，它只关注是否在特定的时间内收到了响应&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果可能的话，尽量使用WAS Console去配置这些参数，因为一旦重新生成插件，手工修改的参数就不存在了。我们可以用Console设置&lt;code&gt;RetryInterval&lt;/code&gt;这个参数，跳转的路径为：Web servers → webserver → Plug-in properties → Request routing，如Figure 7。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/figure7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其他所有的参数都得修改plugin-cfg.xml手工配置。所以每次重新生成plugin之后，记得手工修改一下。更多plugin属性的配置请参阅此链接：&lt;a href=&quot;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/rwsv_plugincfg.html&quot;&gt;http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/rwsv_plugincfg.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;problem5&quot;&gt;Problem: Application load is not being evenly distributed&lt;/h4&gt;
+
+&lt;p&gt;负载分部不均匀可能也是由plugin引起的。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-17&quot;&gt;需要收集的数据&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Plugin trace&lt;/li&gt;
+  &lt;li&gt;Plugin日志&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;手机plugin日志即可得到trace，因为trace是写入到plugin日志中的。你需要分析trace以确定每台服务器得到多少请求。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-18&quot;&gt;如何检查&lt;/h5&gt;
+
+&lt;p&gt;每当plugin选择一台服务器发送请求时都会在日志里写入一条类似下面这样的跟踪信息：&lt;/p&gt;
+
+&lt;p&gt;TRACE: ws_server_group: serverGroupIncrementConnectionCount: Server servername picked, pendingConnectionCount count totalConnectionsCount count.&lt;/p&gt;
+
+&lt;p&gt;你可以手动数一下plugin为集群里的没台应用服务器发送了多少个请求，也可以写一个脚本把日志数据转换一下，然后得到这个数量。（&lt;strong&gt;&lt;em&gt;译者注：如果是Linux系统的话，直接用&lt;code&gt;grep xxxx plugin.log | wc -l&lt;/code&gt;就可以了&lt;/em&gt;&lt;/strong&gt;）。如果发现负载分发的时候不均匀，我们需要检查一下所定义的每个集群成员的权重，查看&lt;code&gt;LoadBalanceWeight&lt;/code&gt;参数即可：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;Server CloneID=cloneid ConnectTimeout=0 ExtendedHandshake=false
+LoadBalanceWeight=3 MaxConnections=-1 Name=servername
+ServerIOTimeout=0 WaitForContinue=false&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;每当plugin把请求发送到某一台应用服务器，那台服务器所对应的计数器的数值会减一。计数器的初始值就是权重的数值。当一台服务器计数器的数值变为0的时候，plugin就不会再往那里转发请求了。当所有服务器的数值都变为0的时候，plugin会充值计数器的数值为权重值。权重的默认值是2。&lt;/p&gt;
+
+&lt;p&gt;举个例子，集群里有两台服务器，server1和server2。Server1的权重是2，server2是4。Table 1展示了请求会如何发送到两台服务器上。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/11/table1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其他参数的配置也会影响到负载均衡。举例来说，如果某台服务器上的应用运行速度比较慢，那台服务器就很容易到达&lt;code&gt;MaxConnection&lt;/code&gt;的上限，这时plugin就会停止给它发送请求。如果发生这种情况，我们可以在plugin trace里看到。&lt;/p&gt;
+
+&lt;p&gt;会话亲缘性也可能影响到请求被分发到哪台服务器上。如果某台服务器创建了一个会话，那后续的请求当然都会发送到那台服务器上。&lt;/p&gt;
+
+&lt;p&gt;如果每台服务器收到的请求数的比值跟权重设置的数字的比值相同，就说明plugin的负载均衡机制工作正常。这时异常的CPU占用率肯定就是由其他原因引发的了，比如服务器上的其他的异常进程，或者应用程序有问题。&lt;/p&gt;
+
+&lt;p&gt;如果比值不同，就说明其他因素影响了负载均衡的工作。比如，某台服务器的请求数到达了&lt;code&gt;MaxConnections&lt;/code&gt;的上限，或者某台服务器被plugin标记为宕机了。&lt;/p&gt;
+
+&lt;p&gt;如果你需要更智能的负载均衡方案，比如根据应用服务器的负载或响应时间，你可以使用其他的负载均衡产品，比如WAS Edge组件。&lt;/p&gt;
+
+&lt;h4 id=&quot;problem6&quot;&gt;The next step&lt;/h4&gt;
+
+&lt;p&gt;本文中提到的那些问题特征基本上涵盖了可能遇到的大部分情况，然而也有其他可能性导致问题的出现。如果看完了本文的诊断过程还是没有得到真相，强烈建议你看一下这篇WAS问题诊断的文章：http://www.redbooks.ibm.com/redpapers/pdfs/redp4073.pdf。请查看这一章：Classify the problem and determine the root cause，以确定是否问题出在其他组件上。&lt;/p&gt;
+
+&lt;p&gt;如果你觉得肯定是plugin的问题，那就重新查看一下你收集到的所有诊断文件，查找跟问题相关但是本文有没有提到的日志记录，查阅支持网站。&lt;/p&gt;
+
+&lt;p&gt;如果还是不能定位问题，你需要收集下面列表中提到的“MustGather”文档，然后发送这些文档给IBM进行下一步诊断。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;MustGather for general problems with the Web server plug-in: &lt;/p&gt;
+
+    &lt;p&gt;http://www-1.ibm.com/support/docview.wss?rs=180&amp;amp;uid=swg21174894&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;MustGather for problems generating the plug-in configuration file:&lt;/p&gt;
+
+    &lt;p&gt;http://www-1.ibm.com/support/docview.wss?rs=180&amp;amp;uid=swg21199421
+􏰀&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;MustGather for problems installing the Web server plug-in: &lt;/p&gt;
+
+    &lt;p&gt;http://www-1.ibm.com/support/docview.wss?rs=180&amp;amp;uid=swg21199343&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;请把你已经做过的诊断过程告诉IBM的支持工程师以减少诊断问题的时间。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;全文完，接下来会继续翻译 redp4309-WebSphere Application Server V6.1Web container problem determination.pdf&lt;/p&gt;
+</description>
+                <link>http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-</link>
+                <guid>http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-</guid>
+                <pubDate>2015-04-11T00:00:00+08:00</pubDate>
+        </item>
+
+        <item>
+                <title>Disable RC4 Cipher for IIS/Apache/IHS</title>
+                <description>
+&lt;p&gt;最近多家安全网站曝出网站系统使用TLS安全协议时如果使用RC4 Cipher会有安全问题，如下文所述：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.imperva.com/docs/HII_Attacking_SSL_when_using_RC4.pdf&quot;&gt;http://www.imperva.com/docs/HII_Attacking_SSL_when_using_RC4.pdf&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://securityaffairs.co/wordpress/35352/hacking/bar-mitzvah-attack-on-rc4.html&quot; title=&quot;http://securityaffairs.co/wordpress/35352/hacking/bar-mitzvah-attack-on-rc4.html&quot;&gt;http://securityaffairs.co/wordpress/35352/hacking/bar-mitzvah-attack-on-rc4.html&lt;/a&gt; &lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.securityweek.com/new-attack-rc4-based-ssltls-leverages-13-year-old-vulnerability&quot; title=&quot;http://www.securityweek.com/new-attack-rc4-based-ssltls-leverages-13-year-old-vulnerability&quot;&gt;http://www.securityweek.com/new-attack-rc4-based-ssltls-leverages-13-year-old-vulnerability&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;对于常见的Web服务器来说，要修复这个安全漏洞，需要禁用RC4 Cipher。下面列出几种服务器中禁用RC4 Cipher的方法：&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;iis&quot;&gt;1) IIS&lt;/h3&gt;
+
+&lt;p&gt;IIS服务器使用哪种安全协议，安全协议使用哪种密钥都是需要在注册表里去配置的。RC4 Cipher也不例外，在Windows Server 2003中的配置方法如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;How to Completely Disable RC4 
+Clients and Servers that do not wish to use RC4 ciphersuites, regardless of the other party&#39;s supported ciphers, can disable the use of RC4 cipher suites completely by setting the following registry keys. In this manner any server or client that is talking to a client or server that must use RC4, can prevent a connection from happening. Clients that deploy this setting will not be able to connect to sites that require RC4 while servers that deploy this setting will not be able to service clients that must use RC4. 
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\RC4 128/128] 
+&quot;Enabled&quot;=dword:00000000
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\RC4 40/128] 
+&quot;Enabled&quot;=dword:00000000
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\RC4 56/128] 
+&quot;Enabled&quot;=dword:00000000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;参考下面链接：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://blogs.technet.com/b/srd/archive/2013/11/12/security-advisory-2868725-recommendation-to-disable-rc4.aspx&quot; title=&quot;http://blogs.technet.com/b/srd/archive/2013/11/12/security-advisory-2868725-recommendation-to-disable-rc4.aspx&quot;&gt;http://blogs.technet.com/b/srd/archive/2013/11/12/security-advisory-2868725-recommendation-to-disable-rc4.aspx&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;ihs&quot;&gt;2) IHS&lt;/h3&gt;
+
+&lt;p&gt;IHS即IBM HTTP Server，所有的配置都在httpd.conf中，所以修改httpd.conf就好了。&lt;/p&gt;
+
+&lt;p&gt;默认情况下，IHS是不会启用RC4的，但是由于前几年各界都比较认可RC4，所以一般的IHS服务器都启用了RC4。想要禁用的话删掉对应的配置就好了。&lt;/p&gt;
+
+&lt;p&gt;首先我们要找到相关的SSL的配置，并且确定哪些配置是用来启用RC4的。可能的配置是这样的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSLCipherSpec SSL_RSA_WITH_3DES_EDE_CBC_SHA
+SSLCipherSpec SSL_RSA_WITH_RC4_128_SHA
+SSLCipherSpec SSL_RSA_WITH_RC4_128_MD5
+SSLCipherSpec SSL_RSA_WITH_DES_CBC_SHA
+SSLCipherSpec TLS_RSA_EXPORT1024_WITH_RC4_56_SHA
+SSLCipherSpec TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;也有可能是这样：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSLCipherSpec 34
+SSLCipherSpec 35
+SSLCipherSpec 3A
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果是启用了34、35或者3A这样的类似代码一样的东西，我们如何确定哪个是跟RC4相关的呢？&lt;/p&gt;
+
+&lt;p&gt;请参考如下链接：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://publib.boulder.ibm.com/httpserv/ihsdiag/ssl_questions.html#check_ssl_config&quot; title=&quot;http://publib.boulder.ibm.com/httpserv/ihsdiag/ssl_questions.html#check_ssl_config&quot;&gt;http://publib.boulder.ibm.com/httpserv/ihsdiag/ssl_questions.html#check_ssl_config&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;How can I check the end result of my SSL configuration changes to verify what prototcols and ciphers my server will use ?
+In IHS 8.0 and later:
+
+If there is a question of how your configuration customizations are ultimately combined, you can run
+ apachectl -t -DDUMP_SSL_CONFIG
+to see the effective values after processing the configuration.
+ 
+Example output of the default configuration + SSLEnable is:             
+                                                                        
+SSL server defined at:                                                  
+/home/ihs/2.2/built/conf/httpd.conf:907                       
+Server name: 127.0.1.1:443                                              
+SSL enabled: YES                                                        
+FIPS enabled: 0                                                         
+Keyfile: /home/ihs/IHSJTest/data/ihskeys/key.kdb                
+Protocols enabled: SSLV2,SSLV3,TLSv10,TLSv11,TLSv12                     
+Ciphers for SSLV2: (defaults)                                           
+Ciphers for SSLV3: (defaults)                                           
+TLS_RSA_WITH_AES_128_CBC_SHA(2F),TLS_RSA_WITH_AES_256_CBC_SHA(35b),S    
+SL_RSA_WITH_RC4_128_SHA(35),SSL_RSA_WITH_RC4_128_MD5(34),SSL_RSA_WIT    
+H_3DES_EDE_CBC_SHA(3A)                                                  
+Ciphers for TLSv10: (defaults)                                          
+TLS_RSA_WITH_AES_128_CBC_SHA(2F),TLS_RSA_WITH_AES_256_CBC_SHA(35b),S    
+SL_RSA_WITH_RC4_128_SHA(35),SSL_RSA_WITH_RC4_128_MD5(34),SSL_RSA_WIT    
+H_3DES_EDE_CBC_SHA(3A)                                                  
+Ciphers for TLSv11: (defaults)                                          
+TLS_RSA_WITH_AES_128_CBC_SHA(2F),TLS_RSA_WITH_AES_256_CBC_SHA(35b),S    
+SL_RSA_WITH_RC4_128_SHA(35),SSL_RSA_WITH_RC4_128_MD5(34),SSL_RSA_WIT    
+H_3DES_EDE_CBC_SHA(3A)                                                  
+Ciphers for TLSv12: (defaults)                                          
+TLS_RSA_WITH_AES_128_GCM_SHA256(9C),TLS_RSA_WITH_AES_256_GCM_SHA384     
+(9D),TLS_RSA_WITH_AES_128_CBC_SHA256(3C),TLS_RSA_WITH_AES_256_CBC_S     
+HA256(3D),TLS_RSA_WITH_AES_128_CBC_SHA(2F),TLS_RSA_WITH_AES_256_CBC     
+_SHA(35b),SSL_RSA_WITH_3DES_EDE_CBC_SHA(3A) 
+
+                            
+(Note: we report SSLv2 as enabled with zero available ciphers as an     
+implementation quirk)                                     
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;找到启用RC4相关的&lt;code&gt;SSLCipherSpec&lt;/code&gt;之后，删除掉他们然后重启IHS服务就好了。&lt;/p&gt;
+
+&lt;h3 id=&quot;apache&quot;&gt;3) Apache&lt;/h3&gt;
+
+&lt;p&gt;如链接：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://raymii.org/s/tutorials/Strong_SSL_Security_On_Apache2.html&quot; title=&quot;https://raymii.org/s/tutorials/Strong_SSL_Security_On_Apache2.html&quot;&gt;https://raymii.org/s/tutorials/Strong_SSL_Security_On_Apache2.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;参考这一部分：&lt;/p&gt;
+
+&lt;p&gt;The recommended cipher suite:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSLCipherSuite AES128+EECDH:AES128+EDH
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The recommended cipher suite for backwards compatibility (IE6/WinXP):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SSLCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+                <link>http://blog.dellyqiao.com/security/middleware/2015/04/07/disable-rc4-cipher-for-iisapacheihs</link>
+                <guid>http://blog.dellyqiao.com/security/middleware/2015/04/07/disable-rc4-cipher-for-iisapacheihs</guid>
+                <pubDate>2015-04-07T00:00:00+08:00</pubDate>
+        </item>
 
         <item>
                 <title>Swift基础学习笔记</title>
