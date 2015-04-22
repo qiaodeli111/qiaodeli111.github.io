@@ -123,7 +123,7 @@ HTTP 404错误有多重成因，下面是一些例子：
 2. 确认应用服务器的状态
 3. 如果没启动，尝试启动一下
 
-如果你不知道这些步骤怎么做，查看这里：[]()
+如果你不知道这些步骤怎么做，查看这里：[“Managing servers and applications”](#page52)
 
 ##### ***确认应用程序是否启动***
 
@@ -140,7 +140,7 @@ HTTP 404错误有多重成因，下面是一些例子：
 - Web服务器access和error日志
 - TRCTCPAPP trace（i5/OS）
 
-	i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：[]()
+	i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：[“Trace Web server requests to WebSphere (i5/OS)”](#page47)
 
 #### 分析数据
 
@@ -177,4 +177,68 @@ HTTP 404错误有多重成因，下面是一些例子：
 - Failed to find resource
 - File not found
 - WebGroup/virtual host not defined
+
+##### ***The page cannot be displayed or found***
+
+Figure 3 展示了一个典型的例子。这种错误页面的显示效果是多种多样的，取决于浏览器。比如，有的浏览器会显示“The page cannot be found.”。
+
+![](http://dellyqiao.qiniudn.com/2015/04/14/3.png)
+
+这种情况的原因可能是：输入的URL错误，也可能是需要访问页面的组件不可用（比如Web服务器，应用服务器）。特别注意发生错误时候浏览器地址栏上的URL。
+
+如果访问出错的是JSP或servlet，查看[“Page cannot be displayed or JSP/JSF error”](#page16)。
+
+##### ***JSP和JSF错误***
+
+JSP和JSF错误通常伴随着从应用服务器发过来的跟问题检测相关的信息，Figure 4展示的就是一个带着"JSPG0036E: Failed to find resource”信息的页面：
+
+![](http://dellyqiao.qiniudn.com/2015/04/14/4.png)
+
+Figure 5展示了一个带有"SRVE0190E: File not found”信息的页面：
+
+![](http://dellyqiao.qiniudn.com/2015/04/14/5.png)
+
+出现这种错误信息的原因可能是URL错误，或者在server上的这个页面不可用，或者是plugin配置的问题。特别注意出错的URL。更多信息查看 [“Page cannot be displayed or JSP/JSF error”](#page16)。
+
+##### ***WebGroup/Virtual Host has not been defined***
+
+这个错误很有可能是因为virtual host配置错误，或者输入的URL不正确。一般错误信息会是这样：
+
+- SRVE0255E: WebGroup/Virtual Host has not been defined (V6.1) 􏰀 
+- SRVE0017W: WebGroup/Virtual Host has not been defined (V6.0)
+
+如下图：
+
+![](http://dellyqiao.qiniudn.com/2015/04/14/6.png)
+
+记住出问题的URL，然后查看这个连接 [“WebGroup/virtual host not defined”](#page16-2) 。
+
+#### 分析SystemOut日志
+
+你需要查找这些关键字段：
+
+- Web容器信息：SRVExxxxE or SRVExxxxW
+- JSP信息：JSPGxxxxE or JSPGxxxxW
+- JSF信息：JSFGxxxxE or JSFGxxxxW
+- 跟应用程序启动相关的错误信息
+
+##### ***检查应用程序是否成功启动***
+
+Example 1中的信息是一个Web模块正常启动的日志信息。
+
+> Example 1 Normal application startup messages	ApplicationMg A WSVR0200I: Starting application: [application_name] 
+	WebContainer A SRVE0161I: IBM WebSphere Application Server - Web Container.	Copyright IBM Corp. 1998-2004	WebContainer  A SRVE0162I: Servlet Specification Level: 2.4	￼￼￼￼￼WebContainer  A SRVE0163I: Supported JSP Specification Level: 2.0	WebGroup      A SRVE0169I: Loading Web Module: [web_module_name] 	ApplicationMg A WSVR0221I: Application started: [application_name]
+
+如果应用启动时出现了错误或警告信息，你需要从应用程序方面检测问题的原因。
+
+##### ***Web group / Virtual host 错误***
+
+如果出现了下面的错误，可能是virtual host配置有问题
+
+- SRVE0255E: A WebGroup/Virtual Host to handle url has not been defined. (V6.1)
+- SRVE0017W: A WebGroup/Virtual Host to handle url has not been defined. (V6.0)
+
+查看这个连接获得更多信息：[“WebGroup/virtual host not defined”](#page16-2) 
+
+##### ***其他错误信息***
 

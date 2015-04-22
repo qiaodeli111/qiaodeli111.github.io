@@ -4,13 +4,155 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-04-17T18:45:37+08:00</updated>
+ <updated>2015-04-22T11:42:59+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
    <email>qiaodeli1@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Windows Log transfer script</title>
+   <link href="http://blog.dellyqiao.com/server/2015/04/21/windows-log-transfer-script"/>
+   <updated>2015-04-21T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/server/2015/04/21/windows-log-transfer-script</id>
+   <content type="html">
+&lt;p&gt;4月21日更新：&lt;/p&gt;
+
+&lt;p&gt;本文分享一个Windows服务器日志传输的脚本。作为示例，这个脚本可以被修改为在Windows服务器之间传输任何文件的一个应用。下面具体描述一下我的环境，需求和脚本的实现方法。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;需求&lt;/h3&gt;
+
+&lt;p&gt;我有三台Windows服务器在运行Java应用，每台服务器上都有多个JVM，每个JVM的日志的路径也不同。而四台服务器是作为水平集群的，每台服务器上的日志路径和命名方式也都是一样的。&lt;/p&gt;
+
+&lt;p&gt;经常性的需要把某个特定的JVM在四台机器上的日志都取出来放到另外的一台服务器上，所以现在写个脚本实现这个任务。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;实现过程&lt;/h3&gt;
+
+&lt;p&gt;首先写一个Map硬盘盘符的脚本 map_drive.bat.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;net use H: /delete
+net use I: /delete
+net use J: /delete
+
+net use H: \\192.168.1.65\logs$ password /user:username
+net use I: \\192.168.1.66\logs$ password /user:username
+net use J: \\192.168.1.67\logs$ password /user:username
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后写一下获取日志的脚本 getlog.bat.&lt;/p&gt;
+
+&lt;p&gt;日志的格式也需要总结一下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;每台服务器上的日志路径是这样的：&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;&amp;lt;logdrive&amp;gt;\logs\WebSphere\sample1-server / sample2-server / sample3-server&lt;/p&gt;
+
+      &lt;p&gt;&amp;lt;logdrive&amp;gt;\log\Websphere\sample4-server&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Java日志的命名格式是这样：&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;SystemOut.log SystemErr.log&lt;/p&gt;
+
+      &lt;p&gt;SystemOut_15.03.30_10.26.32.log SystemErr_15.03.30_10.26.32.log &lt;/p&gt;
+
+      &lt;p&gt;//15.03.30代表15年3月30日，10.26.32代表10点26分32秒生成的日志&lt;/p&gt;
+
+      &lt;p&gt;SystemOut_15.03.30_10.26.32.log.gz SystemErr_15.03.30_10.26.32.log.gz&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;日志轮转机制的设置是，如果日志大于50MB，就会生成一个新的日志文件。所以，当需要获得某一天的日志文件的时候，需要获取文件名为&lt;code&gt;SystemOut_YY.MM.DD*&lt;/code&gt;和&lt;code&gt;SystemErr_YY.MM.DD*&lt;/code&gt;的所有文件，如果需要获取今天的日志，还需要额外拿一下文件名为&lt;code&gt;SystemOut.log SystemErr.log&lt;/code&gt;的这两个文件。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面是&lt;code&gt;getlogs.bat&lt;/code&gt;的具体内容：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;echo on
+call map_drive.bat
+
+set /p appname=&quot;Input APP Server Name (sample1/sample2/sample3/sample4):&quot;
+##获取应用服务器名
+
+set logpath=%appname%-server
+##拼接日志路径字符串
+
+set destpath=logs\WebSphere\
+##设置存有日志的远程主机的日志路径
+
+if %appname%==sample4 (
+set destpath=log\websphere\
+set logpath=iPOSAppSrv
+)
+##为sample4设置例外
+
+set localpath=D:\SFTP_SITE\AIA_Thailand\App_log\
+##设置当前主机，日志将要存放的目标路径
+
+forfiles /p %localpath%%logpath% /s /m *.* /c &quot;cmd /c del @path&quot;
+##清理临时目录
+
+
+set /p time=&quot;Input date(eg:YY.MM.DD / today): &quot;
+##获取想要得到的日志的日期
+
+if %time%==today (
+##如果需要的是今天的日志，那就得到今天的日期并且拼接成SystemOut_YY.MM.DD*格式的字符串，然后直接把SystemOut.log和SystemErr.log传输过来
+
+set sysout=SystemOut_%date:~12,2%.%date:~4,2%.%date:~7,2%*
+set syserr=SystemErr_%date:~12,2%.%date:~4,2%.%date:~7,2%*
+
+copy H:\%destpath%%logpath%\SystemErr.log %localpath%%logpath%\app10
+copy I:\%destpath%%logpath%\SystemErr.log %localpath%%logpath%\app11
+copy J:\%destpath%%logpath%\SystemErr.log %localpath%%logpath%\app12
+
+copy H:\%destpath%%logpath%\SystemOut.log %localpath%%logpath%\app10
+copy I:\%destpath%%logpath%\SystemOut.log %localpath%%logpath%\app11
+copy J:\%destpath%%logpath%\SystemOut.log %localpath%%logpath%\app12
+
+set time=%date:~12,2%.%date:~4,2%.%date:~7,2%
+##把SystemOut.log和SystemErr.log传输完之后，把time变量设成日期，后面做压缩包的时候会用到。
+
+) else (
+##如果需要的不是今天的日志，则直接根据用户输入拼接日志名字符串
+set sysout=SystemOut_%time%*
+set syserr=SystemErr_%time%*
+)
+
+copy H:\%destpath%%logpath%\%syserr% %localpath%%logpath%\app10
+copy I:\%destpath%%logpath%\%syserr% %localpath%%logpath%\app11
+copy J:\%destpath%%logpath%\%syserr% %localpath%%logpath%\app12
+
+copy H:\%destpath%%logpath%\%sysout% %localpath%%logpath%\app10
+copy I:\%destpath%%logpath%\%sysout% %localpath%%logpath%\app11
+copy J:\%destpath%%logpath%\%sysout% %localpath%%logpath%\app12
+##传输日志
+
+
+7z a %localpath%%logpath%_%time%.zip %localpath%%logpath%\
+##压缩整个文件夹
+
+forfiles /p %localpath%%logpath% /s /m *.* /c &quot;cmd /c del @path&quot;
+##再次清理临时文件夹
+
+explorer.exe %localpath%
+##打开放置压缩包的目录方便操作
+
+exit
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行getlog.bat就可以获取日志了。期间需要输入想要获取的日志的JVM名，然后输入日期，即可获得一个打包好的日志文件包了。&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>IBM WAS 6.1 Web container problem determination——文档翻译（更新中）</title>
@@ -157,7 +299,7 @@
   &lt;li&gt;如果没启动，尝试启动一下&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;如果你不知道这些步骤怎么做，查看这里：[]()&lt;/p&gt;
+&lt;p&gt;如果你不知道这些步骤怎么做，查看这里：&lt;a href=&quot;#page52&quot;&gt;“Managing servers and applications”&lt;/a&gt;&lt;/p&gt;
 
 &lt;h5 id=&quot;section-3&quot;&gt;&lt;strong&gt;&lt;em&gt;确认应用程序是否启动&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
 
@@ -176,7 +318,7 @@
   &lt;li&gt;
     &lt;p&gt;TRCTCPAPP trace（i5/OS）&lt;/p&gt;
 
-    &lt;p&gt;i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：[]()&lt;/p&gt;
+    &lt;p&gt;i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：&lt;a href=&quot;#page47&quot;&gt;“Trace Web server requests to WebSphere (i5/OS)”&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
@@ -225,6 +367,86 @@
   &lt;li&gt;File not found&lt;/li&gt;
   &lt;li&gt;WebGroup/virtual host not defined&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h5 id=&quot;the-page-cannot-be-displayed-or-found&quot;&gt;&lt;strong&gt;&lt;em&gt;The page cannot be displayed or found&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;Figure 3 展示了一个典型的例子。这种错误页面的显示效果是多种多样的，取决于浏览器。比如，有的浏览器会显示“The page cannot be found.”。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这种情况的原因可能是：输入的URL错误，也可能是需要访问页面的组件不可用（比如Web服务器，应用服务器）。特别注意发生错误时候浏览器地址栏上的URL。&lt;/p&gt;
+
+&lt;p&gt;如果访问出错的是JSP或servlet，查看&lt;a href=&quot;#page16&quot;&gt;“Page cannot be displayed or JSP/JSF error”&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h5 id=&quot;jspjsf&quot;&gt;&lt;strong&gt;&lt;em&gt;JSP和JSF错误&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;JSP和JSF错误通常伴随着从应用服务器发过来的跟问题检测相关的信息，Figure 4展示的就是一个带着”JSPG0036E: Failed to find resource”信息的页面：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Figure 5展示了一个带有”SRVE0190E: File not found”信息的页面：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;出现这种错误信息的原因可能是URL错误，或者在server上的这个页面不可用，或者是plugin配置的问题。特别注意出错的URL。更多信息查看 &lt;a href=&quot;#page16&quot;&gt;“Page cannot be displayed or JSP/JSF error”&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h5 id=&quot;webgroupvirtual-host-has-not-been-defined&quot;&gt;&lt;strong&gt;&lt;em&gt;WebGroup/Virtual Host has not been defined&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;这个错误很有可能是因为virtual host配置错误，或者输入的URL不正确。一般错误信息会是这样：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;SRVE0255E: WebGroup/Virtual Host has not been defined (V6.1) 􏰀 &lt;/li&gt;
+  &lt;li&gt;SRVE0017W: WebGroup/Virtual Host has not been defined (V6.0)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2015/04/14/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;记住出问题的URL，然后查看这个连接 &lt;a href=&quot;#page16-2&quot;&gt;“WebGroup/virtual host not defined”&lt;/a&gt; 。&lt;/p&gt;
+
+&lt;h4 id=&quot;systemout&quot;&gt;分析SystemOut日志&lt;/h4&gt;
+
+&lt;p&gt;你需要查找这些关键字段：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Web容器信息：SRVExxxxE or SRVExxxxW&lt;/li&gt;
+  &lt;li&gt;JSP信息：JSPGxxxxE or JSPGxxxxW&lt;/li&gt;
+  &lt;li&gt;JSF信息：JSFGxxxxE or JSFGxxxxW&lt;/li&gt;
+  &lt;li&gt;跟应用程序启动相关的错误信息&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;section-7&quot;&gt;&lt;strong&gt;&lt;em&gt;检查应用程序是否成功启动&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;Example 1中的信息是一个Web模块正常启动的日志信息。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Example 1 Normal application startup messages&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;pre&gt;&lt;code&gt;ApplicationMg A WSVR0200I: Starting application: [application_name] 
+WebContainer A SRVE0161I: IBM WebSphere Application Server - Web Container.
+Copyright IBM Corp. 1998-2004
+WebContainer  A SRVE0162I: Servlet Specification Level: 2.4
+￼￼￼￼￼WebContainer  A SRVE0163I: Supported JSP Specification Level: 2.0
+WebGroup      A SRVE0169I: Loading Web Module: [web_module_name] 
+ApplicationMg A WSVR0221I: Application started: [application_name]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果应用启动时出现了错误或警告信息，你需要从应用程序方面检测问题的原因。&lt;/p&gt;
+
+&lt;h5 id=&quot;web-group--virtual-host-&quot;&gt;&lt;strong&gt;&lt;em&gt;Web group / Virtual host 错误&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;如果出现了下面的错误，可能是virtual host配置有问题&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;SRVE0255E: A WebGroup/Virtual Host to handle url has not been defined. (V6.1)&lt;/li&gt;
+  &lt;li&gt;SRVE0017W: A WebGroup/Virtual Host to handle url has not been defined. (V6.0)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;查看这个连接获得更多信息：&lt;a href=&quot;#page16-2&quot;&gt;“WebGroup/virtual host not defined”&lt;/a&gt; &lt;/p&gt;
+
+&lt;h5 id=&quot;section-8&quot;&gt;&lt;strong&gt;&lt;em&gt;其他错误信息&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
 
 </content>
  </entry>
@@ -1792,116 +2014,6 @@ var stringStack = Stack&amp;lt;String&amp;gt;()
 stringStack.push(&quot;Hello&quot;)
 println(stringStack.pop())
 &lt;/code&gt;&lt;/pre&gt;
-</content>
- </entry>
- 
- <entry>
-   <title>Windows Log transfer script</title>
-   <link href="http://blog.dellyqiao.com/server/2015/04/02/windows-log-transfer-script"/>
-   <updated>2015-04-02T00:00:00+08:00</updated>
-   <id>http://blog.dellyqiao.com/server/2015/04/02/windows-log-transfer-script</id>
-   <content type="html">
-&lt;p&gt;本文分享一个Windows服务器日志传输的脚本。作为示例，这个脚本可以被修改为在Windows服务器之间传输任何文件的一个应用。下面具体描述一下我的环境，需求和脚本的实现方法。&lt;/p&gt;
-
-&lt;!-- more --&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;需求&lt;/h3&gt;
-
-&lt;p&gt;我有四台Windows服务器在运行Java应用，每台服务器上都有多个JVM，每个JVM的日志的路径也不同。而四台服务器是作为水平集群的，每台服务器上的日志路径和命名方式也都是一样的。&lt;/p&gt;
-
-&lt;p&gt;经常性的需要把某个特定的JVM在四台机器上的日志都取出来放到另外的一台服务器上，所以现在写个脚本实现这个任务。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-1&quot;&gt;实现过程&lt;/h3&gt;
-
-&lt;p&gt;首先写一个Map硬盘盘符的脚本 map_drive.bat.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;net use H: /delete
-net use I: /delete
-net use J: /delete
-net use K: /delete
-
-net use H: \\192.168.1.65\logs$ passwordrd /user:username
-
-net use I: \\192.168.1.66\logs$ password /user:username
-
-net use J: \\192.168.1.67\logs$ password /user:username
-
-net use K: \\192.168.1.68\logs$ password /user:username
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后写一下获取日志的脚本 getlog.bat.&lt;/p&gt;
-
-&lt;p&gt;每台服务器上的日志路径是这样的：&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;www3-jvm-sample1 / sample2 / sample3&lt;/p&gt;
-
-  &lt;p&gt;www-jvm-sample4 / sample5&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;Java日志的命名格式是这样：&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;SystemOut.log SystemErr.log&lt;/p&gt;
-
-  &lt;p&gt;SystemOut_15.03.30&lt;em&gt;.log SystemErr_15.03.30&lt;/em&gt;.log &lt;/p&gt;
-
-  &lt;p&gt;SystemOut_15.03.30&lt;em&gt;.log.gz SystemErr_15.03.30&lt;/em&gt;.log.gz&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;pre&gt;&lt;code&gt;echo off
-
-call map_drive.bat
-
-##获取用户输入，然后拼接日志路径的字符串到%appname%变量
-
-set /p appname=&quot;Input APP Server Name (sample1/sample2/sample3/sample4/sample5):&quot;
-
-set logpath=www3-jvm-%appname%
-if %appname%==sample4 set logpath=www-jvm-%appname%
-if %appname%==sample5 set logpath=www-jvm-%appname%
-
-##获取用户输入，以确定需要传输哪天的日志
-
-set /p time=&quot;Input date(eg:YY.MM.DD / today): &quot;
-
-if %time%==today (
-set sysout=SystemOut.log
-set syserr=SystemErr.log
-) else (
-set sysout=SystemOut_%time%_*
-set syserr=SystemErr_%time%_*
-)
-
-##清空临时目录D:\logs\www3-jvm-sampleX\，然后传输日志。临时目录下有四个子文件夹(app80/81/82/83)存放四台服务器上对应的日志。
-
-forfiles /p D:\logs\%logpath% /s /m *.* /c &quot;cmd /c del @path&quot;
-
-copy H:\App_Logs\%logpath%\%syserr% D:\logs\%logpath%\app80
-copy I:\App_Logs\%logpath%\%syserr% D:\logs\%logpath%\app81
-copy J:\App_Logs\%logpath%\%syserr% D:\logs\%logpath%\app82
-copy K:\App_Logs\%logpath%\%syserr% D:\logs\%logpath%\app83
-
-copy H:\App_Logs\%logpath%\%sysout% D:\logs\%logpath%\app80
-copy I:\App_Logs\%logpath%\%sysout% D:\logs\%logpath%\app81
-copy J:\App_Logs\%logpath%\%sysout% D:\logs\%logpath%\app82
-copy K:\App_Logs\%logpath%\%sysout% D:\logs\%logpath%\app83
-
-##把日志文件压缩成zip格式，文件名定义为: JVM名_日期.zip
-##7z的命令行工具要预先拷贝到脚本所在的目录下，7z可以从任何一个安装好的Windows版7z中获取，需要拷贝的文件为：7z.exe和7z.dll
-
-7z a D:\logs\%logpath%_%time%.zip D:\logs\%logpath%\
-
-##再次清空临时目录，最后从资源管理器窗口中打开日志目录
-
-forfiles /p D:\logs\%logpath% /s /m *.* /c &quot;cmd /c del @path&quot;
-
-explorer.exe D:\logs\
-
-exit
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;执行getlog.bat就可以获取日志了。期间需要输入想要获取的日志的JVM名，然后输入日期，即可获得一个打包好的日志文件包了。&lt;/p&gt;
 </content>
  </entry>
  
