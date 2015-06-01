@@ -5,10 +5,55 @@
         <description>Delly's Publisher - Delly Qiao</description>
         <link>http://blog.dellyqiao.com</link>
         <link>http://blog.dellyqiao.com</link>
-        <lastBuildDate>2015-04-22T11:42:59+08:00</lastBuildDate>
-        <pubDate>2015-04-22T11:42:59+08:00</pubDate>
+        <lastBuildDate>2015-05-25T12:06:40+08:00</lastBuildDate>
+        <pubDate>2015-05-25T12:06:40+08:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>WebSphere Application Server Performance Tunning</title>
+                <description>
+&lt;p&gt;本文主要根据IBM红皮书的介绍和自己的理解，做一些性能调优的总结。&lt;/p&gt;
+
+&lt;p&gt;应用程序的结构，基础设施，和这个系统需要承受的负载量是影响到性能参数配置的三个因素。不可能有任何一个固定的值是适用于所有系统的。我们需要系统容纳能力的规划，压力测试，收集信息，最后分析结果来确定对我们自己的系统来说最佳的配置。&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;要进行性能调优，我们需要有一套跟自己的生产环境环境相同的性能测试环境。为了让测试结果真的有意义，我们要确保测试环境中的软件和硬件跟生产环境上的完全相同。&lt;/p&gt;
+
+&lt;p&gt;为了让我们的测试成功，我们需要生成符合以下特征的负载：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;可计量的：使用可以量化的计量单位，比如吞吐量和响应时间。&lt;/li&gt;
+  &lt;li&gt;可重现的：确保多次同样的测试可以重现同样的结果。每次只更改一个参数，然后其他条件不变，这样就可以知道那个参数对系统真实的影响。&lt;/li&gt;
+  &lt;li&gt;静态的：要确定是否一样的测试不论执行多久，都能得到一样的效果。&lt;/li&gt;
+  &lt;li&gt;典型性：确保生成的负载可以真实地代表正常操作一个系统的压力。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;要想确定性能的目标，首先我们必须清楚地理解我们系统的架构和需求。查看架构文档，用例图，以及功能性和非功能性的各种需求，从而确定对自己的系统来说，性能好的标准是什么。&lt;/p&gt;
+
+&lt;p&gt;确定一个好坏性能的标准。没有一个标准或目标，我们无法确定性能调整是否成功。要避免使用那些非指向性的标准，比如尽可能地调试为性能“最好”的状态。时刻记住如果没有一个标准线，性能测试可能无穷无尽，因为每次测试都有可能发现一个新的瓶颈，不同的瓶颈又有不同的解决方案，这样的话到最后我们无法确定我们的性能调试到底是成功了还是失败了。&lt;/p&gt;
+
+&lt;p&gt;不要尝试在有真实负载的生产环境上做性能调试，这么做的话，服务器有很大几率会做资源回收以使新的参数生肖，这些回收进程可能引发宕机时间。&lt;/p&gt;
+
+&lt;h2 id=&quot;websphere&quot;&gt;使用队列类推法去调试WebSphere资源池&lt;/h2&gt;
+
+&lt;p&gt;WAS的功能非常类似于一个由互通的代表各种各样不同资源的队列组成的队列网络。这些资源池包括网络，Web服务器，Web容器，EJB容器，ORB（Object Request Broker），数据源，还可能会有连接到自定义的后端系统的连接管理器。每种资源都代表着等待使用那些资源的一个请求的队列，这些队列都是容易受负载影响的资源，也就是说，平均响应速度取决于客户机请求的数量。这样的话，性能调优实际上就是对这些队列的调优。&lt;/p&gt;
+
+&lt;p&gt;举例来说，某个应用程序包含servlet和需要访问数据库的EJB beans。每个部分都被放置在了适当的WebSphere组件上（例如servlet在Web容器里），在确定的时间段内，每个组件可以处理确定的数量的请求。&lt;/p&gt;
+
+&lt;p&gt;客户机的请求会通过Web服务器，穿过WebSphere的几个组件之后WebSphere组件会给客户机提供响应。下面图解了这个应用程序通过WebSphere组件处理客户请求的路径，我们把这个路径类比成一些连接在一起的互通的管道。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;图中管道的宽度代表了在给定的时间里可以处理的请求数量。管道的长度代表了从收到请求到提供响应需要的处理事件。&lt;/p&gt;
+
+&lt;p&gt;上图展示了在一个确定的时间内，一台Web服务器可以处理50个请求，一个Web容器可以处理18个请求，这就意味着在最大负载的情况下，请求会在Web服务器上排队以等待空闲的Web容器。EJB容器可以处理9个请求，因此一半的Web容器的请求需要排队等待可用的ORB线程池。而数据库看起来有足够的处理能力，因此EJB容器不需要等待&lt;/p&gt;
+</description>
+                <link>http://blog.dellyqiao.com/middleware/2015/05/20/websphere-application-server-performance-tunning</link>
+                <guid>http://blog.dellyqiao.com/middleware/2015/05/20/websphere-application-server-performance-tunning</guid>
+                <pubDate>2015-05-20T00:00:00+08:00</pubDate>
+        </item>
 
         <item>
                 <title>Windows Log transfer script</title>
@@ -442,6 +487,47 @@ ApplicationMg A WSVR0221I: Application started: [application_name]
 &lt;p&gt;查看这个连接获得更多信息：&lt;a href=&quot;#page16-2&quot;&gt;“WebGroup/virtual host not defined”&lt;/a&gt; &lt;/p&gt;
 
 &lt;h5 id=&quot;section-8&quot;&gt;&lt;strong&gt;&lt;em&gt;其他错误信息&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;有JSPG，JSFG，或者SRVE前缀并且包含出错的URL的错误信息，点击此链接获取检查方法：&lt;a href=&quot;#page16&quot;&gt;“Page cannot be displayed or JSP/JSF error”&lt;/a&gt;。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;如果没有找到任何错误，查看后面的“Web服务器日志分析”章节。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;web-7&quot;&gt;Web服务器日志分析&lt;/h4&gt;
+
+&lt;p&gt;尝试从Web服务器日志中查找下面的标志符并且分析它们。&lt;/p&gt;
+
+&lt;h5 id=&quot;access404&quot;&gt;&lt;strong&gt;&lt;em&gt;在access日志中查找404状态吗&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;NCSA格式的日志如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Remote_host- - date_time &quot;request&quot; status_code bytes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于404错误来说：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;从&lt;code&gt;status_code&lt;/code&gt;的位置查找“404”&lt;/li&gt;
+  &lt;li&gt;着重关注&lt;code&gt;remote_host&lt;/code&gt;地址，&lt;code&gt;date_time&lt;/code&gt;时间戳，以及请求的URL&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;error&quot;&gt;&lt;strong&gt;&lt;em&gt;在error日志中查找错误&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;Error日志会像下面的例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[date_time] [error] [client Remote_host] error_message
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于error日志来说：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;查找“error”&lt;/li&gt;
+  &lt;li&gt;通过&lt;code&gt;remote_host&lt;/code&gt;地址和&lt;code&gt;date_time&lt;/code&gt;时间戳把对应的access日志和error日志关联起来&lt;/li&gt;
+  &lt;li&gt;注意&lt;code&gt;error_message&lt;/code&gt;的具体内容&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;access&quot;&gt;&lt;strong&gt;&lt;em&gt;评估access日志&lt;/em&gt;&lt;/strong&gt;&lt;/h5&gt;
 
 </description>
                 <link>http://blog.dellyqiao.com/middleware/translation/2015/04/14/ibm-was-61-web-container-problem-determination</link>

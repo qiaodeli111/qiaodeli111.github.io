@@ -420,6 +420,47 @@ ApplicationMg A WSVR0221I: Application started: [application_name]
 
 <h5 id="section-8"><strong><em>其他错误信息</em></strong></h5>
 
+<p>有JSPG，JSFG，或者SRVE前缀并且包含出错的URL的错误信息，点击此链接获取检查方法：<a href="#page16">“Page cannot be displayed or JSP/JSF error”</a>。</p>
+
+<blockquote>
+  <p>如果没有找到任何错误，查看后面的“Web服务器日志分析”章节。</p>
+</blockquote>
+
+<h4 id="web-7">Web服务器日志分析</h4>
+
+<p>尝试从Web服务器日志中查找下面的标志符并且分析它们。</p>
+
+<h5 id="access404"><strong><em>在access日志中查找404状态吗</em></strong></h5>
+
+<p>NCSA格式的日志如下：</p>
+
+<pre><code>Remote_host- - date_time "request" status_code bytes
+</code></pre>
+
+<p>对于404错误来说：</p>
+
+<ol>
+  <li>从<code>status_code</code>的位置查找“404”</li>
+  <li>着重关注<code>remote_host</code>地址，<code>date_time</code>时间戳，以及请求的URL</li>
+</ol>
+
+<h5 id="error"><strong><em>在error日志中查找错误</em></strong></h5>
+
+<p>Error日志会像下面的例子：</p>
+
+<pre><code>[date_time] [error] [client Remote_host] error_message
+</code></pre>
+
+<p>对于error日志来说：</p>
+
+<ol>
+  <li>查找“error”</li>
+  <li>通过<code>remote_host</code>地址和<code>date_time</code>时间戳把对应的access日志和error日志关联起来</li>
+  <li>注意<code>error_message</code>的具体内容</li>
+</ol>
+
+<h5 id="access"><strong><em>评估access日志</em></strong></h5>
+
 
     </div>
 
@@ -433,7 +474,7 @@ ApplicationMg A WSVR0221I: Application started: [application_name]
   
      
     	<li><a class="btn btn-info" href="/categories.html#middleware-ref">
-    		middleware <span class="badge badge-info">18</span>
+    		middleware <span class="badge badge-info">19</span>
     	</a></li>
      
     	<li><a class="btn btn-info" href="/categories.html#translation-ref">

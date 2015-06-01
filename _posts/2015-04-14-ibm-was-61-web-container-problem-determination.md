@@ -242,3 +242,36 @@ Example 1中的信息是一个Web模块正常启动的日志信息。
 
 ##### ***其他错误信息***
 
+有JSPG，JSFG，或者SRVE前缀并且包含出错的URL的错误信息，点击此链接获取检查方法：[“Page cannot be displayed or JSP/JSF error”](#page16)。
+
+> 如果没有找到任何错误，查看后面的“Web服务器日志分析”章节。
+
+#### Web服务器日志分析
+
+尝试从Web服务器日志中查找下面的标志符并且分析它们。
+
+##### ***在access日志中查找404状态吗***
+
+NCSA格式的日志如下：
+
+	Remote_host- - date_time "request" status_code bytes
+
+对于404错误来说：
+
+1. 从`status_code`的位置查找“404”
+2. 着重关注`remote_host`地址，`date_time`时间戳，以及请求的URL
+
+##### ***在error日志中查找错误***
+
+Error日志会像下面的例子：
+
+	[date_time] [error] [client Remote_host] error_message
+
+对于error日志来说：
+
+1. 查找“error”
+2. 通过`remote_host`地址和`date_time`时间戳把对应的access日志和error日志关联起来
+3. 注意`error_message`的具体内容
+
+##### ***评估access日志***
+
