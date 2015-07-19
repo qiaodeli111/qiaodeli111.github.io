@@ -6,7 +6,6 @@ http://blog.dellyqiao.com/categories.html
 http://blog.dellyqiao.com/index.html
 http://blog.dellyqiao.com/rss.xml
 http://blog.dellyqiao.com/sitemap.txt
-http://blog.dellyqiao.com/sporting.html
 http://blog.dellyqiao.com/page2/index.html
 http://blog.dellyqiao.com/page3/index.html
 http://blog.dellyqiao.com/page4/index.html
