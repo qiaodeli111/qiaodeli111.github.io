@@ -4,13 +4,32 @@
  <title>Delly's Publisher</title>
  <link href="http://blog.dellyqiao.com/" rel="self"/>
  <link href="http://blog.dellyqiao.com"/>
- <updated>2015-07-20T07:00:17+08:00</updated>
+ <updated>2015-07-27T17:46:32+08:00</updated>
  <id>http://blog.dellyqiao.com</id>
  <author>
    <name>Delly Qiao</name>
    <email>qiaodeli1@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>解决应用部署失败的问题</title>
+   <link href="http://blog.dellyqiao.com/middleware/2015/07/27/"/>
+   <updated>2015-07-27T00:00:00+08:00</updated>
+   <id>http://blog.dellyqiao.com/middleware/2015/07/</id>
+   <content type="html">
+&lt;p&gt;&lt;strong&gt;症状：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;遇到应用无法部署的问题，提示已存在相同的应用名。在profile的installedApps下面没有发现这个应用，从IBM控制台上也无法找到任何关于这个应用的信息。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解决办法：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;到DMGR的配置文件夹下：
+D:\IBM\WebSphere\AppServer\profiles\Dmgr01\config\cells\CTGQ3APP05Cell01&lt;/p&gt;
+
+&lt;p&gt;有两个文件夹：blas 和 cus，这两个文件夹下面有跟应用名一致的folder，删掉它们重新部署就可以了。&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>WebSphere Application Server Performance Tunning</title>

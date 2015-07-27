@@ -143,6 +143,37 @@
 
 <ul class="posts">
 	
+	    <h2><a href="/middleware/2015/07/27/">解决应用部署失败的问题</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">27 Jul 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p><strong>症状：</strong></p>
+
+<p>遇到应用无法部署的问题，提示已存在相同的应用名。在profile的installedApps下面没有发现这个应用，从IBM控制台上也无法找到任何关于这个应用的信息。</p>
+
+<p><strong>解决办法：</strong></p>
+
+<p>到DMGR的配置文件夹下：
+D:\IBM\WebSphere\AppServer\profiles\Dmgr01\config\cells\CTGQ3APP05Cell01</p>
+
+<p>有两个文件夹：blas 和 cus，这两个文件夹下面有跟应用名一致的folder，删掉它们重新部署就可以了。</p>
+
+
+		      	<a class="btn btn-primary" href="/middleware/2015/07/27/">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
 	    <h2><a href="/middleware/2015/05/20/websphere-application-server-performance-tunning">WebSphere Application Server Performance Tunning</a></h2>
 
 		<div class="tabbable"> <!-- Only required for left/right tabs -->
@@ -365,37 +396,6 @@
 
 
 		      	<a class="btn btn-primary" href="/middleware/security/2015/03/15/ihs---sslerror-ssl0227e">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers">Migrate JVM settings for same version Websphere Servers</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">14 Mar 2015</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	
-<h3 id="important">Important</h3>
-
-<p>Only when your senario is exactly same as below, you may try this method to migrate the <strong>Application Server</strong> configurations, in other word, this method can only copy the <strong>JVM</strong> configurations.</p>
-
-<p>This scenario is as below:</p>
-
-<ul>
-  <li>Your profile have the capability to create new application server. (For example, the ND cell member Node, the standard application server profile which is managed by AgentAdmin)</li>
-  <li>You want to copy the configuration to another server with the same version WAS installed. (both server installed WAS 8.0, for example)</li>
-</ul>
-
-
-		      	<a class="btn btn-primary" href="/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers">Read More...</a>
 		      </p>
 		    </div>
 		  </div>

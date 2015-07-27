@@ -11,6 +11,7 @@ http://blog.dellyqiao.com/page3/index.html
 http://blog.dellyqiao.com/page4/index.html
 http://blog.dellyqiao.com/page5/index.html
 
+http://blog.dellyqiao.com/middleware/2015/07/27/
 http://blog.dellyqiao.com/middleware/2015/05/20/websphere-application-server-performance-tunning
 http://blog.dellyqiao.com/server/2015/04/21/windows-log-transfer-script
 http://blog.dellyqiao.com/middleware/translation/2015/04/14/ibm-was-61-web-container-problem-determination
