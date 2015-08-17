@@ -143,6 +143,79 @@
 
 <ul class="posts">
 	
+	    <h2><a href="/server/2015/08/17/doubletake-replication-via-command-line">DoubleTake replication via command line</a></h2>
+
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+		  <ul class="nav nav-tabs">
+		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">17 Aug 2015</a></li>
+		  </ul>
+		  <div class="tab-content">
+		    <div class="tab-pane active" id="tab1">
+		      <p>
+		      	
+<p>废话不多说，DoubleTake文件传输的命令行配置方法如下：</p>
+
+<p>```</p>
+
+<p>d:\DoubleTake&gt;DTCL.exe -i</p>
+
+<p>Command:  logon 10.52.21.51 csc_mcs “<strong>**</strong><strong>”
+  User access level set to DT_FULL_ACCESS
+Command:  logon localhost csc_mcs “</strong><strong>**</strong>”
+  User access level set to DT_FULL_ACCESS
+//上面两条命令时登陆源服务器和目标服务器，确保用户访问权限是“DT_FULL_ACCESS”，如果是别的字样，说明权限有问题，需要把账户添加到”Double-Take Admin”这个组。  </p>
+
+<p>Command:  source localhost
+Command:  target 10.52.21.51
+//指定源服务器和目标服务器。数据会从源到目标，如果设置错误，后果很危险。</p>
+
+<p>Command:  repset create newrep
+//创建一个新的replication set，也就是要同步的数据集。
+Command:  repset rule add “d:" include to newrep
+Command:  repset rule add “d:\DoubleTake” exclude to newrep
+//为这个数据集添加规则，比如我就是需要同步D盘下所有文件，但是不要同步D:\DoubleTake这个目录。
+Command:  repset save
+Command:  repset list
+  - List of rep sets -
+  newrep                                              disabled</p>
+
+<p>Command:  connect newrep to 10.52.21.51 map exact
+//建立连接，连接之后数据就会开始传输了。
+//注意上面的map exact代表完全按照路径去映射，比如源路径是d:\，那么文件也会传到目标服务器的d:\。
+//当需要映射到不同的目标时，使用这个命令：
+//connect datafile to 10.52.21.57 map d:\ to e:\</p>
+
+<p>Command:  status con 1
+  - Status for connection 1 -
+  Time established:                 08/17/2015 13:59:07.473
+  Replication set:                  newrep
+  Target machine:                   10.52.21.51
+  Target state:                     Mirror Required
+  Mirror bytes transferred:         0
+  Mirror bytes transmitted:         0
+  Mirror bytes in queue:            0
+  Replication bytes transferred:    2040
+  Replication bytes transmitted:    2040
+  Replication bytes in queue:       0
+//这个命令可以看到当前这个链接的状态。一般来说建立的第一个链接编号就是1.</p>
+
+<p>Command:</p>
+
+<p>```</p>
+
+<p>附上一份DoubleTake命令指南：
+<a href="http://7rfgqc.com1.z0.glb.clouddn.com/2015/08/17/double-take-scripting-guide.pdf">DoubleTake Command Guide</a></p>
+
+
+		      	<a class="btn btn-primary" href="/server/2015/08/17/doubletake-replication-via-command-line">Read More...</a>
+		      </p>
+		    </div>
+		  </div>
+		</div>
+
+	    <hr>
+	    <br>
+	
 	    <h2><a href="/middleware/2015/07/27/">解决应用部署失败的问题</a></h2>
 
 		<div class="tabbable"> <!-- Only required for left/right tabs -->
@@ -366,36 +439,6 @@ D:\IBM\WebSphere\AppServer\profiles\Dmgr01\config\cells\CTGQ3APP05Cell01</p>
 
 
 		      	<a class="btn btn-primary" href="/middleware/2015/03/21/WebSphere-Learning-Notes">Read More...</a>
-		      </p>
-		    </div>
-		  </div>
-		</div>
-
-	    <hr>
-	    <br>
-	
-	    <h2><a href="/middleware/security/2015/03/15/ihs---sslerror-ssl0227e">IHS   SSL证书替换之后无法访问（Error SSL0227E）</a></h2>
-
-		<div class="tabbable"> <!-- Only required for left/right tabs -->
-		  <ul class="nav nav-tabs">
-		    <li class="active"><a href="javascript:;" data-toggle="tab" class="label">15 Mar 2015</a></li>
-		  </ul>
-		  <div class="tab-content">
-		    <div class="tab-pane active" id="tab1">
-		      <p>
-		      	
-<h3 id="section">出现的问题</h3>
-
-<p>今天在为网站替换SSL证书的时候出现了一个问题，服务器是IBM HTTP Server服务器，症状如下：</p>
-
-<ul>
-  <li>替换之后站点无法访问</li>
-  <li>用ikeyman打开证书查看，证书没有问题</li>
-  <li>服务启动后，HTTPS端口（443）已经正常监听了</li>
-</ul>
-
-
-		      	<a class="btn btn-primary" href="/middleware/security/2015/03/15/ihs---sslerror-ssl0227e">Read More...</a>
 		      </p>
 		    </div>
 		  </div>
