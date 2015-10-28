@@ -52,6 +52,14 @@ Linux系统用find命令：
 - Linux系统：
 
 	选择比较多，一般Linux系统都自带gzip，tar这类的归档压缩工具，比如可以用这个命令：`gzip SystemOut-*.log`， 直接把归档出来的日志都压缩。如果需要定时执行的话设置一下crontab就好了。
+	
+		cd /opt/JBossEPP43/jboss-as/server/production/log
+		gzip server.log.*
+		gzip boot.log.*
+		gzip gc.log.*
+		mv *.gz logs_archive/
+		cd logs_archive/
+		find . -name "*.gz" -mtime +42 -exec rm {} \;
 
 	Crontab的设置如下：
 
