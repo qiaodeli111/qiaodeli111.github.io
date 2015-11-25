@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "基于IP地址和基于hostname的两种Apache批量配置多个虚拟主机"
+title: "基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法"
 description: ""
 category: "middleware"
 ---
