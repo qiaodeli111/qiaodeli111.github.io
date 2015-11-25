@@ -90,15 +90,17 @@ WEB服务器，收集access.log和error.log。 APP服务器则收集SystemOut.lo
 	111.161.17.67 - - [16/Nov/2015:21:23:26 +0800] 3 3921699 "POST /eCOM/AppleWebService?_command_=AppleWebService&module=HelpModule&actionType=RecordAppLog HTTP/1.1" 200 223 "-" "Mozilla/5.0 (Linux; Android 5.1.1; D6503 Build/23.4.A.1.232; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/45.0.2454.95 Mobile Safari/537.36" 
 	111.161.17.67 - - [17/Nov/2015:00:37:43 +0800] 34 34972869 "POST /eCOM/AppleWebService?_timeIdND=20151117003742_76 HTTP/1.1" 200 174724 "-" "Mozilla/5.0 (Linux; Android 5.1.1; D6503 Build/23.4.A.1.232; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/45.0.2454.95 Mobile Safari/537.36" 
 
-所以问题可能出现的原因有下面几种：
+
+
+###问题排查
+
+根据WEB和APP日志，我们可以猜测问题出现的原因有下面几种：
 
 1. WEB服务器与APP服务器之间传输请求包或者响应包的时候速度过慢，造成了延时。
 2. WEB服务器本身处理缓慢，造成了延时。
 3. Mobile APP和WEB服务器在传输数据的时候速度过慢，造成了延时。
 4. Mobile APP不能及时发出请求数据包，或者Mobile APP收到了响应数据包，但是不能快速解析响应数据包，造成了延时。
 
+********
 
-###问题排查
-
-
-
+待续。。。
