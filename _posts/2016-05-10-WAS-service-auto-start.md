@@ -2,7 +2,7 @@
 layout: post
 title: "如何配置WAS服务跟随系统启动"
 description: ""
-category: ["security", "middleware"]
+category: ["Security", "Middleware"]
 ---
 {% include JB/setup %}
 
@@ -16,8 +16,6 @@ WAS自动启动有两种方法，首先介绍第一种方法：
 1. 登录到管理控制台。
 2. 跳转到Servers > Server Types > WebSphere application servers。
 3. 找到希望自启动的服务器，跳转到其配置界面，打开Java and Process Management，点击Monitoring Policy，如下图：
-
-<!-- more -->
 	
 	![http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_1.png](http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_1.png/scale)
 
@@ -26,6 +24,8 @@ WAS自动启动有两种方法，首先介绍第一种方法：
 	![http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_2.png](http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_2.png/scale)
 
 这样当NodeAgent/Node启动的时候，应用服务器也会自动启动。但是很明显，想要让这种方法生效，前提是NodeAgent/Node必须可以跟随操作系统启动。所以接下来我们需要继续配置：
+
+<!-- more -->
 
 ### 配置NodeAgent/Node跟随操作系统启动 ###
 
