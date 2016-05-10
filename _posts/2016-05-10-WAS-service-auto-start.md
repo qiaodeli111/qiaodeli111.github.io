@@ -1,13 +1,11 @@
 ---
 layout: post
-title: "Configuring the servers to start automatically at boot"
+title: "如何配置WAS服务跟随系统启动"
 description: ""
 category: ["security", "middleware"]
 ---
 {% include JB/setup %}
 
-
-## 如何配置WAS服务跟随系统启动 ##
 
 默认情况下，WAS应用服务器，NodeAgent等等WAS服务是不会跟随系统自动启动的。本文将介绍如何配置WAS使其服务跟随系统启动。
 
