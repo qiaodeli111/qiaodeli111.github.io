@@ -2,7 +2,7 @@
 layout: post
 title: "基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法"
 description: ""
-category: "middleware"
+category: "Middleware"
 ---
 {% include JB/setup %}
 

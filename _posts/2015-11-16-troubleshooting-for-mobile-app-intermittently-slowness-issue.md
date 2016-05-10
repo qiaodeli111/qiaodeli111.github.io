@@ -2,7 +2,7 @@
 layout: post
 title: "Troubleshooting for Mobile APP intermittently slowness issue"
 description: ""
-category: "middleware"
+category: "Middleware"
 ---
 {% include JB/setup %}
 

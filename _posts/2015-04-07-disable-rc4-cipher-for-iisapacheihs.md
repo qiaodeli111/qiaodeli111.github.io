@@ -2,7 +2,7 @@
 layout: post
 title: "Disable RC4 Cipher for IIS/Apache/IHS"
 description: ""
-category: ["security", "middleware"]
+category: ["Security", "Middleware"]
 ---
 {% include JB/setup %}
 

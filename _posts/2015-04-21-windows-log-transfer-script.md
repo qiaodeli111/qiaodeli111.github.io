@@ -2,7 +2,7 @@
 layout: post
 title: "Windows Log transfer script"
 description: ""
-category: "server"
+category: "Server"
 ---
 {% include JB/setup %}
 

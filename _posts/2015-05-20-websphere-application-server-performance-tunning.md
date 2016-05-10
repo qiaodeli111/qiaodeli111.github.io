@@ -2,7 +2,7 @@
 layout: post
 title: "WebSphere Application Server Performance Tunning"
 description: ""
-category: "middleware"
+category: "Middleware"
 ---
 {% include JB/setup %}
 

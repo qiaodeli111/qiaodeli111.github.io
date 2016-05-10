@@ -2,7 +2,7 @@
 layout: post
 title: "IBM WAS 6.1 Web container problem determination——文档翻译（更新中）"
 description: ""
-category: ["middleware", "translation"]
+category: ["Middleware", "Translation"]
 ---
 {% include JB/setup %}
 
