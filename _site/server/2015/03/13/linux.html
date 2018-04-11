@@ -1,0 +1,443 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>Linux网络管理— 学习笔记</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>Linux网络管理— 学习笔记 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>13 March 2015</span>
+    </div>
+    <div class="content">
+      
+<h3 id="osi七层模型"><strong>OSI七层模型：</strong></h3>
+
+<ul>
+  <li>
+    <p>物理层 比特 八根网线1346用来传数据，设备之间传递比特流</p>
+  </li>
+  <li>
+    <p>数据链路层 帧 用Mac地址访问媒介，错误检测修正</p>
+
+    <p>内网用Mac地址传数据</p>
+  </li>
+</ul>
+
+<!-- more -->
+
+<ul>
+  <li>
+    <p>网络层 报文 （确定IP地址）提供逻辑地址，选择通路</p>
+
+    <p>公网用IP地址传输局</p>
+  </li>
+  <li>
+    <p>传输层 TPDU 确定服务端口， TCP/UDP — 确定可靠与不可靠的传输，传输前的错误检测，流控</p>
+  </li>
+  <li>
+    <p>会话层 SPDU 管理和同步用户会话</p>
+  </li>
+  <li>
+    <p>表示层 PPDU 数据的表现形式（如文字翻译成ASCII，再翻译成机器语言），特定功能的实现-如加密</p>
+  </li>
+  <li>
+    <p>应用层 APDU 用户接口</p>
+  </li>
+</ul>
+
+<h3 id="tcpip四层模型"><strong>TCP/IP四层模型</strong></h3>
+
+<ul>
+  <li>
+    <p><em>应用层 为用户提供各种服务 FTP，HTTP，</em></p>
+
+    <blockquote>
+      <p>应用层</p>
+    </blockquote>
+
+    <blockquote>
+      <p>表示层</p>
+    </blockquote>
+
+    <blockquote>
+      <p>会话层</p>
+    </blockquote>
+  </li>
+  <li>
+    <p><em>传输层 为应用层的尸体提供端到端的通信功能 TCP传输控制协议，UDP用户数据报协议</em></p>
+
+    <blockquote>
+      <p>传输层</p>
+    </blockquote>
+  </li>
+  <li>
+    <p><em>网际互联层 解决主机之间的通信问题 IP网际协议，ICMP互联网控制报文协议（ping），IGMP互联网组管理协议</em></p>
+
+    <blockquote>
+      <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>网络层
+</code></pre></div>      </div>
+    </blockquote>
+  </li>
+  <li>
+    <p><em>网络接口层 负责数据在网络中的交换 ARP地址解析协议</em></p>
+
+    <blockquote>
+      <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>数据链路层
+</code></pre></div>      </div>
+    </blockquote>
+
+    <blockquote>
+      <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>物理层
+</code></pre></div>      </div>
+    </blockquote>
+  </li>
+</ul>
+
+<h3 id="tcpip与osi两种模型比较"><strong>TCP/IP与OSI两种模型比较</strong></h3>
+
+<p>共同点：</p>
+
+<p>1）都采用了层次结构的概念</p>
+
+<p>2）都能提供面向连接和无连接两种通信服务机制（TCP/UDP)</p>
+
+<p>不同点：</p>
+
+<p>1）层数不同</p>
+
+<p>2）对可靠性要求不同（后者更高）</p>
+
+<p>3）OSI实在协议开发前设计的，是通用的。TCP/IP是先有协议集再建立模型，不适用与非TCP/IP网络。</p>
+
+<p>4）实际市场应用不同（OSI是理论上的模型，并没有成熟的产品。TCP/IP已经成为实际上的国际标准）</p>
+
+<en-media type="image/png" hash="afc8ec882eaf0902a975f7342adf23b2" style="height: auto;" />
+
+<p>网关</p>
+
+<p>1）子网内的计算机在跟不同子网设备通信时用</p>
+
+<p>2）子网IP转换成公网IP，公网IP转成子网IP</p>
+
+<p><strong>Linux网络配置</strong></p>
+
+<p>**<br />
+**</p>
+
+<p>1）ifconfig — 临时配置IP地址</p>
+
+<p>ifconfig eth0 192.168.0.200 netmask 255.255.255.0</p>
+
+<p>2）setup工具永久配置IP地址（RedHat系列专有）</p>
+
+<p>setup</p>
+
+<p>service network restart</p>
+
+<p>3）修改网络配置文件</p>
+
+<p>1. 网卡信息文件</p>
+
+<p>vi /etc/sysconfig/network-scripts/ifcfg-eth0</p>
+
+<p>BOOTPROTO=none/static/dhcp 是否自动获取IP（none，static都代表手工设定）</p>
+
+<p>ONBOOT=yes 是否随网络服务启动（Redhat6以后默认为no）</p>
+
+<p>UUID=“xxx” 唯一识别码（虚拟机克隆后必须手动修改）</p>
+
+<p>IPADDR=</p>
+
+<p>NETMASK=</p>
+
+<p>GATEWAY=</p>
+
+<p>DNS1=</p>
+
+<en-media type="image/png" hash="8574ea63171d5176e7a56603839a5881" style="height: auto;" />
+
+<p>2. 主机名文件</p>
+
+<p>vi /etc/sysconfig/network</p>
+
+<p>NETWORKING=yes</p>
+
+<p>HOSTNAME=imooc</p>
+
+<p>3. DNS配置文件</p>
+
+<p>vi /etc/resolv.conf</p>
+
+<p>nameserver xxx.xxx.xxx.xxx</p>
+
+<p>search localhost (比如输入imooc，自动访问imooc.localhost）</p>
+
+<p>4）图形界面配置IP地址</p>
+
+<p><strong>虚拟机网络参数配置</strong></p>
+
+<p>1. 配置IP地址 （setup）</p>
+
+<p>2. 启动网卡 （ONBOOT=yes）</p>
+
+<p>service network restart</p>
+
+<p>3. 修改UUID</p>
+
+<p>1）删除Mac地址行</p>
+
+<p>2）rm -rf /etc/udev/rules.d/70-persistent-net.rules 删除网卡和Mac地址绑定文件</p>
+
+<p>3）重启系统</p>
+
+<p>4. 设置虚拟机网络连接方式</p>
+
+<p>桥接：利用电脑的物理网卡连接</p>
+
+<p>NAT：可以跟本机主机通信，而且可以用公网（VMnet8）</p>
+
+<p>HostOnly：可以跟主机通信，但是不能用公网（VMnet1）</p>
+
+<p>5.修改桥接网卡</p>
+
+<p>选择能通信的网卡。</p>
+
+<p>Linux网络命令：</p>
+
+<p><strong>网络环境查看命令</strong></p>
+
+<p>ifconfig 查看与配置网络状态命令</p>
+
+<p>ifdown eth0 禁用网卡eth0</p>
+
+<p>ifup eth0</p>
+
+<p>netstat</p>
+
+<p>-t 列出TCP协议端口</p>
+
+<p>-u 列出UDP协议端口</p>
+
+<p>-n 不使用域名与服务名，而使用IP地址和端口号</p>
+
+<p>-l 仅显示在监听状态的连接</p>
+
+<p>-a 列出所有的网络连接</p>
+
+<p>-r 列出路由列，同route</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>如：netstat -an</td>
+      <td>grep ESTABLISHED</td>
+      <td>wc -l 列出多少服务器连接到这台机器</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>route -n == netstat -rn</p>
+
+<p>route add default gw 192.168.1.1</p>
+
+<p>nslookup www.baidu.com</p>
+
+<p><strong>网络测试命令</strong></p>
+
+<p><strong>ping</strong> IP -c 3</p>
+
+<p>telnet IP port</p>
+
+<p>taceroute IP/domain (利用ICMP协议，同ping）</p>
+
+<p>wget http://xxxxxxx/xxx/xxx.gz (下载）</p>
+
+<p>tcpdump -i eth0 -nnX port 21 (抓包）</p>
+
+<en-media type="image/png" hash="dd3a77f80cc4edbbc3f6c6e29c12a973" style="height: auto;" />
+
+<p><strong>SSH协议原理</strong></p>
+
+<p>对称加密算法：单密钥密码系统的加密方法，同一个密钥同时用来加密和解密。</p>
+
+<p>非对称加密算法：</p>
+<en-media type="image/png" hash="ad3acd4c5dc7306d255541a53e0ab7b7" style="height: auto;" />
+
+<en-media type="image/png" hash="89715a36165a29984b0019f03211cf6b" style="height: auto;" />
+
+<p>ssh 用户@IP</p>
+
+<p>vi ~/ssh/known_hosts</p>
+
+<p>下载文件 scp [-r] 用户@IP:文件路径 本地路径</p>
+
+<p>上传文件 scp [-r] 本地文件 用户@IP:上传路径</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Server-ref">
+    		Server <span class="badge badge-info">8</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/coding/2015/03/13/java" title="Java面试题练习   计算兄弟数字的分析和实现">&larr; Java面试题练习   计算兄弟数字的分析和实现</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/monitoring/2015/03/13/zabbix-update-from-183-to-1812" title="Zabbix   Update from 1.8.3 to 1.8.12">Zabbix   Update from 1.8.3 to 1.8.12 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

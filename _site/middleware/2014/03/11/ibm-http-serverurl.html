@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>在IBM HTTP Server中配置URL重定向</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>在IBM HTTP Server中配置URL重定向 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>11 March 2014</span>
+    </div>
+    <div class="content">
+      
+<p>之前总结在Apache中实现URL重定向跳转的功能，方法如下：</p>
+
+<blockquote>
+  <p>比如要想把dellyserver/abc/下所有的资源都重定向到www.baidu.com，我的dellyserver是在DMZ中，这台server无法访问百度的服务器。</p>
+</blockquote>
+
+<!-- more -->
+<blockquote>
+  <p>第一步，写一个html文件，就叫test.html吧，放到网站的根目录。test.html只是个空白网页，只需要在&lt;head&gt;标签里加上下面这行JS代码：</p>
+</blockquote>
+
+<blockquote>
+  <pre>window.location.href="http://www.baidu.com”</pre>
+</blockquote>
+
+<blockquote>
+  <p>第二步，在httpd.conf中添加配置如下：</p>
+</blockquote>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteCond %{HTTP_HOST} ^dellyserver [NC] 
+
+RewriteRule ^/abc/(.*)$ /test.html [L]
+</code></pre></div></div>
+
+<blockquote>
+  <p>这样所有到达http://dellyserver/abc/xxxx的资源都会被定向到test.html，当test.html下载到本地的时候，浏览器会执行html文件中的JS代码：&lt;pre&gt;window.location.href=”http://www.baidu.com”&lt;/pre&gt;，这样浏览器会自动给http://www.baidu.com发送请求并且获得响应，费了一番功夫但是也确实达到了重定向的效果。</p>
+</blockquote>
+
+<p>IHS是基于Apache的，按理说这种方法也应该能工作的，但是起作用的情况仅限静态网站的情况。</p>
+
+<p>如果IHS通过Plugin进行URI的处理，那么用上面的方法并不会生效，而是会直接跳出500错误。因为IHS会先通过plugin匹配用户的URI请求，然后再搜索DocumentRoot下地文件去匹配请求。</p>
+
+<p>如果请求abc.jsp，如果plugin无法处理对应的请求，IHS就会直接返回500错误，因为jsp只能被WAS处理，DocumentRoot下的文件全部都是静态html文件。</p>
+
+<p>那么应该如何配置才能让IHS首先去适配rewrite模块填写的规则呢？如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteRule ^/abc/(.*)$ /test.html [L,R=301]*
+</code></pre></div></div>
+
+<p>R=301 代表/abc/下所有的资源都永久转移到新的位置了，这样IHS就会去直接执行这条规则而不是去尝试plugin匹配了。</p>
+
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/hadoop/2014/03/11/hadoop" title="如何确定Hadoop守护进程分别会在哪台机器上运行">&larr; 如何确定Hadoop守护进程分别会在哪台机器上运行</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/middleware/2014/03/11/ibm-renewing-personal-was-certificate-fails-if-plugin-keykdb-is-unavailable" title="解决Websphere内置证书更新失败——IBM Renewing personal WAS certificate fails if plugin key.kdb is unavailable">解决Websphere内置证书更新失败——IBM Renewing personal WAS certificate fails if plugin key.kdb is unavailable &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

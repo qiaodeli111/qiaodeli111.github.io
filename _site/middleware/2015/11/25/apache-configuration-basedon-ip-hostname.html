@@ -1,0 +1,558 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>25 November 2015</span>
+    </div>
+    <div class="content">
+      
+<p>本文介绍如何从头开始为Apache配置多个虚拟主机。</p>
+
+<p>Apache可以通过三种方式实现在同一台物理机上配置多个虚拟主机：</p>
+
+<ol>
+  <li>基于不同的端口号</li>
+  <li>基于不同的IP地址</li>
+  <li>基于不同的hostname</li>
+</ol>
+
+<p>本文介绍2和3。</p>
+
+<p>注意：本文环境是Suse Linux，安装的Apache也是由Novell公司的Suse源里提供的Apache2.2。Apache的默认配置、文件的路径之类的可能会与其它版本的Apache有所不同，所以此文仅供参考。但是配置方法适用于所有2.2的Apache。</p>
+
+<!-- more -->
+
+<hr />
+
+<p>基于IP地址的虚拟主机设置。</p>
+
+<p>假设当前物理机的IP地址是10.52.19.44，我们希望创建20个虚拟主机。这里用两个domain来做例子: www.domain1.com（10.52.19.60）, www.domain2.com（10.52.19.61）。步骤如下：</p>
+
+<ol>
+  <li>
+    <p>为服务器配置虚拟IP。我们的主机上只有一块网卡，配置多个虚拟IP就可以用不同的IP来接收数据包。</p>
+
+    <p>vim /etc/sysconfig/network/ifcfg-eth0， 然后更改如下：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> BOOTPROTO='static'
+ BROADCAST=''
+ ETHTOOL_OPTIONS=''
+ IPADDR='10.52.19.44/24'
+ GATEWAY='10.52.19.254'
+ MTU=''
+ NAME=''
+ NETWORK=''
+ REMOTE_IPADDR=''
+ STARTMODE='auto'
+ USERCONTROL='no'
+ _nm_name='eth0'
+ IPADDR_0='10.52.19.60'
+ LABEL_0='1'
+ NETMASK_0='255.255.255.0'
+ IPADDR_2='10.52.19.61'
+ LABEL_2='2'
+ NETMASK_2='255.255.255.0'
+</code></pre></div>    </div>
+
+    <p>重启网络服务使设置生效：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> service network restart
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>启动Apache的SSL服务。</p>
+
+    <p>我们尽量遵守软件提供商希望的方法来配置我们的软件。对这个Apache的版本来说，所有SSL相关的设置都是要配置到<code class="highlighter-rouge">&lt;IfDefine SSL&gt;</code>标签中，所以只有当这个对应的参数配置过以后，Apache才会启动SSL，否则一切SSL的配置都不会生效。（当然也可以把所有SSL相关的配置都放到这个标签之外，但是这样的话如果我们想禁用SSL就会非常麻烦）</p>
+
+    <p>vim /etc/sysconfig/apache2，修改如下：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> APACHE_SERVER_FLAGS="SSL"
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建相关的文件夹：</p>
+
+    <p>1) 为我们的Domain创建DocumentRoot文件夹，这里使用脚本test.sh：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c">#!/bin/bash</span>
+ <span class="k">for </span>i <span class="k">in</span> <span class="sb">`</span><span class="nb">cat </span>urls<span class="sb">`</span>
+ <span class="k">do
+ </span><span class="nb">mkdir</span> /Apps/<span class="nv">$i</span>
+ <span class="nb">echo</span> <span class="s2">"&lt;h1&gt;Index Page for </span><span class="nv">$i</span><span class="s2">&lt;/h1&gt;"</span> <span class="o">&gt;</span> <span class="nv">$i</span>/index.html
+ <span class="k">done</span>
+</code></pre></div>    </div>
+
+    <p>需要创建一个名为“urls”的文件并且放到与test.sh相同的路径下：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> www.domain1.com
+ www.domain2.com
+</code></pre></div>    </div>
+
+    <p>修改脚本权限，运行：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> cd /Apps/
+ chmod +x test.sh
+ ./test.sh
+</code></pre></div>    </div>
+
+    <p>2) 稍微修改脚本，创建相关的日志文件夹。 （比如把“／Apps“修改为”/Apps/logs“）</p>
+  </li>
+  <li>
+    <p>我们使用自签名证书进行测试。创建自签名证书的方法:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> cd /etc/Apache2/SSL/
+ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ssl.key -out ssl.crt
+</code></pre></div>    </div>
+
+    <p>命令执行后会有交互界面输入相关信息，关键的信息是”Common Name“，这儿要填写完整域名（比如www.domain1.com）</p>
+  </li>
+  <li>
+    <p>配置Apache监听的IP和端口:</p>
+
+    <p>vim /etc/apache2/listen.conf</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Listen 10.52.19.60:80
+ Listen 10.52.19.61:80	
+	
+ &lt;IfDefine SSL&gt;
+     &lt;IfDefine !NOSSL&gt;
+         &lt;IfModule mod_ssl.c&gt;
+	
+                 Listen 10.52.19.60:443
+                 Listen 10.52.19.61:443
+         &lt;/IfModule&gt;
+     &lt;/IfDefine&gt;
+ &lt;/IfDefine&gt;
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建虚拟主机，这里使用脚本:</p>
+
+    <p>1) 创建一个虚拟主机的模板，命名为”temp“放到/etc/apache2/vhost.d/。</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &lt;VirtualHost 10.52.19.60:80&gt;
+         ServerName www.domain.comwww.domain.com:80
+         DocumentRoot /Apps/www.domain.com
+         ErrorLog /Apps/logs/www.domain.com/error_log
+         LogLevel warn
+         CustomLog /Apps/logs/www.domain.com/access_log combined
+         RewriteEngine on
+	
+ &lt;/VirtualHost&gt;
+	
+ &lt;IfDefine SSL&gt;
+ &lt;IfDefine !NOSSL&gt;
+	
+ &lt;VirtualHost 10.52.19.60:443&gt;
+	
+         DocumentRoot /Apps/www.domain.com
+         ServerName www.domain.com:443
+         ErrorLog /Apps/logs/www.domain.com/error_log
+         TransferLog /Apps/logs/www.domain.com/access_log
+	
+         SSLEngine on
+         # 4 possible values: All, SSLv2, SSLv3, TLSv1. Allow TLS only:
+         SSLProtocol all -SSLv2 -SSLv3
+	
+         #   "openssl ciphers -v" for a complete list of ciphers that are
+         #   available.
+         SSLCipherSuite ALL:!aNULL:!eNULL:!SSLv2:!LOW:!EXP:!MD5:@STRENGTH
+	
+         SSLCertificateFile /etc/apache2/SSL/ssl.crt
+         #SSLCertificateFile /etc/apache2/ssl.crt/server-dsa.crt
+	
+         SSLCertificateKeyFile /etc/apache2/SSL/ssl.key
+         #SSLCertificateKeyFile /etc/apache2/ssl.key/server-dsa.key
+	
+         #SSLCertificateChainFile /etc/apache2/ssl.crt/ca.crt
+	
+         #SSLCACertificatePath /etc/apache2/ssl.crt
+         #SSLCACertificateFile /etc/apache2/ssl.crt/ca-bundle.crt
+         #SSLCARevocationPath /etc/apache2/ssl.crl
+         #SSLCARevocationFile /etc/apache2/ssl.crl/ca-bundle.crl
+	
+         #SSLVerifyClient require
+         #SSLVerifyDepth  10
+         &lt;Files ~ "\.(cgi|shtml|phtml|php3?)$"&gt;
+             SSLOptions +StdEnvVars
+         &lt;/Files&gt;
+         &lt;Directory "/srv/www/cgi-bin"&gt;
+             SSLOptions +StdEnvVars
+         &lt;/Directory&gt;
+         CustomLog /Apps/logs/www.domain.com/ssl_request_log   ssl_combined
+	
+ &lt;/VirtualHost&gt;
+	
+ &lt;/IfDefine&gt;
+ &lt;/IfDefine&gt;
+</code></pre></div>    </div>
+
+    <p>2) 在同一个文件夹下创建文件”urls”，内容如下:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> www.domain1.com 10.52.19.60
+ www.domain2.com 10.52.19.61
+</code></pre></div>    </div>
+
+    <p>3) 建立一个脚本(test.sh)，内容如下:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c">#!/bin/bash</span>
+ <span class="k">while </span><span class="nb">read </span>line
+ <span class="k">do</span>
+         <span class="c">##提取出domain name</span>
+         <span class="nv">HOST</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$line</span> | <span class="nb">awk</span> <span class="s1">'{print $1}'</span><span class="sb">`</span>
+         <span class="c">##提取出对应的IP</span>
+         <span class="nv">IP</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$line</span> | <span class="nb">awk</span> <span class="s1">'{print $2}'</span><span class="sb">`</span>
+         <span class="c">##修改虚拟主机中的domain name和IP，然后建立对应的虚拟主机配置文件</span>
+         <span class="nb">sed</span> <span class="nt">-e</span> <span class="s1">'s/10.52.19.60/'</span><span class="nv">$IP</span><span class="s1">'/g'</span> <span class="nt">-e</span> <span class="s1">'s/www.domain.com/'</span><span class="nv">$HOST</span><span class="s1">'/g'</span> temp <span class="o">&gt;</span> vhost-<span class="nv">$HOST</span>.conf
+         <span class="nb">echo</span> <span class="s2">"Virtual Host for </span><span class="nv">$HOST</span><span class="s2"> has been created!"</span>
+	
+ <span class="k">done</span> &lt; urls
+</code></pre></div>    </div>
+
+    <p>4) 脚本加权限执行：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> cd /etc/apache/vhost.d/
+ chmod +x test.sh
+ ./test.sh
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>重启Apache服务：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> service apache2 restart
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p><em>如何测试虚拟主机是否生效：</em></p>
+
+<p><em>在测试的PC上，打开浏览器输入对应的IP地址，看看会不会跳转到对应的index.html页面</em></p>
+
+<hr />
+
+<p>基于hostname的虚拟主机设置。</p>
+
+<p>假设当前物理机的IP地址是10.52.19.44，我们希望创建20个虚拟主机。这里用两个domain来做例子。虚拟主机拥有不同的主机名，但是我们希望用同一个IP。 例如：www.domain1.com（10.52.19.44）, www.domain2.com（10.52.19.44），我们希望通过www.domain1.com访问Apache服务器的时候，用户访问到domain1的所有文件；通过www.domain2.com访问Apache服务器的时候，用户访问到domain2的所有文件。</p>
+
+<p>为了可以方便地批量创建虚拟主机，我写了一个脚本实现所有功能。首先可以看看我们文件夹下面的所有文件列表：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/tmp/configure # ls -R
+.:
+SSL  test.sh  urls  vhost-temp
+
+./SSL:
+www.domain1.com  www.domain2.com
+
+./SSL/www.domain1.com:
+ssl.crt  ssl.key
+
+./SSL/www.domain2.com:
+ssl.crt  ssl.key
+</code></pre></div></div>
+
+<p>test.sh内容如下:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c">## Define variables</span>
+<span class="nv">today</span><span class="o">=</span><span class="sb">`</span><span class="nb">date</span> +<span class="s2">"%Y%m%d"</span><span class="sb">`</span>
+<span class="nv">ipaddr</span><span class="o">=</span><span class="sb">`</span>ifconfig eth0 | <span class="nb">grep</span> <span class="s2">"inet addr"</span> | <span class="nb">awk</span> <span class="nt">-F</span> <span class="s2">":"</span> <span class="s1">'{print $2}'</span> | <span class="nb">awk</span> <span class="s1">'{print $1}'</span><span class="sb">`</span>
+
+<span class="c">## Make the required directories and copy required files</span>
+<span class="nb">mkdir</span> /Apps/logs/
+<span class="nb">mkdir</span> /etc/apache2/backup_<span class="nv">$today</span>
+<span class="nb">cp</span> <span class="nt">-r</span> SSL/ /etc/apache2/
+<span class="nb">cp </span>httpd.conf /etc/apache2/
+
+<span class="k">for </span>i <span class="k">in</span> <span class="sb">`</span><span class="nb">cat </span>urls<span class="sb">`</span>
+<span class="k">do
+        </span><span class="nb">mkdir</span> /Apps/<span class="nv">$i</span>
+        <span class="nb">mkdir</span> /Apps/logs/<span class="nv">$i</span>
+        <span class="nb">echo</span> <span class="s2">"&lt;h1&gt;Index Page for </span><span class="nv">$i</span><span class="s2">&lt;/h1&gt;"</span> <span class="o">&gt;</span> /Apps/<span class="nv">$i</span>/index.html
+        <span class="nb">sed</span> <span class="nt">-e</span> <span class="s1">'s/www.domain.com/'</span><span class="nv">$i</span><span class="s1">'/g'</span> vhost-temp <span class="o">&gt;</span> /etc/apache2/vhosts.d/vhost-<span class="nv">$i</span>.conf
+        <span class="nb">echo</span> <span class="s2">"Virtual Host for </span><span class="nv">$i</span><span class="s2"> has been created!"</span>
+<span class="k">done</span>
+
+
+<span class="c">## Backup the modified files</span>
+<span class="nb">cd</span> /etc/apache2
+<span class="nb">cp </span>httpd.conf backup_<span class="nv">$today</span>
+<span class="nb">cp </span>listen.conf backup_<span class="nv">$today</span>
+
+<span class="c">##Change listen.conf</span>
+<span class="nb">echo</span> <span class="s2">"NameVirtualHost </span><span class="nv">$ipaddr</span><span class="s2">:80"</span> <span class="o">&gt;&gt;</span> listen.conf
+<span class="nb">echo</span> <span class="s2">"NameVirtualHost </span><span class="nv">$ipaddr</span><span class="s2">:443"</span> <span class="o">&gt;&gt;</span> listen.conf
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="nt">-e</span> <span class="s1">'s/Listen 80/Listen '</span><span class="nv">$ipaddr</span><span class="s1">':80/g'</span>  <span class="nt">-e</span> <span class="s1">'s/Listen 443/Listen '</span><span class="nv">$ipaddr</span><span class="s1">':443/g'</span> listen.conf
+
+<span class="c">##Restart service</span>
+service apache2 restart
+</code></pre></div></div>
+
+<p>urls:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>www.domain1.com
+www.domain2.com
+</code></pre></div></div>
+
+<p>vhost-temp:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;VirtualHost 10.52.19.44:80&gt;
+        ServerName www.domain.com
+        DocumentRoot /Apps/www.domain.com
+        ErrorLog /Apps/logs/www.domain.com/error_log
+        LogLevel warn
+        CustomLog /Apps/logs/www.domain.com/access_log combined
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(GET|HEAD|POST)$
+        RewriteRule .* - [F]
+        #RewriteCond %{SERVER_PORT} !^443$
+        #RewriteRule ^/(.*)$ https://%{SERVER_NAME}/$1 [L,R]
+        RewriteRule ^/$ http://%{SERVER_NAME}/index.html
+
+&lt;/VirtualHost&gt;
+
+
+&lt;IfDefine SSL&gt;
+&lt;IfDefine !NOSSL&gt;
+
+&lt;VirtualHost 10.52.19.44:443&gt;
+
+        ServerName www.domain.com
+        DocumentRoot /Apps/www.domain.com
+        ErrorLog /Apps/logs/www.domain.com/error_log
+        TransferLog /Apps/logs/www.domain.com/access_log
+
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(GET|HEAD|POST)$
+        RewriteRule .* - [F]
+        #RewriteCond %{SERVER_PORT} !^443$
+        #RewriteRule ^/(.*)$ https://%{SERVER_NAME}/$1 [L,R]
+        RewriteRule ^/$ https://%{SERVER_NAME}/index.html
+
+
+        SSLEngine on
+        # 4 possible values: All, SSLv2, SSLv3, TLSv1. Allow TLS only:
+        SSLProtocol all -SSLv2 -SSLv3
+
+        #   "openssl ciphers -v" for a complete list of ciphers that are
+        #   available.
+        SSLCipherSuite ALL:!aNULL:!eNULL:!SSLv2:!LOW:!EXP:!MD5:@STRENGTH
+
+        SSLCertificateFile /etc/apache2/SSL/www.domain.com/ssl.crt
+        #SSLCertificateFile /etc/apache2/ssl.crt/server-dsa.crt
+
+        SSLCertificateKeyFile /etc/apache2/SSL/www.domain.com/ssl.key
+        #SSLCertificateKeyFile /etc/apache2/ssl.key/server-dsa.key
+
+        #SSLCertificateChainFile /etc/apache2/ssl.crt/ca.crt
+
+        #SSLCACertificatePath /etc/apache2/ssl.crt
+        #SSLCACertificateFile /etc/apache2/ssl.crt/ca-bundle.crt
+        #SSLCARevocationPath /etc/apache2/ssl.crl
+        #SSLCARevocationFile /etc/apache2/ssl.crl/ca-bundle.crl
+
+        #SSLVerifyClient require
+        #SSLVerifyDepth  10
+
+        &lt;Files ~ "\.(cgi|shtml|phtml|php3?)$"&gt;
+            SSLOptions +StdEnvVars
+        &lt;/Files&gt;
+        &lt;Directory "/srv/www/cgi-bin"&gt;
+            SSLOptions +StdEnvVars
+        &lt;/Directory&gt;
+        CustomLog /Apps/logs/www.domain.com/ssl_request_log   ssl_combined
+
+&lt;/VirtualHost&gt;
+
+&lt;/IfDefine&gt;
+&lt;/IfDefine&gt;
+</code></pre></div></div>
+
+<p>加权限执行test.sh即可。</p>
+
+<p><em>如何测试虚拟主机是否工作正常：</em></p>
+
+<p><em>在测试用的PC上添加如下内容到hosts文件（C:\Windows\System32\drivers\etc\hosts for Windows, /etc/hosts for Lunix/Max)</em></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>10.52.19.44	www.domain1.com
+10.52.19.44	www.domain2.com
+</code></pre></div></div>
+
+<p><em>随后打开浏览器，访问对应的域名，查看是否访问到对应域名下的文件</em></p>
+
+<hr />
+
+<p>基于端口的虚拟主机设置与基于IP的很类似，只要修改一下监听的端口和虚拟主机中的相关配置即可。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/2015/11/16/troubleshooting-for-mobile-app-intermittently-slowness-issue" title="Troubleshooting for Mobile APP intermittently slowness issue">&larr; Troubleshooting for Mobile APP intermittently slowness issue</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/middleware/2016/02/20/configure-primary-backup-cluster-for-ibm-was-cluster" title="如何在IBM WAS上配置主从集群">如何在IBM WAS上配置主从集群 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

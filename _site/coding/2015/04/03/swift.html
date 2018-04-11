@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>Swift基础学习笔记</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>Swift基础学习笔记 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>03 April 2015</span>
+    </div>
+    <div class="content">
+      
+<h3 id="swift基础">Swift基础</h3>
+
+<p>Swift语言相当灵活，这里做了一下总结，每个特性下面直接用代码做解释。</p>
+
+<!-- more -->
+
+<p>Variables</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var languageName: String = "Swift"
+
+let languageName: String = "Swift"  //常量，安全性和运行速度有优势，所以优先考虑。
+
+
+var version = 1.0  //推导为Double类型
+var version: Double = 1.0 
+
+变量名可以使用Unicode符号，Emojo汉字都可以
+</code></pre></div></div>
+
+<p>String:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let someString = "String"
+
+let components = "~/Documents/ZhaoZhe".pathComponents
+// ["~", "Documents", "ZhaoZhe"]
+</code></pre></div></div>
+
+<p>Character:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for character in "Swift" {
+	println(character)
+}
+</code></pre></div></div>
+
+<p>Combining Strings and Characters:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let china = "a"
+let video = "好开心"
+let chineseVideo = china + video
+</code></pre></div></div>
+
+<p>Building Complex Strings:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let a = 3, b = 5
+let mathResult = "\(a) 乘以 \(b) 等于 \(a * b)"
+\\3 乘以 5 等于 15
+</code></pre></div></div>
+
+<p>String Mutability：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var a = "小明"
+a += "和小红"
+</code></pre></div></div>
+
+<p>Array and Dictionary:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let components = "~/Documents/ZhaoZhe".pathComponents
+// ["~", "Documents", "ZhaoZhe"]
+
+var names = ["ming", "hong", "sang", "four"]
+
+var numberOfLegs = ["ant": 6, "snake": 0, "dog": 4]
+
+var elements = Int[]()
+</code></pre></div></div>
+
+<p>Modify an Array:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var shoppingList = ["松花蛋", "doujiang"]
+println(shoppingList[0])
+shoppingList += "new"
+shoppingList += ["new2", "new3"]
+shoppingList[0] = "6颗松花蛋"
+shoppingList[3...5] = ["毛豆", "黄瓜"]
+</code></pre></div></div>
+
+<p>Modify a Dictionary:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var numberOfLegs = ["ant": 6, "snake": 0, "dog": 4]
+numberOfLegs["蜘蛛"] = 273 //自动添加这条
+</code></pre></div></div>
+
+<p>Retrieving a Value from a Dictionary:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>possibleLegCount: Int? = numberOfLegs["章鱼"] //表示可能得到一个值，也可能没有值
+
+if possibleLegCount == nil {
+	println("no data")
+} else {
+	let legCount = possibleLegCount! //强制解包
+	println("一只章鱼\(legCount)条腿")
+}
+
+等价写法：
+
+if possibleLegCount {
+	let legCount = possibleLegCount!
+	println("一只章鱼\(legCount)条腿")
+}
+
+等价写法：
+
+if let legCount = possibleLegCount {
+	println("一只章鱼\(legCount)条腿")
+}
+</code></pre></div></div>
+
+<p>If Stagements:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if legCount == 0 {
+} else if letCount == 1 {
+else {
+}
+</code></pre></div></div>
+
+<p>Switch:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>switch legCount {
+	case 0:
+		println("000")
+		break //写不写都会执行break
+		
+	case 1, 3, 5, 7, 9:
+		println("111")
+		
+	case 10...100:
+		println("222")
+		
+	default:
+		println("nnn")
+}
+
+switch sender {
+	case button:
+		println("someone tapped button")
+		
+	case usernameTextField:
+		println("someone tapped the text field")
+		
+	default:
+		println("tapped something else")
+}
+</code></pre></div></div>
+
+<p>Loops:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>while !winCheck() {
+	next()
+
+}
+
+for var i = 1; i&lt;=10; ++i {
+}
+
+for number in 1...5 {
+	//表示1~5所有值，如果是1..5就是1234，不包含5
+}
+
+var numberOfLegs = ["ant": 6, "snake": 0, "dog": 4]
+for (animalName, legCount) in numberOfLegs {
+	println("一只\(animalName)\(legCount)条腿")
+}
+</code></pre></div></div>
+
+<p>Functions:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func sayHello() {
+	println("Hello")
+}
+
+sayHello()
+
+func sayHello(name: String = "路人甲") {
+	println("\(name) 你好")
+}
+sayHello() or sayHello(name: "zhaozhe")
+
+
+func buildGreeting(name: String = "lurenjia") -&gt; String {
+	return name + "Hello"
+}
+let greeting = buildGreeting()
+
+//Return Multiple Values
+func refreshWebPage() -&gt; (Int, String) {
+	return (200, "Success")
+}
+let (statusCode, message) = refreshWebPage()
+
+等价写法：
+
+func refreshWebPage() -&gt; (code: Int, message: String) {
+	return (200, "Success")
+}
+let status = refreshWebPage()
+println("Received \(status.code): \(status.message)")
+</code></pre></div></div>
+
+<p>Tuples (元组)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//类似于没有名字的结构体
+(2.79, 3.99, 4.19)
+(404, "Not Found")
+</code></pre></div></div>
+
+<p>Closures: 闭包</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let greetingPrinter = {
+	println("Hello World!")
+}
+
+等价写法：
+
+let greetingPrinter: () -&gt; () = {
+	println("Hello World!")
+}
+
+greetingPrinter()
+</code></pre></div></div>
+
+<p>Closure as Parameters:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func repeat(count: Int, task: () -&gt; ()) {
+	for i in 0..count {
+		task()
+	}
+}
+
+repeat(2, {
+	println("Hello!")
+})
+</code></pre></div></div>
+
+<p>Trailing Closures: 依附式闭包</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>repeat(2) {
+	println("Hello!")
+}
+</code></pre></div></div>
+
+<p>Classes:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Vehicle {
+	// properties
+	// methods
+	// initializers
+	
+	var numberOfWheels = 0 //Stored Properties
+	//此处必须设置初始值，或者声明时加?
+	
+	//Computed Properties
+	var description: String {
+		get { //get属性是默认的，不写这个声明也可以
+			return "\(numberOfWheels)个轮子"
+		}
+		set {
+			//在这里可以通过newValue变量访问新值
+		}
+	}
+}
+
+let someVehicle = Vehicle()
+someVehicle.numberOfWheels = 2
+println(someVehicle.description)
+
+	
+
+class Bicycle: Vehicle {
+	init() {
+		super.init() //这个不是必要的，子类初始化与父类无关
+		numberOfWheels = 2
+	}
+}
+let myBicycle = Bicycle()
+</code></pre></div></div>
+
+<p>Overriding a Property:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Car: Vehicle {
+	var speed = 0.0
+	init() {
+		numberOfWheels = 4
+	}
+	override var description: String {
+		return super.description + ", 每小时 \(speed) 英里"
+	}
+}
+</code></pre></div></div>
+
+<p>Property Observers: 属性观察</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class ParentsCar: Car {
+	override var speed: Double {
+		willSet {
+			//这里可以通过newValue变量访问新值
+			if newValue &gt; 65.0 {
+				println("请小心")
+			}
+		}
+		didSet {
+			//在这里可以通过oldValue变量访问旧值
+		}
+	}
+}
+</code></pre></div></div>
+
+<p>Methods:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Conter {
+	var count = 0
+	func increment(amount: Int) {
+		count += amount
+	}
+	func resetToCount(count: Int) {
+		self.count = count
+	}
+}
+</code></pre></div></div>
+
+<p>Structures in Swift:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct Point {
+	var x, y: Double
+}
+struct Size {
+	var width, height: Double
+}
+struct Rect {
+	var origin: Point
+	var size: Size
+	
+	var area: Double {
+		return size.width * size.height
+	}
+	
+	func isBiggerThanRect(other: Rect) -&gt; Bool {
+		return self.area &gt; other.area
+	}
+}
+
+
+var point = Point(x: 0.0, y: 0.0)
+var size = Size(width: 640.0, height: 480.0)
+var rect = Rect(origin: point, size: size)
+</code></pre></div></div>
+
+<p>Structures and Classes:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct不可继承，class可以
+
+struct在传输的时候是值传递，会复制整个值。class对象是引用传递，传递的是对象的引用
+</code></pre></div></div>
+
+<p>Constants and Variables: Reference Types</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let window = Window(frame: frame)  //Window是类
+window.title = "Hello!" //这么做是可以的，因为window是个引用，即时是常量的引用也可以修改对象内的值
+ 
+window = Window(frame: frame) //这样不可以
+</code></pre></div></div>
+
+<p>Constants and Variables: Value Types</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let point1 = Point(x: 0.0, y: 0.0)  //Point是结构体
+
+point1.x = 5  //不可以这样做
+</code></pre></div></div>
+
+<p>Mutating a Structure:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct Point {
+	var x, y: Double
+	
+	mutating func moveToTheRightBy(dx: Double) { //mutating是在涉及到修改struct内部变量时必须的
+		x += dx
+	}
+}
+
+let point = Point(x: 0.0, y: 0.0)
+point.moveToTheRightBy(200.0)  //错误！！！
+</code></pre></div></div>
+
+<p>Enumerations: 枚举</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>enum Day: Int {
+	case Monday = 1
+	case Tuesday = 2
+	case Wdnesday = 3, Thursday = 4
+}
+
+等价写法：
+
+enum Day: Int {
+	case Monday = 1, Tuesday, Wednesday, Thursday
+}
+
+let day = Day.thursday	//推导为枚举Day类型
+//day 是 Thursday
+
+let dayNumber = Day.Thursday.toRow() //推导为其内部存储Int类型
+//dayNumber 是 4
+
+
+enum Direction {
+	case North, South, East, West
+}
+var direction = Direction.West
+direction = .East
+
+let lable = UILable()
+lable.textAlignment = .Right
+</code></pre></div></div>
+
+<p>Enumerations: Associated Values</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>enum TrainStatus {
+	case OnTime, Delayed(Int)
+	init() {
+		self = OnTime
+	}
+	var description: String {
+		switch self {
+			case OnTime:
+				return "准时到达"
+			case Delayed(let minutes):
+				return "延误 \(minutes) 分钟"
+			default:
+				return "准时到达“”
+		}
+	}
+}
+
+var status = .Delayed(42)
+println(status.description)
+//延误 42 分钟
+</code></pre></div></div>
+
+<p>Nested Types: 类型嵌套</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Train {
+	enum Status {
+		case ......
+		......
+	}
+}
+</code></pre></div></div>
+
+<p>Extensions: 扩展</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>extension Size {
+	mutating func increaseByFactor(factor: Int) {
+		width *= factor
+		height *= factor
+	}
+}
+
+extension Int {
+	func repetitions(task: () -&gt; ()) {
+		for i in 0..self {
+			task()
+		}
+	}
+}
+
+500.repetitions({
+	println("赵哲"
+})
+</code></pre></div></div>
+
+<p>Generic: 泛型</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct Stack&lt;T&gt; {
+	var elements = T[]()
+	
+	mutating func push(element: T) {
+		elements.append(element)
+	}
+	
+	mutating func pop() -&gt; T {
+		return elements.removeLast()
+	}
+}
+
+var stringStack = Stack&lt;String&gt;()
+stringStack.push("Hello")
+println(stringStack.pop())
+</code></pre></div></div>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Coding-ref">
+    		Coding <span class="badge badge-info">4</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/management/2015/03/22/ITIL-Learning-Note" title="ITIL Learning Note">&larr; ITIL Learning Note</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/security/middleware/2015/04/07/disable-rc4-cipher-for-iisapacheihs" title="Disable RC4 Cipher for IIS/Apache/IHS">Disable RC4 Cipher for IIS/Apache/IHS &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

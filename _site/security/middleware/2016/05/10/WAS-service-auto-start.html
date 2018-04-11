@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>如何配置WAS服务跟随系统启动</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>如何配置WAS服务跟随系统启动 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>10 May 2016</span>
+    </div>
+    <div class="content">
+      
+<p>默认情况下，WAS应用服务器，NodeAgent等等WAS服务是不会跟随系统自动启动的。本文将介绍如何配置WAS使其服务跟随系统启动。</p>
+
+<p>WAS自动启动有两种方法，首先介绍第一种方法：</p>
+
+<h3 id="配置was服务器跟随nodeagentnode自动启动">配置WAS服务器跟随NodeAgent/Node自动启动</h3>
+
+<ol>
+  <li>登录到管理控制台。</li>
+  <li>跳转到Servers &gt; Server Types &gt; WebSphere application servers。</li>
+  <li>
+    <p>找到希望自启动的服务器，跳转到其配置界面，打开Java and Process Management，点击Monitoring Policy，如下图：</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_1.png/scale" alt="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_1.png" /></p>
+  </li>
+  <li>
+    <p>勾选Automatic restart，并且配置“Node restart state”为“RUNNING”。如图：</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_2.png/scale" alt="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_2.png" /></p>
+  </li>
+</ol>
+
+<p>这样当NodeAgent/Node启动的时候，应用服务器也会自动启动。但是很明显，想要让这种方法生效，前提是NodeAgent/Node必须可以跟随操作系统启动。所以接下来我们需要继续配置：</p>
+
+<!-- more -->
+
+<h3 id="配置nodeagentnode跟随操作系统启动">配置NodeAgent/Node跟随操作系统启动</h3>
+
+<ol>
+  <li>打开命令提示符窗口（Windows下可以运行cmd，Linux下打开一个新的Shell窗口）。</li>
+  <li>
+    <p>跳转到<code class="highlighter-rouge">&lt;WAS Home&gt;/bin</code>。</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 例如：
+ 在Windows下：C:\IBM\WebSphere\AppServer\bin
+ Linux下：/opt/IBM/WebSphere/AppServer/bin
+ 视实际安装目录而定。
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>使用wasservice工具把NodeAgent添加到随系统启动的列表里：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> wasservice -add nodeagent -serverName nodeagent -profilePath “C:\IBM\WebSphere\AppServer\profiles\DocsWin01” -restart true -startType automatic
+</code></pre></div>    </div>
+
+    <p>结果如下图：</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_4.png/scale" alt="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_4.png" /></p>
+  </li>
+  <li>
+    <p>如果以上命令失败，则可能是权限问题。可以尝试以管理员身份启动命令提示符窗口。</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_3.png/scale" alt="http://dellyqiao.qiniudn.com/2016%2F05%2F10%2Fautostart_3.png" /></p>
+  </li>
+</ol>
+
+<blockquote>
+  <p>注意：</p>
+
+  <p>NodeAgent只存在于ND版本中，对于AdminAgent+APP Server的组合来说，要确保AdminAgent随系统自动启动。命令也是类似：</p>
+
+  <p>wasservice -add adminagent -serverName adminagent -profilePath “C:\IBM\WebSphere\AppServer\profiles\AdminAgent01” -restart true -startType automatic</p>
+</blockquote>
+
+<p><strong>至此，所有的WAS服务器都可以做到随系统启动了。</strong></p>
+
+<p>基于以上的经验，我们也很容易想到另外一种让WAS服务器自动启动的方法，那就是利用wasservice工具，把所有的WAS应用服务器也添加到自启动列表。这样做的好处就是应用服务器进程的自启动不依赖于Node的状态，即使Node出问题，管理控制台无法访问，应用服务器还是<strong>可能</strong>启动。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>示例如下：
+wasservice -add server1 -serverName server1 -profilePath “C:\IBM\WebSphere\AppServer\profiles\AppSrv01” -restart true -startType automatic
+</code></pre></div></div>
+
+<hr />
+
+<p>全文完。两种方法大家自行选择。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Security-ref">
+    		Security <span class="badge badge-info">9</span>
+    	</a></li>
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/2016/02/20/configure-primary-backup-cluster-for-ibm-was-cluster" title="如何在IBM WAS上配置主从集群">&larr; 如何在IBM WAS上配置主从集群</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/2017/04/09/Java%E4%B8%AD%E4%BD%8D%E8%BF%90%E7%AE%97%E7%9B%B8%E5%85%B3%E6%B5%8B%E8%AF%95" title="Java中位运算相关测试">Java中位运算相关测试 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

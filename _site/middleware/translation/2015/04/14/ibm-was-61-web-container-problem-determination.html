@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>IBM WAS 6.1 Web container problem determination——文档翻译（更新中）</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>IBM WAS 6.1 Web container problem determination——文档翻译（更新中） </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>14 April 2015</span>
+    </div>
+    <div class="content">
+      
+<h3 id="声明">声明</h3>
+
+<p>本文为IBM官方WebSphere问题诊断系列文档翻译，旨在为自己增加知识和方便国人查看。本翻译遵循实用原则，原文过于拖沓啰嗦的地方就略过。有兴趣的可以继续阅读，没兴趣的请路过。欢迎留言吐槽，谢谢。</p>
+
+<p>本文为翻译plugin问题诊断文档：redp4045-WebSphere Application Server V6 Web Server Plug-in Problem Determination.pdf，次文档可以从这里下载：<a href="http://dellyqiao.qiniudn.com/2015/04/14/redp4309-WebSphere Application Server V6.1Web container problem determination.pdf">文档下载</a></p>
+
+<p>下面进入正题：</p>
+
+<!-- more -->
+
+<h2 id="websphere-application-server-v61-web-container-problem-determination">WebSphere Application Server V6.1: Web container problem determination</h2>
+
+<p>Web组件的运行时环境叫做Web容器（Web Container）。当用户无法正常访问系统时，可能就是Web Container的问题。</p>
+
+<p>对于Web container来说，可能出现的问题有：</p>
+
+<ul>
+  <li>用户无法访问Web组件</li>
+  <li>运行Web组件的时候反应不正常</li>
+  <li>启动Web组件时报错</li>
+  <li>JSP进行编译的时候有错</li>
+  <li>运行Web组件时抛出错误或异常</li>
+  <li>收到以SRVE（Web container）、JSPG（JSP）、JSFG（JSF页面）开头的信息</li>
+</ul>
+
+<p>本文教你如何在分布式系统和IBM i5/OS系统上诊断IBM WAS V6.1的Web container的问题。</p>
+
+<h3 id="web容器介绍">Web容器介绍</h3>
+
+<p>Web容器是运行Web应用的运行时环境，它处理servlet，JSP文件，和其他种类的服务器端组件。每个应用程序服务器运行时都有有一个单独的逻辑Web容器，你可以修改它，但是不能创建或删除。</p>
+
+<h3 id="web容器概述">Web容器概述</h3>
+
+<p>Figure 1图解了Web容器，以及它在应用服务器中的位置。</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/1.png" alt="" /></p>
+
+<p>Web容器提供：</p>
+
+<ul>
+  <li>
+    <p>Web容器传输链（transport chains）</p>
+
+    <p>Web容器inbound传输链用来处理请求。它由下列组件组成：用来提供容器和网络之间的链接的TCP inbound channel，用来为HTTP 1.0和1.1提供服务的HTTP inbound channel，还有用来把servlet和JSP请求发送到Web容器的Web container channel。</p>
+  </li>
+  <li>
+    <p>Servlet处理进程</p>
+
+    <p>当Web容器处理servlet请求时，Web容器会创建请求对象和响应对象，然后调用servlet的service方法。当时机合适，Web容器也会调用servlet的destroy方法，之后JVM会执行垃圾回收（GC）。</p>
+  </li>
+  <li>
+    <p>HTML和其他静态内容的处理进程</p>
+
+    <p>当Web容器接受到HTML或其他静态内容请求时，Web容器inbound传输链会提供服务。然而，在生产环境下，使用外部Web服务器并且使用plugin作为接口在大多数情况下是更为合适的选择。</p>
+  </li>
+  <li>
+    <p>会话管理</p>
+
+    <p>Web容器支持API中定义的javax.servlet.http.HttpSession接口规范。</p>
+  </li>
+</ul>
+
+<h3 id="web应用程序">Web应用程序</h3>
+
+<p>Servlet和JSP文件就是所说的Web组件。静态内容文件（比如HTML页面，图片，XML文件）在进行应用封装创建Web模块的时候会跟Web组件捆绑在一起。Web模块是一种遵循指定的格式规范去组织和打包的，可以被单独拿出来部署和使用的一个单元，它会被打包成Web archive（WAR）文件。J2EE Web模块符合Java servlet规范。</p>
+
+<p>Web模块最顶层的目录是应用程序的<code class="highlighter-rouge">document root</code>，也就是放置JSP页面和静态Web资源的位置。document root有个名为<code class="highlighter-rouge">/WEB-INF/</code>的子目录，其中放置Web应用部署描述符（web.xml）和Web模块需要用到的服务器端的类文件。如Figure 2：</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/2.png" alt="" /></p>
+
+<h3 id="确认web容器的问题类型">确认Web容器的问题类型</h3>
+
+<p>Web容器出问题的时候会给用户返回很多种类的标识符，比如HTTP 404错误，500错误，或者页面上显示不正确的信息，例如由HTTP错误引发的一个错误页面，或者页面上显示的内容不正确，或者页面显示不完整。</p>
+
+<p>当发生HTTP错误的时候，Web浏览器会显示一个包含错误码的错误页面。如果在Web模块中自定义了错误页面，那你需要检查Web服务器日志以确定真实的HTTP错误码是什么，因为那些错误码很可能并不会显示在你自定的页面上。</p>
+
+<h4 id="收集分析web服务器日志">收集分析Web服务器日志</h4>
+
+<p>从Web服务器上手机access日志，然后搜索日志中的404或500错误。下面是一些IHS（IBM HTTP Server）的例子：</p>
+
+<ul>
+  <li>
+    <p>access.log日志：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  127.0.0.1 - - [28/Mar/2007:19:52:31 -0400] "GET url HTTP/1.1" 404 304 
+  127.0.0.1 - - [28/Mar/2007:20:03:48 -0400] "GET url HTTP/1.1"500 5348
+</code></pre></div>    </div>
+
+    <p>重点注意一下跟出问题的URL相关的错误码。</p>
+  </li>
+  <li>
+    <p>如果正常情况下从Web服务器应该可以访问某个URL（这个请求需要到达应用服务器进行处理），然后出现了类似这样的信息：从xxx地方无法找到指定的文件。这时需要查看error日志，找一下文件无法访问的日志：</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  - [Wed Mar 28 19:52:31 2007] [error] [client 127.0.0.1] File does not exist: file_location
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h3 id="http-404错误">HTTP 404错误</h3>
+
+<p>HTTP 404错误有多重成因，下面是一些例子：</p>
+
+<ul>
+  <li>外部因素，比如Web服务器有问题</li>
+  <li>配置问题，比如plugin或者virtual host配置不正确</li>
+  <li>运行时环境的问题，比如应用或应用服务器没有启动</li>
+  <li>用户或应用问题，比如输错了URL</li>
+</ul>
+
+<h4 id="验证系统的完整性">验证系统的完整性</h4>
+
+<p>如果用户得到404错误并且你比较了解出问题的应用程序，那么首先应该检查一下系统的完整性，需要检查的组件包括：</p>
+
+<ul>
+  <li>Web服务器</li>
+  <li>应用服务器</li>
+  <li>应用程序</li>
+</ul>
+
+<p>如果这些组件都工作正常，或者你不是很清楚哪台应用服务或哪个应用受到了影响，请继续往下看。</p>
+
+<h5 id="确认web服务器是否正常响应"><strong><em>确认Web服务器是否正常响应</em></strong></h5>
+
+<p>如何检查？取决于Web服务器的种类和它的配置。</p>
+
+<p>如果是IHS，简捷的方法是从浏览器访问对应的URL：http://server_name。如果可以看到欢迎页面，说明Web服务器可以工作。如果无法显示，出现了“page cannot be displayed”这类的信息，说明问题可能处在Web服务器。</p>
+
+<h5 id="解决web服务器问题"><strong><em>解决Web服务器问题</em></strong></h5>
+
+<p>参阅另一篇文章：<a href="http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-/">http://blog.dellyqiao.com/middleware/translation/2015/04/11/web-server-plug-in-/</a></p>
+
+<h5 id="确认应用服务器是否启动"><strong><em>确认应用服务器是否启动</em></strong></h5>
+
+<ol>
+  <li>确认应用程序是否部署在了服务器或集群上</li>
+  <li>确认应用服务器的状态</li>
+  <li>如果没启动，尝试启动一下</li>
+</ol>
+
+<p>如果你不知道这些步骤怎么做，查看这里：<a href="#page52">“Managing servers and applications”</a></p>
+
+<h5 id="确认应用程序是否启动"><strong><em>确认应用程序是否启动</em></strong></h5>
+
+<p>从管理控制台查看，Applications → Enterprise Applications。</p>
+
+<p>如果应用状态是启动，说明应用在运行，但是它无法检测应用在启动过程中是否有任何错误。</p>
+
+<h4 id="收集诊断相关的数据">收集诊断相关的数据</h4>
+
+<p>如果你无法看到错误的类型或者无法得知出问题的URL信息，你需要手机以下数据：</p>
+
+<ul>
+  <li>用户浏览器显示的错误以及失败的URL</li>
+  <li>应用服务器的日志（如果应用部署在集群上，需要手机每台集群成员的日志）</li>
+  <li>Web服务器access和error日志</li>
+  <li>
+    <p>TRCTCPAPP trace（i5/OS）</p>
+
+    <p>i5/OS系统上的HTTP服务器是集成到系统里的，还有一种额外的跟踪日志可以提供有用的信息。查看这里：<a href="#page47">“Trace Web server requests to WebSphere (i5/OS)”</a></p>
+  </li>
+</ul>
+
+<h4 id="分析数据">分析数据</h4>
+
+<p>从诊断数据里能得到的信息主要是这两种：</p>
+
+<ul>
+  <li>出问题的URL</li>
+  <li>问题出在哪儿（Web服务器，plugin，应用服务器）</li>
+</ul>
+
+<p>可以以下面的顺序做问题诊断：</p>
+
+<ol>
+  <li>
+    <p>Web浏览器显示的错误信息</p>
+
+    <p>这些信息可以帮助你得知问题的类型和出问题的URL。这些信息有可能已经足够解决你的问题。</p>
+  </li>
+  <li>
+    <p>SystemOut日志</p>
+
+    <p>如果是Web容器出问题，SystemOut日志是最能提供有用信息的文件。日志中的信息也有可能会显示到浏览器中，取决于应用程序如何处理错误。如果这个JVM日志中没有任何错误信息，多数可能是因为请求没有到达应用服务器。</p>
+  </li>
+  <li>
+    <p>TRCTCPAPP trace（只针对i5/OS系统）</p>
+
+    <p>这个trace可以帮你i安测问题是否出在plugin上。</p>
+  </li>
+  <li>
+    <p>Web服务器日志</p>
+
+    <p>如果没有发现其他的错误迹象，查看一下Web服务器日志，卡伊找到错误的类型（404、500）和错问题的URL。</p>
+  </li>
+</ol>
+
+<h4 id="分析浏览器输出的错误信息">分析浏览器输出的错误信息</h4>
+
+<p>一般来说，404错误会伴随有一些描述性的问题说明信息一起出现，如果用户报告的问题属于下面列表中的任何一条，我们就可以直接定位问题原因：</p>
+
+<ul>
+  <li>The page cannot be displayed</li>
+  <li>JSP error or JSF error</li>
+  <li>Failed to find resource</li>
+  <li>File not found</li>
+  <li>WebGroup/virtual host not defined</li>
+</ul>
+
+<h5 id="the-page-cannot-be-displayed-or-found"><strong><em>The page cannot be displayed or found</em></strong></h5>
+
+<p>Figure 3 展示了一个典型的例子。这种错误页面的显示效果是多种多样的，取决于浏览器。比如，有的浏览器会显示“The page cannot be found.”。</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/3.png" alt="" /></p>
+
+<p>这种情况的原因可能是：输入的URL错误，也可能是需要访问页面的组件不可用（比如Web服务器，应用服务器）。特别注意发生错误时候浏览器地址栏上的URL。</p>
+
+<p>如果访问出错的是JSP或servlet，查看<a href="#page16">“Page cannot be displayed or JSP/JSF error”</a>。</p>
+
+<h5 id="jsp和jsf错误"><strong><em>JSP和JSF错误</em></strong></h5>
+
+<p>JSP和JSF错误通常伴随着从应用服务器发过来的跟问题检测相关的信息，Figure 4展示的就是一个带着”JSPG0036E: Failed to find resource”信息的页面：</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/4.png" alt="" /></p>
+
+<p>Figure 5展示了一个带有”SRVE0190E: File not found”信息的页面：</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/5.png" alt="" /></p>
+
+<p>出现这种错误信息的原因可能是URL错误，或者在server上的这个页面不可用，或者是plugin配置的问题。特别注意出错的URL。更多信息查看 <a href="#page16">“Page cannot be displayed or JSP/JSF error”</a>。</p>
+
+<h5 id="webgroupvirtual-host-has-not-been-defined"><strong><em>WebGroup/Virtual Host has not been defined</em></strong></h5>
+
+<p>这个错误很有可能是因为virtual host配置错误，或者输入的URL不正确。一般错误信息会是这样：</p>
+
+<ul>
+  <li>SRVE0255E: WebGroup/Virtual Host has not been defined (V6.1) 􏰀</li>
+  <li>SRVE0017W: WebGroup/Virtual Host has not been defined (V6.0)</li>
+</ul>
+
+<p>如下图：</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/04/14/6.png" alt="" /></p>
+
+<p>记住出问题的URL，然后查看这个连接 <a href="#page16-2">“WebGroup/virtual host not defined”</a> 。</p>
+
+<h4 id="分析systemout日志">分析SystemOut日志</h4>
+
+<p>你需要查找这些关键字段：</p>
+
+<ul>
+  <li>Web容器信息：SRVExxxxE or SRVExxxxW</li>
+  <li>JSP信息：JSPGxxxxE or JSPGxxxxW</li>
+  <li>JSF信息：JSFGxxxxE or JSFGxxxxW</li>
+  <li>跟应用程序启动相关的错误信息</li>
+</ul>
+
+<h5 id="检查应用程序是否成功启动"><strong><em>检查应用程序是否成功启动</em></strong></h5>
+
+<p>Example 1中的信息是一个Web模块正常启动的日志信息。</p>
+
+<blockquote>
+  <p>Example 1 Normal application startup messages</p>
+</blockquote>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ApplicationMg A WSVR0200I: Starting application: [application_name] 
+WebContainer A SRVE0161I: IBM WebSphere Application Server - Web Container.
+Copyright IBM Corp. 1998-2004
+WebContainer  A SRVE0162I: Servlet Specification Level: 2.4
+￼￼￼￼￼WebContainer  A SRVE0163I: Supported JSP Specification Level: 2.0
+WebGroup      A SRVE0169I: Loading Web Module: [web_module_name] 
+ApplicationMg A WSVR0221I: Application started: [application_name]
+</code></pre></div></div>
+
+<p>如果应用启动时出现了错误或警告信息，你需要从应用程序方面检测问题的原因。</p>
+
+<h5 id="web-group--virtual-host-错误"><strong><em>Web group / Virtual host 错误</em></strong></h5>
+
+<p>如果出现了下面的错误，可能是virtual host配置有问题</p>
+
+<ul>
+  <li>SRVE0255E: A WebGroup/Virtual Host to handle url has not been defined. (V6.1)</li>
+  <li>SRVE0017W: A WebGroup/Virtual Host to handle url has not been defined. (V6.0)</li>
+</ul>
+
+<p>查看这个连接获得更多信息：<a href="#page16-2">“WebGroup/virtual host not defined”</a></p>
+
+<h5 id="其他错误信息"><strong><em>其他错误信息</em></strong></h5>
+
+<p>有JSPG，JSFG，或者SRVE前缀并且包含出错的URL的错误信息，点击此链接获取检查方法：<a href="#page16">“Page cannot be displayed or JSP/JSF error”</a>。</p>
+
+<blockquote>
+  <p>如果没有找到任何错误，查看后面的“Web服务器日志分析”章节。</p>
+</blockquote>
+
+<h4 id="web服务器日志分析">Web服务器日志分析</h4>
+
+<p>尝试从Web服务器日志中查找下面的标志符并且分析它们。</p>
+
+<h5 id="在access日志中查找404状态吗"><strong><em>在access日志中查找404状态吗</em></strong></h5>
+
+<p>NCSA格式的日志如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Remote_host- - date_time "request" status_code bytes
+</code></pre></div></div>
+
+<p>对于404错误来说：</p>
+
+<ol>
+  <li>从<code class="highlighter-rouge">status_code</code>的位置查找“404”</li>
+  <li>着重关注<code class="highlighter-rouge">remote_host</code>地址，<code class="highlighter-rouge">date_time</code>时间戳，以及请求的URL</li>
+</ol>
+
+<h5 id="在error日志中查找错误"><strong><em>在error日志中查找错误</em></strong></h5>
+
+<p>Error日志会像下面的例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[date_time] [error] [client Remote_host] error_message
+</code></pre></div></div>
+
+<p>对于error日志来说：</p>
+
+<ol>
+  <li>查找“error”</li>
+  <li>通过<code class="highlighter-rouge">remote_host</code>地址和<code class="highlighter-rouge">date_time</code>时间戳把对应的access日志和error日志关联起来</li>
+  <li>注意<code class="highlighter-rouge">error_message</code>的具体内容</li>
+</ol>
+
+<h5 id="评估access日志"><strong><em>评估access日志</em></strong></h5>
+
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+     
+    	<li><a class="btn btn-info" href="/categories.html#Translation-ref">
+    		Translation <span class="badge badge-info">2</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/translation/2015/04/11/web-server-plug-in" title="IBM Web Server Plug-in问题诊断——文档翻译">&larr; IBM Web Server Plug-in问题诊断——文档翻译</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/server/2015/04/21/windows-log-transfer-script" title="Windows Log transfer script">Windows Log transfer script &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

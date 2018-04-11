@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>Zabbix   Update from 1.8.3 to 1.8.12</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>Zabbix   Update from 1.8.3 to 1.8.12 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>13 March 2015</span>
+    </div>
+    <div class="content">
+      
+<p>This document is to introduce how to upgrade the Zabbix from 1.8.3 to 1.8.12 to suit OpenSuse 11.4.</p>
+
+<p><em>Note: As this is not a full new configuration, so this document is only for Zabbix version update from 1.8.3 to 1.8.12, cannot be treated as a full installation guide.</em></p>
+
+<p>As this is a little update during 1.8.x, so no need to touch the DB. Steps attached here, please follow the steps strictly, all the command are provided here.</p>
+
+<!-- more -->
+
+<h3 id="reference">Reference:</h3>
+
+<p>You may find more information from below links:</p>
+
+<p>Install zabbix from Source: <a href="https://www.zabbix.com/documentation/1.8/manual/installation/installation_from_source">https://www.zabbix.com/documentation/1.8/manual/installation/installation_from_source</a></p>
+
+<p>Upgrade proceduler: (section 3.6) <a href="https://www.zabbix.com/documentation/1.8/manual/about/installation_and_upgrade">https://www.zabbix.com/documentation/1.8/manual/about/installation_and_upgrade</a></p>
+
+<p>Dependency packages: (Chinese) <a href="http://os.51cto.com/art/201104/252989.htm">http://os.51cto.com/art/201104/252989.htm</a></p>
+
+<h3 id="download">Download:</h3>
+
+<p>You may get all the required packages from here: <a href="http://dellyqiao.qiniudn.com/2015/03/13/Zabbix_Update_packages.zip">Download</a></p>
+
+<h3 id="steps">Steps:</h3>
+
+<ol>
+  <li>
+    <p>Remove the old version Zabbix 1.8.3.</p>
+
+    <p>You may run: <code class="highlighter-rouge">rpm -qa | grep zabbix</code> to check all the installed zabbix packages. Please confirm all the installed packages have been removed before perform the new installation.</p>
+
+    <p>Before remove:</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/1.png" alt="" /></p>
+
+    <p>After:</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/2.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Install the dependency packages:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> gcc  
+ make  
+ mysql-devel  
+ curl-devel  
+ net-snmp-devel 
+</code></pre></div>    </div>
+
+    <p>(Above packages could be find from the OpenSuse 11.4 OS iso file, and most of the Linux distrubution should have includes these tools already.)</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> iksemel-1.4.tar.gz 
+</code></pre></div>    </div>
+
+    <p><em>install this package with below steps</em>:</p>
+
+    <ol>
+      <li>
+        <p>Upload file iksemel-1.4.tar.gz to /tmp, then <code class="highlighter-rouge">cd /tmp</code></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">tar –zxf iksemel-1.4.tar.gz</code></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">cd iksemel-1.4</code></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">./configure</code></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">make</code></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">make install</code></p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Upload the file zabbix-1.8.12.tar.gz to /tmp, then <code class="highlighter-rouge">cd /tmp</code>.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">tar –zxf zabbix-1.8.12.tar.gz</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">cd zabbix-1.8.12</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">./configure --enable-server --enable-proxy --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">make install</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">ln -sf /usr/local/lib/libiksemel.so.3 /lib/</code></p>
+
+    <p>Basically, till now, the new version Zabbix have been installed, please run <code class="highlighter-rouge">zabbix_server –V</code> to verify the version of zabbix.</p>
+  </li>
+  <li>
+    <p>Copy the config file to folder: /etc/zabbix:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> cd /tmp/zabbix-1.8.12  
+ cp misc/conf/zabbix_server.conf /etc/zabbix/  
+ cp misc/conf/zabbix_proxy.conf /etc/zabbix/  
+ cp misc/conf/zabbix_agent.conf /etc/zabbix/  
+ cp misc/conf/zabbix_agentd.conf /etc/zabbix/
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">vi /etc/zabbix/zabbix_server.conf</code></p>
+
+    <p>Find out below 2 lines, then modify the DB username and password:</p>
+
+    <p>(find function in VI: type <code class="highlighter-rouge">/ DBUser</code> in command mode)</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DBUser=zabbix  
+DBPassword=zabbix
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Upload the files: zabbix_server and zabbix_agentd to /etc/init.d/, then add execute permission:&lt;/div&gt;</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chmod +x /etc/init.d/zabbix_server  
+chmod +x /etc/init.d/zabbix_agentd
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Start and stop the zabbix_server and zabbix_agentd to verify the installation with below commands:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/etc/init.d/zabbix_server start  
+/etc/init.d/zabbix_server stop  
+ps –ef | grep zabbix  
+/etc/init.d/zabbix_agentd start  
+/etc/init.d/zabbix_agentd stop  
+ps –ef | grep zabbix  
+</code></pre></div>    </div>
+
+    <p>After confirmed there’s no issue, start the zabbix_server and zabbix_agentd:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/etc/init.d/zabbix_server start  
+/etc/init.d/zabbix_agentd start  		
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<hr />
+
+<p>Steer into the web interface configuration:</p>
+
+<ol>
+  <li>
+    <p><code class="highlighter-rouge">cd /tmp/zabbix-1.8.12/frontends/php/</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">mkdir /srv/www/htdocs/zabbix</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">cp -a . /srv/www/htdocs/zabbix</code></p>
+  </li>
+  <li>
+    <p>Now we don’t need to work with the command line any more, instead, we need to open a Web browser to access the zabbix web interface to configure our web view.</p>
+
+    <p>Open a browser, input the address: <code class="highlighter-rouge">http://&lt;IP address here&gt;/zabbix/queue.php</code></p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/3.png" alt="" /></p>
+
+    <ul>
+      <li>If you are working locally on the Linux server, you may open the embeded Firefox (I guess all the popular Linux distribution have Firefox installed by default).</li>
+    </ul>
+
+    <p>If you are working with Linux server remotely, you will have some choices:</p>
+
+    <ul>
+      <li>Find out any PC which could access the remote server via port 80, then use PC browser to access the web page.</li>
+      <li>Configure remote X session from local PC, you may use Putty+xming (free), or xterm (not free), and then access the Firefox on the server from local PC directly.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Click <code class="highlighter-rouge">Next&gt;&gt;</code> Button. Then read and accept GPL v2 license.</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/4.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Make sure that all software pre-requisites are met.</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/5.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Configure database settings. Zabbix database must already be created.<br />
+<strong><em>Please input “zabbix” in “Name”, “User” and “Password” fields.</em></strong>.</p>
+
+    <p>Then click <code class="highlighter-rouge">Test Connection</code> button, “Ok” means connection is fine.</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/6.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Click Next. See summary of settings. Click next.</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/7.png" alt="" /></p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/8.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Download configuration file and place it under conf/.</p>
+
+    <ol>
+      <li>
+        <p>Click the “Save configuration file” button.</p>
+
+        <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/9.png" alt="" /></p>
+      </li>
+      <li>
+        <p>After saved, upload the file zabbix.conf.php to /srv/www/htdocs/zabbix/conf/.</p>
+
+        <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/10.png" alt="" /></p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>Click <code class="highlighter-rouge">Retry</code> button, there should be “Ok” appears. Then finishing installation.</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2015/03/13/11.png" alt="" /></p>
+  </li>
+</ol>
+
+<p>Till now, all the configuration is done, input the monitoring address on browser <code class="highlighter-rouge">http://IP Address/zabbix/</code> to work with the new environment.</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Monitoring-ref">
+    		Monitoring <span class="badge badge-info">2</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/server/2015/03/13/linux" title="Linux网络管理— 学习笔记">&larr; Linux网络管理— 学习笔记</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/middleware/2015/03/14/how-to-delete-a-websphere-profile" title="How to delete a Websphere profile">How to delete a Websphere profile &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

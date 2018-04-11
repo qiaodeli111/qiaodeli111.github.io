@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>用Markdown编写Evernote文章(With Sublime Text)</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>用Markdown编写Evernote文章(With Sublime Text) </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>14 March 2015</span>
+    </div>
+    <div class="content">
+      
+<h3 id="前言">前言</h3>
+
+<p>先说说本文的来历。 之前用postach.io的服务构建了一个自己的个人博客，我也在陆续往这个博客上post文章。简单的来说，通过这个服务，你可以再Evernote的某一个笔记本里发布一篇文章，只要添加上特定的标签，这篇文章就可以自动发布到你的博客站点中。个人觉得这种方式有很多优点：</p>
+
+<ul>
+  <li>发博文方便，你不需要像传统的方式那样在本地编号再登录到博客网站重新发布排版</li>
+  <li>便于归档，你不用把文章存好几份，不用担心线上线下的文章数量是否一致</li>
+  <li>有足够的定制空间。Postach.io可以从模板库里选择模板，也可以从github上fork一个现成的模板，修改一下应用到自己的博客上–这也是我现在正在使用的方式，我为自己的博客添加了评论系统，分享按钮，流量统计功能，等等……</li>
+</ul>
+
+<!-- more -->
+
+<p>但是缺点也是有的：</p>
+
+<ul>
+  <li><em>只能用Evernote的编辑器去编写文章，说实话evernote的编辑器功能并不好，排版非常麻烦</em></li>
+</ul>
+
+<p>要说这个排版，最方便最”正确”的方式莫过于Markdown了，正好最近发现有一个Sublime Text 3的插件正好是用来发布Evernote的，如果能用Sublime编写Markdown形式的内容，然后简简单单直接post到Evernote上同时同步到postach.io上的话那可就真的完美了。经过一番探究，这种方法确实是可行的，于是在这里记录一下自己的经验做抛砖引玉之用。</p>
+
+<hr />
+
+<h3 id="配置篇">配置篇</h3>
+
+<h4 id="第一步为sublime-text-3安装evernote插件">第一步：为Sublime Text 3安装Evernote插件</h4>
+
+<p>安装Evernote插件的方法有三种，<em>Package Control</em>，<em>手动</em>，<em>Github</em>。这里根据我的经验，用<em>Github</em>和<em>手动</em>的方式真心容易出问题（我碰到了菜单不全的问题，貌似Github上的那个库是很久以前的版本，已经很久没更新了，只有发布新文章的功能），用<em>Package Control</em>的方法是最给力的。</p>
+
+<p><em>Package Control</em>是Sublime Text的一个插件，这个插件可以很方便的让Sublime去搜索安装其他插件，类似于一个包管理器，有了这个东西，以后安装更多的插件就非常容易了。所以首先我们得位Sublime Text装上Package Control：</p>
+
+<blockquote>
+  <p>安装方法来源：<a href="http://blog.csdn.net/nivana999/article/details/7823805">一些必不可少的Sublime Text 2插件</a></p>
+
+  <ol>
+    <li>按Ctrl+`调出console</li>
+    <li>粘贴以下代码到底部命令行并回车： import urllib2,os;pf=’Package Control.sublime-package’;ipp=sublime.installed_packages_path();os.makedirs(ipp) if not os.path.exists(ipp) else None;open(os.path.join(ipp,pf),’wb’).write(urllib2.urlopen(‘http://sublime.wbond.net/’+pf.replace(‘ ‘,’%20’)).read())</li>
+    <li>重启Sublime Text 2。</li>
+    <li>如果在Perferences-&gt;package settings中看到package control这一项，则安装成功。</li>
+  </ol>
+</blockquote>
+
+<p>根据我的经验，照做就好，不会出问题的。</p>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/03/14/1.png/scale" alt="" /></p>
+
+<p><strong>更新：</strong></p>
+
+<p>Mac版ST3按照上面ST2的方法安装成功，然而Windows版ST3无法成功。如果有问题请参照官方说明，ST3跟ST2的Package Control的安装方法应该是不同的。</p>
+
+<p><a href="https://packagecontrol.io/installation#st3">https://packagecontrol.io/installation#st3</a></p>
+
+<p>安装好之后，就可以去搜索安装Evernote插件了。（<strong>注意：根据官方的说法，Evernote这个插件只兼容Sublime Text 3，目前3是Beta版，如果你的电脑里不是3，请去官网下载。</strong>）</p>
+
+<ol>
+  <li>打开Sublime编辑器，调出命令面板。快捷键<code class="highlighter-rouge">CMD+Shift+P</code></li>
+  <li>输入<code class="highlighter-rouge">Package Control Install</code>并回车。稍微等待一会儿，Sublime将会去搜索所有被Package Control管理的插件并且列出在编辑器列表中。</li>
+  <li>等列表出现之后，继续输入<code class="highlighter-rouge">evernote</code>，找到这个插件包之后，按下回车键开始安装。等到安装日志出现后就说明插件装好了。</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>![](http://dellyqiao.qiniudn.com/2015/03/14/2.png/scale)
+</code></pre></div></div>
+
+<ol>
+  <li>验证：CMD+Shift+P调出命令面板，输入evernote，看看有没有出现evernote相关的菜单，如果出现那就没问题了。</li>
+</ol>
+
+<h4 id="第二步为你的sublime-text-3添加evernote的授权">第二步：为你的Sublime Text 3添加Evernote的授权</h4>
+
+<p>通过Evernote developer的授权，你就可以通过认证码进行文章的增删改查，做法如下：</p>
+
+<ol>
+  <li>CMD+Shift+P调出命令面板（最喜欢这个强大的功能了ʅ(‾◡◝)），输入<code class="highlighter-rouge">evernote reconfigure auth</code>(**Sublime编辑器支持模糊匹配，所以不一定非得输入完整的命令，只要差不多就行），看到重新授权的菜单后回车。</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>![](http://dellyqiao.qiniudn.com/2015/03/14/3.png/scale)
+</code></pre></div></div>
+
+<ol>
+  <li>这时候会自动弹出一个evernote的网页，网页的下部有一个创建token的连接，点击之，就会生成token了。</li>
+</ol>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/03/14/4.png/scale" alt="" /></p>
+
+<ol>
+  <li>打开Sublime Text的界面，会看到在软件的下部出现了一个输入token的条，把token复制粘贴进去，回车；然后复制“NoteStore URL”，粘贴到软件中，回车。</li>
+</ol>
+
+<p><img src="http://dellyqiao.qiniudn.com/2015/03/14/5.png/scale" alt="" /></p>
+
+<p>不出意外的话，Sublime编辑器的evernote插件就完全配置好了。</p>
+
+<hr />
+
+<h3 id="使用篇">使用篇</h3>
+
+<p>到使用的部分了，自然就是写文章+发布文章了。</p>
+
+<h4 id="写文章">写文章</h4>
+
+<p>用<code class="highlighter-rouge">CMD+N</code>在Sublime中创建新文档并且通过<code class="highlighter-rouge">CMD+Shift+P</code>节日<code class="highlighter-rouge">ssmarkdown</code>设置Markdown语法匹配环境。</p>
+
+<p>文章的标题和标签可以通过两种方式设定：</p>
+
+<ol>
+  <li>
+    <p>通过Liquid格式的meta data设置evernote文章的笔记本，标签和标题：</p>
+
+ 	— 
+ 	title: 用Markdown编写Evernote文章(Sublime Text Editor) 	
+ 	tags: [“published”, “technology”] 
+ 	notebook: dellyqiao.com &gt;
+ 	—<br />
+  </li>
+</ol>
+
+<p>如果meta data的数据格式不对的话，在发布的时候会报错。下图是我写本文时候的样子。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>![](http://dellyqiao.qiniudn.com/2015/03/14/6.png/scale)
+</code></pre></div></div>
+
+<ol>
+  <li>不设定Meta data，直接写文章，在发布的时候插件会提示你去设置标题，标签和所属的笔记本。</li>
+</ol>
+
+<h4 id="发布文章">发布文章</h4>
+
+<p>发布文章的命令是<code class="highlighter-rouge">send to Evernote as new note</code>，只需要几秒钟，你的文章就能按照想象的排版方式输出到evernote中并且同步到自己的博客里了。</p>
+
+<p>当然，也完全可以打开现有的文章（<code class="highlighter-rouge">Open Evernote Note</code>）然后编辑保存，evernote的文章会按照原先的格式转换成Markdown格式输出到本地的Sublime Text中，修改完成后调用<code class="highlighter-rouge">Update Evernote Note</code>就OK了。</p>
+
+<p>得益于Sublime Text强大的模糊搜索功能和各种各样的文档编辑功能，我觉得以后也许我会全靠Sublime Text来管理我的Evernote笔记了。</p>
+
+<hr />
+
+<h3 id="遗憾">遗憾</h3>
+
+<p>任何事情达成的过程都是一个取舍的过程，这种方案也不例外，那就是图片的问题。</p>
+
+<p>用Sublime打开带图片的Evernote文章的时候，图片不会被正确的转换成Markdown格式</p>
+
+<ul>
+  <li>如果图片是直接复制粘贴到Evernote笔记里的，转换成Markdown的时候图片会转换成一堆无法识别的html代码。如果不加任何修改再把那堆代码同步到evernote中，evernote也无法识别。</li>
+  <li>如果图片是在用Markdown编写文章的时候通过<code class="highlighter-rouge">![alt "text"]()</code>标签插入的，发布到evernote再转出来的话会转换成几个特殊字符，也不是正常的图片。</li>
+</ul>
+
+<p>个人觉得靠谱的解决方案如下：</p>
+
+<ul>
+  <li>
+    <p>用第三方的网盘存储图片，然后生成公开连接，在写文章时通过标签引用。如下： <code class="highlighter-rouge">![](http://dellyqiao.qiniudn.com/2015/03/14/2.png/scale)</code> （同时也裂墙推荐七牛云存储，免费好用）</p>
+
+    <p>如此一来也能有效地节省Evernote吝啬的60M上传流量吧。如果这篇文章以后有可能会有大量改动的话，而且确实非Markdown编辑器不用的话，把Markdown文件在本地保存一份，方便随时修改而不用再去头疼图片的问题。</p>
+  </li>
+  <li>
+    <p>（<em>从来不用Evernote客户端一直用网页端的请无视，网页端的复杂度堪比图片外链。。。</em>）用Sublime写文章时只写文字，等文字发布之后，再转到Evernote客户端中把需要的图片粘到文章里做二次修改。 这种情况适合以后改动较少和图片较多的情况（按我的理解，在evernote客户端里粘贴图片是一种更为简单方便的操作）。</p>
+  </li>
+</ul>
+
+<hr />
+
+<p>文章写到这儿也算完成了，我觉得介绍的还算详细，有了这工具，修改整理自己的笔记真心也方便了不少，很容易就能做出良好排版的笔记。如果我需要的话，可以把笔记转换到本地，然后用Markdown语法稍加修改，然后生成格式良好的打印版文档。</p>
+
+<p>抛砖引玉，Evernote的客户端编辑器确实做的不咋地，用Markdown+Sublime Text 3，相信你更会感受到创造内容的快乐的。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Tools-ref">
+    		Tools <span class="badge badge-info">2</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/2015/03/14/how-to-delete-a-websphere-profile" title="How to delete a Websphere profile">&larr; How to delete a Websphere profile</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/middleware/migration/2015/03/14/migrate-jvm-settings-for-same-version-websphere-servers" title="Migrate JVM settings for same version Websphere Servers">Migrate JVM settings for same version Websphere Servers &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>如何在IBM WAS上配置主从集群</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>如何在IBM WAS上配置主从集群 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>20 February 2016</span>
+    </div>
+    <div class="content">
+      
+<p>如题，如何在IBM WAS（WebSphere Application Server）上配置主从集群呢？</p>
+
+<p>一个典型的基于IBM中间件的生产环境网站系统包含这几个部分：</p>
+
+<ol>
+  <li>前端的LoadBalancer（软件或者硬件）</li>
+  <li>IBM HTTP Server集群（处理静态内容，通过前端的LoadBalaner分发请求到多个节点上）</li>
+  <li>IBM WebSphere Plugin（安装在IBM HTTP Server所在的主机上，用来把动态请求转发到后端的IBM WebSphere Application Server服务器集群上）</li>
+  <li>WAS服务器</li>
+  <li>后端的DB服务器</li>
+</ol>
+
+<p>WAS集群实际上分两种情况，一种是使用了ND（Network Deployment）版本的，另一种是使用了Base版的。我们分别来探讨。</p>
+
+<!-- more -->
+
+<hr />
+
+<h3 id="was-nd版">WAS ND版</h3>
+
+<p>WAS ND版创建集群比较方便，在管理控制台的Console上就有相关功能（Click Servers -&gt; Clusters -&gt; WebSphere application server clusters, 点击<code class="highlighter-rouge">新建</code>.）根据提示一路向下就能创建好集群。</p>
+
+<p>默认情况下，集群创建好之后，每个集群成员的权重都是一样的，外部请求会被Plugin以Round Robin方式平均地把请求转发到后端服务器上。所以我们可以想到的第一个办法就是<strong><em>通过修改对应服务器的权重达到主从的目的</em></strong>。</p>
+
+<p>具体操作如下：</p>
+
+<ol>
+  <li>登录到管理控制台，定位到集群配置界面（Servers -&gt; Clusters -&gt; WebSphere application server clusters.</li>
+  <li>选择对应的集群，点击<code class="highlighter-rouge">成员</code>即可对集群成员的权重进行更改。</li>
+  <li>将standby成员的权重设置成 <code class="highlighter-rouge">0</code>，这样所有的请求都不会跑到它这边，除非其他集群成员无法处理请求（比如宕机）。</li>
+  <li><strong>重新生成plugin-cfg配置文件，并且替换到WEB服务器上。</strong></li>
+</ol>
+
+<p>第二个方法是<strong>配置应用服务器的角色（role）</strong>。</p>
+
+<p>默认情况下，所有应用服务器的角色都是“Primary”，所以我们需要把从成员的角色设定为“Backup”。操作方法如下：</p>
+
+<ol>
+  <li>
+    <p>找到要设置为backup的服务器，进入配置界面，点击Additional Properties -&gt; web server plug-in properties</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016/05/10/serverrole_1.png/scale" alt="http://dellyqiao.qiniudn.com/2016/05/10/serverrole_1.png" /></p>
+  </li>
+  <li>
+    <p>这里可以配置服务器的角色，进而plugin就可以通过plugin-cfg配置文件知道服务器的角色。</p>
+
+    <p><img src="http://dellyqiao.qiniudn.com/2016/05/10/serverrole_2.png/scale" alt="http://dellyqiao.qiniudn.com/2016/05/10/serverrole_2.png" /></p>
+  </li>
+  <li>
+    <p><strong>重新生成plugin-cfg配置文件，并且替换到WEB服务器上。</strong></p>
+  </li>
+</ol>
+
+<hr />
+
+<h3 id="was-base版">WAS Base版</h3>
+
+<p>在WAS Base版中上面的做法是没用的。因为Base版没有DMGR，没有统一的管理，即使有服务器集群也都是通过多个单点服务器的堆叠而成的。Plugin-cfg配置文件也必须通过IBM提供的工具进行手动merge。以上ND提到的方法拿到Base版本里就有了一些限制：</p>
+
+<ul>
+  <li>Base版由于没有集群的概念，所以也没有权重这个东西，所以第一种办法不可能实现。</li>
+  <li>Base版本也可以配置应用服务器的角色。但是配置过后还需要手动merge plugin-cfg配置文件，而merge工具会平等地看待所有的plugin-cfg配置文件，所以最终得到的配置文件并不会体现出每个服务器的规则是主还是从。</li>
+</ul>
+
+<blockquote>
+  <p>下图为Base版本集群的架构：</p>
+
+  <p><img src="http://7rfgqc.com1.z0.glb.clouddn.com/2016/05/10/2.png/scale" alt="http://7rfgqc.com1.z0.glb.clouddn.com/2016/05/10/2.png" /></p>
+</blockquote>
+
+<p><strong>但是隐约觉得第二种方法是有可能实现的，因为最终哪个节点对应什么规则实际上是由WebSphere Plug-in来决定的，而WAS版本的差异只在于WAS而已，plugin没有任何差异。所以，只要plugin可以把请求按照主从的方式转发到后台的WAS服务器，那么我们的主从集群就有可能实现。</strong></p>
+
+<p>根据以上猜想，我手动检查了ND版本实现了主从集群对应的的plugin-cfg配置文件，并且找到了控制主从集群的关键属性：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;ServerCluster CloneSeparatorChange="false" GetDWLMTable="false&gt;
+......
+&lt;BackupServers&gt;
+	&lt;Server Name="app01Node01_AppSrv_1"/&gt;
+&lt;/BackupServers&gt;
+&lt;PrimaryServers&gt;
+	&lt;Server Name="app02Node01_AppSrv_0"/&gt;
+&lt;/PrimaryServers&gt;
+......
+&lt;/ServerCluster&gt;
+</code></pre></div></div>
+
+<p>非主从集群的配置文件会是如下的情形：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;ServerCluster CloneSeparatorChange="false" GetDWLMTable="false&gt;
+......
+&lt;PrimaryServers&gt;
+	&lt;Server Name="app01Node01_AppSrv_1"/&gt; 
+	&lt;Server Name="app02Node01_AppSrv_0"/&gt;
+&lt;/PrimaryServers&gt;
+......
+&lt;/ServerCluster&gt;
+</code></pre></div></div>
+
+<p>所以，对于WAS Base版本，如果希望配置WAS服务器集群为主从集群，我们就必须要手动配置：</p>
+
+<ol>
+  <li>登录到每个应用服务器对应的管理控制台，生成plugin-cfg.xml配置文件。</li>
+  <li>使用<code class="highlighter-rouge">&lt;WAS HOME&gt;/pluginCfgMerge</code>工具把多个plugin-cfg配置文件合并为一个。</li>
+  <li>手动修改生成后的plugin-cfg文件，把主成员放到<code class="highlighter-rouge">&lt;PrimaryServers&gt;</code>标签中，把从成员放到<code class="highlighter-rouge">&lt;BackupServers&gt;</code>标签中。</li>
+  <li>把修改后的plugin-cfg文件替换到所有的WEB服务器上。</li>
+</ol>
+
+<hr />
+
+<p>全文完。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev"><a href="/middleware/2015/11/25/apache-configuration-basedon-ip-hostname" title="基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法">&larr; 基于IP地址和基于hostname的两种批量配置Apache虚拟主机的方法</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/security/middleware/2016/05/10/WAS-service-auto-start" title="如何配置WAS服务跟随系统启动">如何配置WAS服务跟随系统启动 &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+

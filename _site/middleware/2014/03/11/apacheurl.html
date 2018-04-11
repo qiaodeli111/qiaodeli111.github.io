@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>利用Apache服务器实现URL跳转</title>
+    <meta name="description" content="">
+    <meta name="author" content="Delly Qiao">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/dellytheme/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/dellytheme/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <meta name="ujianVerification" content="e65b6194c1b1b2adaa10a22de5c617d4" />
+
+    <meta property="wb:webmaster" content="dcdfffebfeab6e90" />
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Delly's Publisher</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive">Timeline</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories">Categories</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content col-md-9">
+        
+<div class="page-header">
+  <h2>利用Apache服务器实现URL跳转 </h2>
+</div>
+
+<div class="row-fluid post-full">
+  <div class="span12">
+    <div class="date">
+      <span>11 March 2014</span>
+    </div>
+    <div class="content">
+      
+<p>此文记录一下如何利用Apache服务器进行URL跳转。开发人员可能会说用JavaScript或者后台代码可以很容易实现，但是不管是什么样的代码，都需要首先载入页面，之后才能实现跳转功能，体验并不是很好，如果在Apache服务器上设置好的话，由于服务器的配置已经预先读取到内存里了，所以当请求到达Apache的时候直接就可以进行相应地跳转，迅速可靠。</p>
+
+<p>Apache的URL重定向是利用rewrite_module实现的，这个模块功能十分强大，作为一个实用主义者我只取需要用到的功能。</p>
+
+<!-- more -->
+
+<p><strong>注意</strong>：如果想要做的跳转是跨服务器的跳转，那么Apache所在的服务器必须得能访问目标服务器。比如说Apache在服务器A上，要想把abc.com/abc重定向到www.baidu.com，那么从服务器A上至少得能访问到www.baidu.com，否则跳转是不会成功的。所以说如果服务器在DMZ里，四面都有防火墙，那就请参照本文最后面的配置方法。</p>
+
+<p>如何配置此模块：</p>
+
+<p>1）找到这个模块的配置，把前面的注释符号去掉。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>LoadModule rewrite_module modules/mod_rewrite.so
+</code></pre></div></div>
+
+<p>2）在<code class="highlighter-rouge">&lt;virtualhost&gt;</code> 的配置中，添加如下配置：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteEngine On
+</code></pre></div></div>
+
+<p>配置完成。</p>
+
+<p>注意：RewriteEngine必须要在virtualhost里启用，否则不会生效。</p>
+
+<p>在这行配置下面就可以写跳转的规则了。下面是常见的几种情况：</p>
+
+<h4 id="1单个指定url的跳转">1）单个指定URL的跳转。</h4>
+
+<p>比如要把/abc.html重定向到/def.html：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Redirect /abc.thml /def.html
+</code></pre></div></div>
+
+<h4 id="2有相同特征的域名的跳转">2）有相同特征的域名的跳转。</h4>
+
+<p>比如说把所有/abc/之下的所有页面都重定向到/def/1.html：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteRule ^/abc/(.*)$ /def/1.html
+</code></pre></div></div>
+
+<p>rewrite_module支持正则表达式，^表示URI的开头，.表示任意字符，*表示出现N次，$表示结尾。</p>
+
+<h4 id="3还有一种情况域名更换但是所有资源的位置没有改变">3）还有一种情况，域名更换，但是所有资源的位置没有改变。</h4>
+
+<p>比如，访问http://dellyserver/abc/abcd.html的时候跳转到http://abc.dellyserver/abcd.html，是要根据所请求的资源动态跳转，而不是跳到一个特定的页面。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteCond %{HTTP_HOST} ^dellyserver [NC]
+##声明一下请求的URL的hostname是dellyserver
+
+RewriteCond %{REQUEST_URI} ^/abc/
+##声明一下请求的URI是/abc/xxxxxx
+
+RewriteRule ^/abc/(.*) &lt;http://abc.dellyserver/$1&gt; [R=permanent,L]
+##在以上两个条件都符合的时候，执行这个跳转，$1代表的是http://dellyserver/abc/后面的部分
+</code></pre></div></div>
+
+<p>4） 最后一种情况，跨服务器跳转，并且源服务器无法访问目标服务器的情况。</p>
+
+<p>比如要想把dellyserver/abc/下所有的资源都重定向到www.baidu.com，我的dellyserver是在DMZ中，这台server无法访问百度的服务器。</p>
+
+<p>这种时候，根据我目前的知识，唯一能想到的办法应该是借助程序代码了。</p>
+
+<p>第一步，写一个html文件，就叫test.html吧，放到网站的根目录。test.html只是个空白网页，只需要在&lt;head&gt;标签里加上下面这行JS代码：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;pre&gt;window.location.href="http://www.baidu.com”&lt;/pre&gt;
+</code></pre></div></div>
+
+<p>第二步，在httpd.conf中添加配置如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RewriteCond %{HTTP_HOST} ^dellyserver [NC]
+
+RewriteRule ^/abc/(.*)$ /test.html [L]
+</code></pre></div></div>
+
+<p>这样所有到达http://dellyserver/abc/xxxx的资源都会被定向到test.html，当test.html下载到本地的时候，浏览器会执行html文件中的JS代码：&lt;pre&gt;window.location.href=”http://www.baidu.com”&lt;/pre&gt;，这样浏览器会自动给http://www.baidu.com发送请求并且获得响应，费了一番功夫但是也确实达到了重定向的效果。</p>
+
+<p>就这些了，rewrite_module非常强大，有更多需求的同学可以继续深入研究下这个东西。希望我本文能起到抛砖引玉的作用吧。</p>
+
+    </div>
+
+  
+    <ul class="tag_box inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+
+
+  
+     
+    	<li><a class="btn btn-info" href="/categories.html#Middleware-ref">
+    		Middleware <span class="badge badge-info">25</span>
+    	</a></li>
+    
+  
+
+
+    </ul>
+    
+
+    
+
+  <div class="bdsharebuttonbox"><a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a><a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a><a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a><a href="#" class="bds_mail" data-cmd="mail" title="分享到邮件分享"></a><a href="#" class="bds_more" data-cmd="more"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["qzone","renren","kaixin001","tieba","douban","tsohu","sqq","qq","taobao","hi","mogujie","diandian","youdao","sdo","xg","ty","twi","deli","linkedin","copy","print"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","tqq","weixin","fbook","mail"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+    <hr>
+    <div class="pagination  pagination-centered">
+      <ul>
+      
+        <li class="prev disabled"><a>&larr; Previous</a></li>
+      
+        <li><a href="/archive.html">Timeline</a></li>
+      
+        <li class="next"><a href="/security/2014/03/11/fix-vulnerability-http-server-prone-to-slow-denial-of-service-attack" title="Fix vulnerability: HTTP Server Prone To Slow Denial Of Service Attack">Fix vulnerability: HTTP Server Prone To Slow Denial Of Service Attack &rarr;</a></li>
+      
+      </ul>
+    </div>
+    <hr>
+    
+
+
+  <!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1970163"></script>
+<!-- UY END -->
+
+
+
+  </div>
+</div>
+
+
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; 2018 Delly Qiao
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
+
