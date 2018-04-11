@@ -5,22 +5,14 @@
         <description>Delly's Publisher - Delly Qiao</description>
         <link>http://blog.dellyqiao.com</link>
         <link>http://blog.dellyqiao.com</link>
-        <lastBuildDate>2018-04-11T11:09:17+08:00</lastBuildDate>
-        <pubDate>2018-04-11T11:09:17+08:00</pubDate>
+        <lastBuildDate>2018-04-11T11:25:44+08:00</lastBuildDate>
+        <pubDate>2018-04-11T11:25:44+08:00</pubDate>
         <ttl>1800</ttl>
 
 
         <item>
-                <title>Configure Markdown Plugin For Vim</title>
-                <description>&lt;h1 id=&quot;在vim中配置markdown-preview插件&quot;&gt;在vim中配置Markdown Preview插件&lt;/h1&gt;
-
-&lt;hr /&gt;
-&lt;p&gt;layout: post
-title: “在vim中配置Markdown Preview插件”
-description: “”
-category: [“Tools”]
-—&lt;/p&gt;
-
+                <title>在vim中配置Markdown Preview插件</title>
+                <description>
 &lt;p&gt;Vim可以算是我的主力文本编辑器，这东西上手之后是一个非常好用的工具。Vim适合写市面上大部分的开发语言和脚本，当然用来写Markdown也是非常合适的，或者说越来越合适了。&lt;/p&gt;
 
 &lt;p&gt;相比较其他五花八门的Markdown编辑器，他们的书写体验都不是很好，基本上就是一个记事本加上了预览功能，但是他们共同比Vim强的一点就是：支持实时预览。今天我就要为Vim加上实时预览的功能。&lt;/p&gt;
@@ -40,6 +32,8 @@ category: [“Tools”]
 &lt;blockquote&gt;
   &lt;p&gt;这是一个用来管理Vim插件的一个插件。直接把github上的项目名称配置进去，这个插件就可以通过一条命令直接下载项目，并且安装到Vim里。如果插件有更新，也可以通过一条命令直接更新全部插件，非常好用。我们用到的这个Markdown插件也是通过这个vim-plug来安装的。&lt;/p&gt;
 &lt;/blockquote&gt;
+
+&lt;!-- more --&gt;
 
 &lt;p&gt;首先需要安装git。&lt;a href=&quot;https://git-scm.com/downloads&quot;&gt;点击这里&lt;/a&gt;获取下载连接。&lt;/p&gt;
 
@@ -153,8 +147,8 @@ imap &amp;lt;silent&amp;gt; &amp;lt;F9&amp;gt; &amp;lt;Plug&amp;gt;StopMarkdownP
 
 &lt;p&gt;&lt;img src=&quot;http://dellyqiao.qiniudn.com/2018/04/10/preview.JPG&quot; alt=&quot;preview&quot; /&gt;&lt;/p&gt;
 </description>
-                <link>http://blog.dellyqiao.com/2018/04/10/configure-markdown-plugin-for-vim</link>
-                <guid>http://blog.dellyqiao.com/2018/04/10/configure-markdown-plugin-for-vim</guid>
+                <link>http://blog.dellyqiao.com/tools/2018/04/10/configure-markdown-plugin-for-vim</link>
+                <guid>http://blog.dellyqiao.com/tools/2018/04/10/configure-markdown-plugin-for-vim</guid>
                 <pubDate>2018-04-10T00:00:00+08:00</pubDate>
         </item>
 

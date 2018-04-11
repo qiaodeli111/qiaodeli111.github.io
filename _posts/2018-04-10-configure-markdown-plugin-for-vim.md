@@ -1,6 +1,4 @@
-﻿# 在vim中配置Markdown Preview插件
-
----
+﻿---
 layout: post
 title: "在vim中配置Markdown Preview插件"
 description: ""
@@ -24,6 +22,8 @@ Vim可以算是我的主力文本编辑器，这东西上手之后是一个非�
 ### 第一部分：安装[junegunn/vim-plug](https://github.com/junegunn/vim-plug)。
 
 > 这是一个用来管理Vim插件的一个插件。直接把github上的项目名称配置进去，这个插件就可以通过一条命令直接下载项目，并且安装到Vim里。如果插件有更新，也可以通过一条命令直接更新全部插件，非常好用。我们用到的这个Markdown插件也是通过这个vim-plug来安装的。
+
+<!-- more -->
 
 首先需要安装git。[点击这里](https://git-scm.com/downloads)获取下载连接。
   

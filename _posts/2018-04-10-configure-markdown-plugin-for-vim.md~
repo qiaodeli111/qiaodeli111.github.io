@@ -1,6 +1,4 @@
-﻿# 在vim中配置Markdown Preview插件
-
----
+﻿---
 layout: post
 title: "在vim中配置Markdown Preview插件"
 description: ""
@@ -126,4 +124,7 @@ vim-plug的安装过程也非常方便，主要分两步。
 
 ----
 
+
 这次是真行了。
+
+![preview](http://dellyqiao.qiniudn.com/2018/04/10/preview.JPG)

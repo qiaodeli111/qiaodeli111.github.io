@@ -7,7 +7,7 @@ http://blog.dellyqiao.com/
 http://blog.dellyqiao.com/rss.xml
 http://blog.dellyqiao.com/sitemap.txt
 
-http://blog.dellyqiao.com/2018/04/10/configure-markdown-plugin-for-vim
+http://blog.dellyqiao.com/tools/2018/04/10/configure-markdown-plugin-for-vim
 http://blog.dellyqiao.com/2017/04/09/Java%E4%B8%AD%E4%BD%8D%E8%BF%90%E7%AE%97%E7%9B%B8%E5%85%B3%E6%B5%8B%E8%AF%95
 http://blog.dellyqiao.com/security/middleware/2016/05/10/WAS-service-auto-start
 http://blog.dellyqiao.com/middleware/2016/02/20/configure-primary-backup-cluster-for-ibm-was-cluster
