@@ -73,7 +73,7 @@ vim-plug的安装过程也非常方便，主要分两步。
 基于vim-plug已经成功安装，我们这个插件的安装就会比较容易。只需要把下面两行配置放到vim配置文件里，然后重启Vim，运行`:PlugInstall`即可。
 
 	Plug 'iamcco/mathjax-support-for-mkdp'
-	Plug 'iamcco/markdown-preview.vim
+	Plug 'iamcco/markdown-preview.vim'
 
 插件安装完成后，再把下面四行配置放到vim配置文件中（可以放到最后面），用来映射快捷键：
 
